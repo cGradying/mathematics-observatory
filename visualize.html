@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="See Grade 11 mathematical relationships through interactive graphs and visual studies.">
+  <title>Visualize | The Mathematics Observatory</title>
+  <link rel="stylesheet" href="assets/css/styles.css?v=14">
+  <link rel="stylesheet" href="assets/css/assistant.css?v=7">
+  <link rel="stylesheet" href="assets/css/visualize.css?v=16">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Archivo+Black&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body class="observatory-page visualize-page" data-section="visualize">
+  <nav class="main-nav" aria-label="Main navigation">
+    <div class="nav-container">
+      <a class="logo" href="index.html" aria-label="The Mathematics Observatory home"><span class="logo-symbol">∫</span><span class="logo-text">The Mathematics Observatory</span></a>
+      <button class="menu-toggle" type="button" aria-label="Toggle menu" aria-controls="site-navigation" aria-expanded="false"><span></span><span></span><span></span></button>
+      <ul class="nav-links" id="site-navigation">
+        <li><a href="index.html" class="nav-link">Home</a></li>
+        <li><a href="learn.html" class="nav-link">Learn</a></li>
+        <li><a href="explore.html" class="nav-link">Explore</a></li>
+        <li><a href="visualize.html" class="nav-link active" aria-current="page">Visualize</a></li>
+        <li><a href="laboratory.html" class="nav-link">Laboratory</a></li>
+        <li><a href="challenges.html" class="nav-link">Challenges</a></li>
+        <li><a href="history.html" class="nav-link">History</a></li>
+        <li><a href="proofs.html" class="nav-link">Why It Works</a></li>
+      </ul>
+    </div>
+  </nav>
+  <main>
+    <section class="viz-hero">
+      <div class="viz-hero-copy"><p class="op-kicker">A visual field guide · Grade 11</p><h1>See the rule<br><em>take shape.</em></h1><p>Explore how inputs, patterns, and data become visible relationships. Change the rule and watch the graph respond.</p><a class="op-button op-button-viz" href="#visual-workspace">Open the function studio <span aria-hidden="true">↓</span></a></div>
+      <div class="viz-hero-mark" aria-hidden="true"><span>y = mx + b</span><svg viewBox="0 0 400 230"><path d="M30 195H375M55 215V18M80 177 338 42"/><circle cx="210" cy="112" r="6"/></svg></div>
+    </section>
+    <section class="viz-index op-shell" aria-label="Visualization topics">
+      <p class="op-kicker">Choose a lens</p><div class="viz-filters" role="group" aria-label="Filter visualizations"><button type="button" class="is-active" data-viz-filter="all" aria-pressed="true">All studies</button><button type="button" data-viz-filter="functions" aria-pressed="false">Functions</button><button type="button" data-viz-filter="sequences" aria-pressed="false">Sequences</button><button type="button" data-viz-filter="data" aria-pressed="false">Statistics</button><button type="button" data-viz-filter="finance" aria-pressed="false">Finance</button></div>
+    </section>
+    <section class="visualization-section op-shell" id="visual-workspace">
+      <div class="viz-intro"><div><p class="op-kicker">Interactive study · Grade 11</p><h2 id="viz-study-title">A line is a relationship</h2><p id="viz-study-description">Adjust the slope and intercept of y = mx + b. See how each parameter changes the graph and the value of y.</p></div><div id="viz-rule-panel" class="viz-equation" aria-live="polite" hidden><span id="viz-rule-label">Current rule</span><strong id="viz-equation">y = 1x + 0</strong><p id="viz-formula-reference" class="viz-formula-reference" hidden><span>Formula reference:</span><span class="viz-quadratic-formula" role="math" aria-label="x equals negative b plus or minus the square root of b squared minus four a c, divided by two a"><span>x =</span><span class="viz-fraction"><span class="viz-fraction-numerator">−b ± √(b² − 4ac)</span><span class="viz-fraction-denominator">2a</span></span></span></p></div></div>
+      <label class="viz-study-picker" for="viz-topic">Study a topic <select id="viz-topic"><option value="linear">Linear functions</option><option value="quadratic">Quadratic functions</option><option value="absolute">Absolute value functions</option><option value="root">Square-root functions</option><option value="cube-root">Cube-root functions</option><option value="sequence">Sequences and series</option><option value="statistics">Data and statistics</option><option value="regression">Correlation and regression</option><option value="normal">Normal distributions</option><option value="random-variable">Discrete random variables</option><option value="finance">Compound interest</option><option value="annuity">Annuities</option><option value="loan">Loan amortization</option><option value="price">Markup, discount, VAT</option><option value="profit">Profit and loss</option><option value="inflation">Inflation and purchasing power</option><option value="pay">Wages and overtime</option><option value="piecewise">Piecewise fare model</option><option value="geometry">Solid geometry</option><option value="triangle">Triangle area</option><option value="trig">Right-triangle trigonometry</option><option value="logic">Logic truth tables</option><option value="measurement">Scale and temperature</option><option value="sigma">Series and sigma notation</option></select></label>
+      
+      <div class="viz-workbench">
+          <div class="viz-chart-wrap"><div class="viz-chart-caption"><span>OUTPUT · y</span><span>INPUT · x</span></div><svg class="viz-chart" id="viz-chart" viewBox="0 0 720 420" role="img" aria-labelledby="viz-chart-title viz-chart-desc"><title id="viz-chart-title">Interactive graph of a mathematical relationship</title><desc id="viz-chart-desc">The visual display updates when an input changes.</desc><defs><pattern id="viz-grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none"/></pattern><clipPath id="viz-plot-clip"><rect x="40" y="20" width="640" height="360"/></clipPath></defs><rect class="viz-grid-bg" x="40" y="20" width="640" height="360"/><g id="viz-grid-lines" aria-hidden="true" clip-path="url(#viz-plot-clip)"></g><path class="viz-axis" d="M40 200H680M360 20V380"/><path id="viz-area" class="viz-area" d="" clip-path="url(#viz-plot-clip)"/><path id="viz-line" class="viz-line" d="M40 300L680 100" clip-path="url(#viz-plot-clip)"/><circle id="viz-point" class="viz-point" cx="360" cy="200" r="7"/><g id="viz-markers" class="viz-markers" aria-hidden="true" clip-path="url(#viz-plot-clip)"></g><text x="665" y="222">x</text><text x="374" y="35">y</text><g class="viz-ticks"></g></svg><div id="viz-alt-visual" class="viz-alt-visual" hidden></div><div id="viz-metrics" class="viz-metrics" aria-live="polite" hidden></div><p id="viz-point-readout" class="viz-readout" aria-live="polite">At x = 0, y = 0</p></div>
+        <aside class="viz-controls"><p class="op-kicker">Adjust the study</p><div id="viz-topic-controls" class="viz-topic-controls" aria-live="polite"></div><div class="viz-result"><span>Result</span><strong id="viz-output">0</strong></div><button class="op-text-button" type="button" id="viz-reset">Reset the view <span aria-hidden="true">↺</span></button></aside>
+      </div>
+    </section>
+    <section class="viz-collection op-shell"><div class="op-section-heading"><p class="op-kicker">More ways to see</p><h2>Studies in the collection</h2></div><div class="viz-study-list">
+      <article class="viz-study" data-viz-category="functions"><span class="study-number">02</span><div class="study-spark spark-function" aria-hidden="true"><svg viewBox="0 0 150 62"><path d="M4 52C24 45 32 12 58 15S91 57 112 42 131 8 148 5"/></svg></div><div><p>Functions · transformations</p><h3>Shift the graph</h3><span>Compare a base line with a vertical translation.</span></div><a href="explore.html#curriculum-paths" class="study-action">Explore formulas <span>↗</span></a></article>
+      <article class="viz-study" data-viz-category="sequences"><span class="study-number">03</span><div class="study-spark spark-sequence" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div><div><p>Sequences · common difference</p><h3>Terms in a pattern</h3><span>See an arithmetic sequence grow one term at a time.</span></div><a href="explore.html#curriculum-paths" class="study-action">Explore formulas <span>↗</span></a></article>
+      <article class="viz-study" data-viz-category="data"><span class="study-number">04</span><div class="study-spark spark-data" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div><div><p>Statistics · association</p><h3>Read the scatter</h3><span>Inspect how paired observations follow a trend.</span></div><a href="explore.html#curriculum-paths" class="study-action">Explore formulas <span>↗</span></a></article>
+      <article class="viz-study" data-viz-category="finance"><span class="study-number">05</span><div class="study-spark spark-finance" aria-hidden="true"><svg viewBox="0 0 150 62"><path d="M4 54C44 49 70 43 93 31S128 12 148 5"/></svg></div><div><p>Finance · compound interest</p><h3>Growth over time</h3><span>Compare a balance after repeated compounding.</span></div><a href="explore.html#curriculum-paths" class="study-action">Explore formulas <span>↗</span></a></article>
+    </div></section>
+  </main>
+  <footer class="op-footer"><a href="index.html">The Mathematics Observatory</a><nav class="op-more" aria-label="More mathematics studios"><a href="visualize.html" aria-current="page">Visualize</a><a href="laboratory.html">Laboratory</a><a href="challenges.html">Challenges</a></nav><span>Visualize · See relationships</span><a href="#visual-workspace">Return to the studio ↑</a></footer>
+  <script src="assets/js/script.js"></script><script src="assets/js/curriculum-data.js?v=7"></script><script src="assets/js/math-calculator.js?v=7"></script><script src="assets/js/observatory-math.js?v=4"></script><script src="assets/js/assistant-config.js"></script><script src="assets/js/assistant.js?v=46"></script><script type="module" src="assets/js/geometry-loader.js?v=1"></script><script src="assets/js/visualize.js?v=38"></script>
+</body>
+</html>
