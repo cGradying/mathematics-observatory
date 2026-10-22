@@ -119,22 +119,16 @@
 
     const stylesheet = document.createElement('link');
     stylesheet.rel = 'stylesheet';
-    stylesheet.href = new URL('node_modules/katex/dist/katex.min.css', document.baseURI).href;
-    stylesheet.onerror = () => {
-      stylesheet.href = 'https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.css';
-    };
+    stylesheet.href = '/vendor/katex/katex.min.css'; // self-hosted: public/vendor/katex
     document.head.append(stylesheet);
 
-    const loadScript = (source) => new Promise((resolve, reject) => {
+    katexReady = new Promise((resolve, reject) => {
       const script = document.createElement('script');
-      script.src = source;
+      script.src = '/vendor/katex/katex.min.js';
       script.onload = () => window.katex?.render ? resolve(window.katex) : reject(new Error('KaTeX did not initialize.'));
-      script.onerror = () => reject(new Error(`KaTeX failed to load from ${source}`));
+      script.onerror = () => reject(new Error('KaTeX failed to load.'));
       document.head.append(script);
     });
-
-    katexReady = loadScript(new URL('node_modules/katex/dist/katex.min.js', document.baseURI).href)
-      .catch(() => loadScript('https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.js'));
     return katexReady;
   }
 
@@ -318,6 +312,7 @@
     if (!n) return;
     $('quiz-track').setAttribute('aria-valuemax', String(n));
     $('quiz-track').setAttribute('aria-valuenow', String(done));
+    $('quiz-track').setAttribute('aria-valuetext', `${done} of ${n} answered`);
     $('quiz-fill').style.width = `${(done / n) * 100}%`;
     $('quiz-track').querySelectorAll?.('.quiz-tick').forEach((t) => t.classList.toggle('is-hit', Number(t.dataset.k) <= done));
   }
@@ -359,7 +354,7 @@
       P().recordAnswer(item.topicId, passed);
       const after = P().describe(item.topicId);
       const now = P().LEVEL_NAMES.indexOf(after.level);
-      levelEl.textContent = now > before ? (before === 0 ? `Nice start on ${titleOf(item.topicId)}.` : `Level up: ${titleOf(item.topicId)} is now ${after.label}.`) : '';
+      levelEl.textContent = passed && now > before ? (before === 0 ? `Nice start on ${titleOf(item.topicId)}.` : `Level up: ${titleOf(item.topicId)} is now ${after.label}.`) : '';
       markLast(item);
       const slug = item.topicId;
       toolsEl.replaceChildren('Related tools: ');
@@ -404,8 +399,9 @@
     const nStars = P() ? P().stars(right, res.length) : 0;
     const starEl = $('quiz-stars');
     starEl.textContent = '\u2605'.repeat(nStars) + '\u2606'.repeat(3 - nStars);
+    starEl.setAttribute('role', 'img');
     starEl.setAttribute('aria-label', `${nStars} of 3 stars`);
-    setText('quiz-score-note', pct === 1 ? 'A clean sweep. Every star earned.' : pct >= 0.7 ? 'Solid work. Look over the misses below.' : pct >= 0.4 ? 'Getting there. The review below shows where to look again.' : 'Every attempt maps the sky a little better. Start with the review below.');
+    setText('quiz-score-note', pct === 1 ? 'A clean sweep. Every star earned.' : pct >= 0.7 ? 'Solid work. Look over the misses below.' : pct >= 0.4 ? 'Getting there. The review below shows where to look again.' : (right ? 'Every attempt maps the sky a little better. Start with the review below.' : 'No stars this time, and that is fine. Read the review below, then try again.'));
     let bestNote = '';
     if (P() && (S.kind === 'quick' || S.kind === 'topic') && res.length === S.qs.length && !S.saved) {
       S.saved = true;
@@ -423,8 +419,8 @@
         const d = P().describe(slug);
         const now = P().LEVEL_NAMES.indexOf(d.level);
         const li = document.createElement('li');
-        if (now > S.pre[slug]) li.textContent = S.pre[slug] === 0 ? `Nice start on ${titleOf(slug)}.` : `Level up: ${titleOf(slug)} is now ${d.label}.`;
-        else li.textContent = `${titleOf(slug)}: ${d.label}. ${d.next}.`;
+        if (nStars > 0 && now > S.pre[slug]) li.textContent = S.pre[slug] === 0 ? `Nice start on ${titleOf(slug)}.` : `Level up: ${titleOf(slug)} is now ${d.label}.`;
+        else li.textContent = nStars === 0 ? `${titleOf(slug)}: no stars yet, and that is fine. Read the review, then try again.` : `${titleOf(slug)}: ${d.label}. ${d.next}.`;
         levels.append(li);
       });
     }

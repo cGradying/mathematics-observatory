@@ -75,7 +75,7 @@ function renderContents() {
 
 function renderEra(era, index) {
   const dark = index === 2 || index === 5;
-  return `<section class="era-section${dark ? " era-dark" : ""}" id="${esc(era.id)}"><div class="era-meta"><span>${pad(index + 1)}</span><p>${esc(era.period)}</p></div><div class="era-body"><p class="eyebrow">Gallery ${pad(index + 1)}</p><h2>${esc(era.title)}</h2><p class="era-intro">${esc(era.intro)}</p><div class="topic-grid">${era.topics.map((topic) => `<article class="topic-card"><h3>${esc(topic.title)}</h3><p>${esc(topic.text)}</p>${LEARN_TOPICS.has(topic.title) ? '<a class="learn-chip" href="learn.html">View in Learn <span aria-hidden="true">↗</span></a>' : ""}</article>`).join("")}</div></div></section>${index % 2 === 0 && era.fact ? `<aside class="fact-callout"><span class="fact-medallion">Did you know?</span><p>${esc(era.fact)}</p></aside>` : ""}`;
+  return `<section class="era-section${dark ? " era-dark" : ""}" id="${esc(era.id)}"><div class="era-meta"><span>${pad(index + 1)}</span><p>${esc(era.period)}</p></div><div class="era-body"><p class="eyebrow">Gallery ${pad(index + 1)}</p><h2>${esc(era.title)}</h2><p class="era-intro">${esc(era.intro)}</p><div class="topic-grid">${era.topics.map((topic) => `<article class="topic-card"><h3>${esc(topic.title)}</h3><p>${esc(topic.text)}</p>${LEARN_TOPICS.has(topic.title) ? '<a class="learn-chip" href="learn.html">View in Learn <span aria-hidden="true">↗</span></a>' : ""}</article>`).join("")}</div></div></section>${index % 2 === 0 && era.fact ? `<aside class="fact-callout" aria-label="Did you know"><span class="fact-medallion">Did you know?</span><p>${esc(era.fact)}</p></aside>` : ""}`;
 }
 
 function renderPeople() {

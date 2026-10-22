@@ -9,7 +9,8 @@
     "knowledge:build": "node scripts/build-knowledge-index.js",
     "knowledge:check": "node scripts/build-knowledge-index.js --check",
     "pretest": "npm run knowledge:check",
-    "test": "vite build && node --test tests/grade11-ai.test.js tests/project-structure.test.js tests/gemini-api.test.js tests/observatory-math.test.js tests/visualize-interactions.test.js tests/explore-formulas.test.js tests/progress.test.js tests/dashboard.test.js tests/challenges-progress.test.js tests/topic-chip.test.js tests/dist-links.test.js tests/headers.test.js tests/learn-progress.test.js tests/a11y-static.test.js tests/header.test.js tests/fun.test.js",
+    "test": "vite build && node --test tests/grade11-ai.test.js tests/project-structure.test.js tests/gemini-api.test.js tests/assistant-api-mock.test.js tests/observatory-math.test.js tests/visualize-interactions.test.js tests/explore-formulas.test.js tests/progress.test.js tests/dashboard.test.js tests/challenges-progress.test.js tests/topic-chip.test.js tests/dist-links.test.js tests/headers.test.js tests/learn-progress.test.js tests/a11y-static.test.js tests/header.test.js tests/fun.test.js tests/home-stats.test.js",
+    "ai:check": "node scripts/check-ai-ready.mjs",
     "test:ollama": "node --test tests/grade11-ai-live.test.js"
   },
   "dependencies": {
@@ -27,7 +28,6 @@
     "@fontsource/libre-franklin": "^5.3.0",
     "@fontsource/playfair-display": "^5.3.0",
     "@vitejs/plugin-react": "^6.1.2",
-    "tailwindcss": "^4.3.3",
     "vite": "^8.3.2"
   }
 }

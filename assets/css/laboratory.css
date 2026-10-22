@@ -18,15 +18,15 @@
 .lab-masthead-inner .op-button { margin-top: 4px; }
 .lab-masthead h1 { font-size: clamp(3.2rem,6.5vw,5.7rem); }
 .lab-masthead-inner > p:not(.op-kicker) { max-width: 600px; margin-bottom: 26px; }
-.lab-index { display: flex; align-items: center; flex-wrap: wrap; gap: 15px; margin-top: 40px; padding-top: 18px; border-top: 1px solid rgba(40, 36, 53, 0.2); color: var(--op-accent); font: 600 .65rem "IBM Plex Mono",monospace; letter-spacing: .13em; }
+.lab-index { display: flex; align-items: center; flex-wrap: wrap; gap: 15px; margin-top: 40px; padding-top: 18px; border-top: 1px solid rgba(40, 36, 53, 0.2); color: var(--op-accent); font: 600 0.7rem "IBM Plex Mono",monospace; letter-spacing: .13em; }
 .lab-index i { color: var(--op-accent); opacity: .55; font-style: normal; }
 .lab-questions { padding-block: 70px 33px; display: grid; grid-template-columns: 1fr 320px; align-items: end; gap: 40px; }
 .lab-questions h2 { font-size: 2.5rem; }
 .lab-objective { max-width: 640px; margin: 15px 0 12px; color: var(--op-ink); font: 500 1.14rem/1.55 "Archivo",sans-serif; }
-.lab-objective b { margin-right: 9px; color: var(--op-accent); font: 600 .62rem "IBM Plex Mono",monospace; letter-spacing: .1em; text-transform: uppercase; }
+.lab-objective b { margin-right: 9px; color: var(--op-accent); font: 600 0.7rem "IBM Plex Mono",monospace; letter-spacing: .1em; text-transform: uppercase; }
 .lab-source { margin: 0; color: var(--op-muted); font-size: .75rem; }
 .lab-notes { padding: 17px 20px; border: 2px solid var(--op-ink); border-radius: 14px; border-left-width: 6px; border-left-color: var(--op-accent); background: var(--op-card); box-shadow: 4px 4px 0 rgba(40,36,53,.9); }
-.lab-notes span { display: block; color: var(--op-muted); font: 600 .62rem "IBM Plex Mono",monospace; letter-spacing: .1em; text-transform: uppercase; }
+.lab-notes span { display: block; color: var(--op-muted); font: 600 0.7rem "IBM Plex Mono",monospace; letter-spacing: .1em; text-transform: uppercase; }
 .lab-notes strong { display: block; margin: 10px 0 7px; font-family: "Archivo", sans-serif; font-weight: 700; font-size: 1.7rem; }
 .lab-notes p { margin: 0; color: var(--op-muted); font-size: .76rem; line-height: 1.5; }
 .lab-workspace { padding-block: 26px 86px; display: grid; grid-template-columns: 285px minmax(0,1fr); align-items: start; }
@@ -47,7 +47,7 @@
 .lab-result-head { display: flex; justify-content: space-between; align-items: start; gap: 20px; }
 .lab-result-head span:first-child { display: block; color: var(--op-muted); font-size: .74rem; }
 .lab-result-head strong { display: block; margin-top: 4px; color: var(--op-ink); font-family: "Archivo", sans-serif; font-weight: 800; font-size: clamp(1.8rem,4vw,2.8rem); letter-spacing: -0.02em; }
-.lab-result-tag { padding: 7px 12px; color: var(--op-ink); border: 2px solid var(--op-ink); border-radius: 999px; background: var(--op-mint); font: 600 .55rem "IBM Plex Mono",monospace; letter-spacing: .08em; }
+.lab-result-tag { padding: 7px 12px; color: var(--op-ink); border: 2px solid var(--op-ink); border-radius: 999px; background: var(--op-mint); font: 600 0.7rem "IBM Plex Mono",monospace; letter-spacing: .08em; }
 .lab-chart-wrap { margin-top: 16px; border-bottom: 1px solid var(--op-line); position: relative; }
 .lab-chart { width: 100%; height: auto; display: block; }
 .lab-chart-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: block; }
@@ -62,7 +62,7 @@
 .lab-note-mark { width: 26px; height: 26px; display: grid; place-items: center; color: var(--op-ink); background: var(--op-lime); border: 2px solid var(--op-ink); border-radius: 8px; }
 .lab-observation-note p { margin: 0; color: var(--op-ink); font-size: .83rem; line-height: 1.6; }
 .lab-guided { margin-top: 23px; padding-top: 17px; border-top: 1px solid var(--op-line); }
-.lab-guided > span { color: var(--op-accent); font: 600 .6rem "IBM Plex Mono",monospace; letter-spacing: .12em; text-transform: uppercase; }
+.lab-guided > span { color: var(--op-accent); font: 600 0.7rem "IBM Plex Mono",monospace; letter-spacing: .12em; text-transform: uppercase; }
 .lab-guided > p { margin: 7px 0; color: var(--op-ink); font: 700 1rem/1.5 "Archivo",sans-serif; }
 .lab-guided button { padding: 8px 14px; border: 2px solid var(--op-ink); border-radius: 10px; box-shadow: 3px 3px 0 rgba(40,36,53,.9); color: var(--op-ink); background: var(--op-lime); font-size: .74rem; font-weight: 700; cursor: pointer; }
 .lab-guided button:hover { background: var(--op-peach); }
@@ -75,7 +75,7 @@
 .lab-queue-list button:hover { background: rgba(255,253,249,.6); }
 .lab-queue-list button > span { grid-row: span 2; color: var(--op-accent); font: .7rem "IBM Plex Mono",monospace; }
 .lab-queue-list b { font: 700 1rem "Archivo",serif; }
-.lab-queue-list small { color: var(--op-muted); font-size: .67rem; }
+.lab-queue-list small { color: var(--op-muted); font-size: 0.7rem; }
 .lab-queue-list i { grid-column: 3; grid-row: 1 / 3; color: var(--op-accent); font-size: .72rem; font-style: normal; }
 .lab-queue-message { grid-column: 2; margin: 0; color: var(--op-muted); font-size: .73rem; }
 
@@ -86,7 +86,7 @@
   .observatory-page { padding-top: 56px; }
   .op-shell { width: min(100% - 32px, 1180px); }
   .lab-masthead { min-height: 430px; padding: 56px 22px 28px; }
-  .lab-index { gap: 8px; font-size: .56rem; }
+  .lab-index { gap: 8px; font-size: 0.7rem; }
   .lab-questions { padding-block: 48px 20px; grid-template-columns: 1fr; gap: 20px; }
   .lab-workspace { padding-block: 18px 55px; grid-template-columns: 1fr; }
   .lab-control-rail { padding: 22px; }

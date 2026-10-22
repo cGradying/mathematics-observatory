@@ -33,7 +33,7 @@
 .viz-intro > div:first-child > p:last-child { max-width: 630px; margin: 0; color: var(--op-muted); font-size: .9rem; line-height: 1.6; }
 .viz-equation { min-width: 190px; padding: 12px 16px; border: 2px solid var(--op-ink); border-radius: 12px; border-left-width: 6px; border-left-color: var(--op-accent); background: var(--op-card); box-shadow: 3px 3px 0 rgba(40,36,53,.9); }
 .viz-equation > span, .viz-equation > strong { display: block; }
-.viz-equation > span { margin-bottom: 6px; color: var(--op-muted); font: 600 .61rem "IBM Plex Mono",monospace; letter-spacing: .1em; text-transform: uppercase; }
+.viz-equation > span { margin-bottom: 6px; color: var(--op-muted); font: 600 0.7rem "IBM Plex Mono",monospace; letter-spacing: .1em; text-transform: uppercase; }
 .viz-equation strong { font-family: Georgia, serif; font-weight: 500; font-size: 1.2rem; }
 .viz-formula-reference { margin:9px 0 0; display:flex; flex-wrap:wrap; align-items:center; gap:4px; color:var(--op-muted); font-size:.72rem; line-height:1.45; }
 .viz-quadratic-formula { display:inline-flex; align-items:center; gap:5px; color:var(--op-ink); font:500 .88rem Georgia,serif; white-space:nowrap; }
@@ -45,7 +45,7 @@
 .viz-chart-wrap.viz-alt-view-active > .viz-chart,
 .viz-chart-wrap.viz-alt-view-active > .viz-chart-caption { display:none !important; }
 .viz-chart-wrap.viz-alt-view-active > .viz-alt-visual:not([hidden]) { display:block; }
-.viz-chart-caption { display: flex; justify-content: space-between; color: #655E71; font: 600 .58rem "IBM Plex Mono",monospace; letter-spacing: .12em; }
+.viz-chart-caption { display: flex; justify-content: space-between; color: #655E71; font: 600 0.7rem "IBM Plex Mono",monospace; letter-spacing: .12em; }
 .viz-chart { display: block; width: min(100%, 820px); height: auto; margin: 8px auto 0; }
 .viz-grid-bg { fill: #fcfbfe; }
 .viz-grid-line { fill: none; vector-effect: non-scaling-stroke; }
@@ -74,7 +74,7 @@
 .viz-study { min-height: 105px; padding: 15px 12px; display: grid; grid-template-columns: 42px 150px minmax(0,1fr) auto; align-items: center; gap: 20px; border-bottom: 1px solid var(--op-line); border-radius: 10px; }
 .viz-study:hover { background: rgba(217,207,245,.3); }
 .viz-study[hidden] { display: none; }
-.viz-study p { margin: 0 0 5px; color: var(--op-accent); font: 600 .6rem "IBM Plex Mono",monospace; letter-spacing: .08em; text-transform: uppercase; }
+.viz-study p { margin: 0 0 5px; color: var(--op-accent); font: 600 0.7rem "IBM Plex Mono",monospace; letter-spacing: .08em; text-transform: uppercase; }
 .viz-study h3 { margin: 0 0 4px; font-family: "Archivo", sans-serif; font-weight: 700; font-size: 1.12rem; letter-spacing: -0.01em; }
 .viz-study div > span { color: var(--op-muted); font-size: .78rem; }
 .study-action { padding: 8px 14px; border: 2px solid var(--op-ink); border-radius: 999px; color: var(--op-ink); background: var(--op-sky); font-size: .74rem; font-weight: 700; text-decoration: none; white-space: nowrap; }
@@ -276,11 +276,11 @@
 .viz-topic-controls .viz-geometry-dimension input[type="range"] { min-height:0; padding:0; accent-color:var(--op-accent); }
 .viz-alt-visual table { width:100%; border-collapse:collapse; color:#4d4354; font-size:.84rem; text-align:left; }
 .viz-alt-visual th, .viz-alt-visual td { padding:11px 14px; border-bottom:1px solid #e9e4ef; }
-.viz-alt-visual th { color:#70518f; font:600 .65rem 'IBM Plex Mono',monospace; letter-spacing:.05em; }
+.viz-alt-visual th { color:#70518f; font:600 0.7rem 'IBM Plex Mono',monospace; letter-spacing:.05em; }
 .viz-metrics { margin-top:12px; display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:8px; }
 .viz-metrics[hidden] { display:none; }
 .viz-metric { padding:10px 12px; border:2px solid var(--op-ink); border-radius: 10px; background:#fff; }
-.viz-metric span { display:block; color:var(--op-muted); font:600 .6rem 'IBM Plex Mono',monospace; letter-spacing:.08em; text-transform:uppercase; }
+.viz-metric span { display:block; color:var(--op-muted); font:600 0.7rem 'IBM Plex Mono',monospace; letter-spacing:.08em; text-transform:uppercase; }
 .viz-metric strong { display:block; margin-top:4px; font-size:.92rem; font-weight:600; }
 .viz-slider-group { margin:0 0 14px; }
 .viz-slider-row { margin-bottom:6px; display:flex; align-items:center; justify-content:space-between; gap:10px; color:var(--op-muted); font-size:.76rem; }
@@ -301,7 +301,7 @@
 .viz-intercept-label { fill:#403649; }
 .viz-root-label { fill:#258b4c; }
 .viz-sample { fill:#eab308; stroke:#fff; stroke-width:2.5; }
-.viz-run-label { fill:#d6543c; font:600 11px 'IBM Plex Mono',monospace; text-anchor:start; }
+.viz-run-label { fill:#d6543c; font:600 11px 'IBM Plex Mono',monospace; }
 .viz-rise-label { fill:#258b4c; font:600 11px 'IBM Plex Mono',monospace; }
 .viz-equation-tag-bg { fill:#222630; stroke:#374151; stroke-width:1.5; }
 .viz-equation-tag { fill:#fff!important; font:700 11px 'Archivo',sans-serif!important; text-anchor:middle; }
@@ -310,11 +310,20 @@
 .viz-preset-btn, .study-action { min-height:44px; display:inline-flex; align-items:center; }
 .viz-topic-controls input[type="range"] { min-height:44px; }
 .viz-topic-controls .viz-geometry-color { min-height:44px; }
-.viz-topic-controls .viz-geometry-color input[type="color"] { width:36px; height:36px; }
+.viz-topic-controls .viz-geometry-color input[type="color"] { width:44px; height:44px; }
 .viz-controls, .viz-result strong, .viz-readout, .viz-metrics { overflow-wrap:anywhere; }
 .viz-intro > div { min-width:0; }
 @media (max-width: 700px) {
-  .viz-chart text, .viz-tick-label { font-size:20px; }
   .viz-chart-wrap { padding:16px 12px 12px; }
 }
 .viz-slider-row input[type="number"] { min-height:44px; }
+
+/* ---- a11y sweep: >=11px text, 44px tap targets ---- */
+.viz-chart-caption { font-size:.7rem; }
+.viz-metric span, .viz-study p { font-size:.7rem; }
+.viz-equation > span:first-child, #viz-rule-label { font-size:.7rem; }
+.viz-alt-visual th { font-size:.7rem; }
+.viz-filters button { min-height:44px; }
+.study-action { min-width:44px; justify-content:center; }
+.viz-topic-controls .viz-geometry-color input[type="color"] { flex:none; min-width:44px; min-height:44px; }
+.viz-topic-controls .viz-geometry-dimension input[type="range"] { min-height:44px; }

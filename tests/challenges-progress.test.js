@@ -130,3 +130,20 @@ test('quiz session: scoring, review, and retry-missed', async () => {
   q('#quiz-new').fire('click');
   assert.equal(q('#quiz-setup').hidden, false);
 });
+
+test('0-star result: kind retry copy, no "Nice start" or level-up lines', async () => {
+  const { q, start, answer, next } = await boot({ hash: '#topic=statistics' });
+  start('statistics', 'topic');
+  answer('wrong'); next(); answer('wrong'); next();
+  assert.equal(q('#quiz-score').textContent, '0 of 2 correct');
+  assert.equal(q('#quiz-stars').textContent, '☆☆☆');
+  assert.match(q('#quiz-score-note').textContent, /No stars this time, and that is fine/);
+  const lines = q('#quiz-levels').children.map(c => c.textContent).join(' ');
+  assert.doesNotMatch(lines, /Nice start|Level up/);
+  assert.match(lines, /no stars yet/);
+});
+
+test('result copy matches star count', async () => {
+  const s = src('assets/js/challenges.js');
+  for (const note of ['A clean sweep', 'Solid work', 'Getting there', 'No stars this time']) assert.ok(s.includes(note), note);
+});

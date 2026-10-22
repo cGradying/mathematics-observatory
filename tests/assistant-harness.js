@@ -49,7 +49,9 @@ function createElement(tagName) {
         attributes: {},
         children: [],
         listeners: {},
-        classList: { toggle() {}, contains() { return false; } },
+        classList: { toggle() {}, add() {}, remove() {}, contains() { return false; } },
+        style: {},
+        hidden: false,
         append(...children) { this.children.push(...children); },
         appendChild(child) { this.children.push(child); return child; },
         replaceChildren(...children) { this.children = children.filter(Boolean); },
@@ -87,8 +89,8 @@ function createAssistantHarness(modelResponse, options = {}) {
             appendChild(element) {
                 const source = element.href || element.src;
                 assets.push(source);
-                const localKatexUnavailable = options.failLocalKatexAssets && source?.includes('/node_modules/katex/');
-                if (localKatexUnavailable && element.onerror) queueMicrotask(() => element.onerror());
+                const katexUnavailable = options.failKatexAssets && source?.includes('/vendor/katex/');
+                if (katexUnavailable && element.onerror) queueMicrotask(() => element.onerror());
                 else if (element.onload) queueMicrotask(() => element.onload());
                 return element;
             }

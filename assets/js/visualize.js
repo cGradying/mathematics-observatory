@@ -93,14 +93,15 @@
           const samplePy = sy(sampleY);
           markers.append(svgDot(samplePx, samplePy, 'viz-sample'));
           const tagText = rule;
-          const tagWidth = Math.max(54, tagText.length * 6.8 + 12);
+          const tk = textScale().k;
+          const tagWidth = Math.max(54, tagText.length * 6.8 * tk + 12);
           // Keep the rule in a consistent open corner instead of stacking it
           // on the intercept and rise/run labels around the sample point.
           const tagX = 648 - tagWidth;
           const tagY = 52;
-          markers.append(svgRect(tagX, tagY, tagWidth, 22, 'viz-equation-tag-bg'));
-          markers.append(svgLabel(tagX + tagWidth / 2, tagY + 15, tagText, 'viz-equation-tag'));
-          fixedObstacles.push({ left:tagX, right:tagX + tagWidth, top:tagY, bottom:tagY + 22 });
+          markers.append(svgRect(tagX, tagY, tagWidth, 22 * tk, 'viz-equation-tag-bg'));
+          markers.append(svgLabel(tagX + tagWidth / 2, tagY + 15 * tk, tagText, 'viz-equation-tag'));
+          fixedObstacles.push({ left:tagX, right:tagX + tagWidth, top:tagY, bottom:tagY + 22 * tk });
         }
         placeGraphAnnotations(annotations, fixedObstacles);
       },
@@ -312,10 +313,19 @@
     dot.setAttribute('class', `viz-marker ${cls}`);
     return dot;
   }
+  // Chart text is drawn in a 720-unit viewBox that shrinks on phones; scale the
+  // font so it stays >= 12 rendered px. k is 1 on desktop (unchanged sizes).
+  function textScale() {
+    const w = chart.clientWidth || 720;
+    const px = Math.min(30, Math.max(12, 12 * 720 / w));
+    return { tick: px, marker: Math.max(11, px), k: Math.max(11, px) / 11 };
+  }
   function svgLabel(x, y, text, cls = 'viz-marker-label') {
     const label = document.createElementNS(SVGNS, 'text');
     label.setAttribute('x', x); label.setAttribute('y', y);
     label.setAttribute('class', cls); label.textContent = text;
+    const t = textScale();
+    if (t.k > 1) label.setAttribute('style', `font-size:${cls === 'viz-tick-label' ? t.tick : t.marker}px!important`);
     return label;
   }
   function svgRect(x, y, width, height, cls) {
@@ -325,9 +335,10 @@
     return rect;
   }
   function appendMarkerBadge(x, y, text, anchor = 'start', labelClass = 'viz-marker-label viz-intercept-label') {
-    const width = text.length * 6.6 + 12;
+    const k = textScale().k;
+    const width = text.length * (k > 1 ? 7 : 6.6) * k + 12;
     const left = anchor === 'end' ? x + 6 - width : anchor === 'middle' ? x - width / 2 : x - 6;
-    markers.append(svgRect(left, y - 13, width, 18, 'viz-marker-label-bg'));
+    markers.append(svgRect(left, y - 13 * k, width, 18 * k, 'viz-marker-label-bg'));
     const label = svgLabel(x, y, text, labelClass);
     label.setAttribute('text-anchor', anchor);
     markers.append(label);
@@ -337,11 +348,13 @@
     const placedBoxes = [];
     const tickGroup = document.querySelector('.viz-ticks');
     Array.from(tickGroup?.children || []).forEach(tick => {
-      const x = Number(tick.attributes.x), y = Number(tick.attributes.y);
-      const width = (tick.textContent || '').length * 7.5;
-      const anchor = tick.attributes['text-anchor'] || 'start';
+      const attr = name => Number(tick.getAttribute ? tick.getAttribute(name) : tick.attributes[name]);
+      const x = attr('x'), y = attr('y');
+      const width = (tick.textContent || '').length * 7.5 * (textScale().tick / 12);
+      const anchor = (tick.getAttribute ? tick.getAttribute('text-anchor') : tick.attributes['text-anchor']) || 'start';
       const left = anchor === 'end' ? x - width : anchor === 'middle' ? x - width / 2 : x;
-      tickBoxes.push({ left:left - 3, right:left + width + 3, top:y - 11, bottom:y + 4 });
+      const tk = textScale().tick / 12;
+      tickBoxes.push({ left:left - 3, right:left + width + 3, top:y - 11 * tk, bottom:y + 4 });
     });
     const pointBoxes = annotations.map(item => ({ left:item.x - 8, right:item.x + 8, top:item.y - 8, bottom:item.y + 8 }));
     const candidates = [
@@ -349,13 +362,14 @@
       [0,-28,'middle'],[0,42,'middle'],[20,-42,'start'],[-20,-42,'end'],
       [20,54,'start'],[-20,54,'end'],[0,-58,'middle'],[0,70,'middle'],
     ];
+    const k = textScale().k;
     annotations.forEach(item => {
-      const width = item.text.length * 6.6 + 12;
+      const width = item.text.length * (k > 1 ? 7 : 6.6) * k + 12;
       let best = null;
       candidates.forEach(([dx,dy,anchor], order) => {
-        const x = item.x + dx, y = item.y + dy;
+        const x = item.x + dx, y = item.y + dy * k;
         const left = anchor === 'end' ? x + 6 - width : anchor === 'middle' ? x - width / 2 : x - 6;
-        const box = { left, right:left + width, top:y - 13, bottom:y + 5 };
+        const box = { left, right:left + width, top:y - 13 * k, bottom:y + 5 * k };
         if (box.left < 62 || box.right > 658 || box.top < 42 || box.bottom > 368) return;
         const overlaps = (other) => box.left < other.right && box.right > other.left && box.top < other.bottom && box.bottom > other.top;
         const tickCollisions = tickBoxes.filter(overlaps).length;
@@ -365,9 +379,11 @@
         const score = tickCollisions * 1e7 + obstacleCollisions * 1e6 + placedCollisions * 1e5 + pointCollisions * 100 + order;
         if (!best || score < best.score) best = { x,y,anchor,score };
       });
+      // Larger (phone) text: hide lower-priority labels instead of overlapping.
+      if (k > 1 && (!best || best.score >= 1e5)) return;
       if (!best) best = { x:item.x + 12, y:Math.min(356, Math.max(54, item.y - 18)), anchor:'start' };
       const left = best.anchor === 'end' ? best.x + 6 - width : best.anchor === 'middle' ? best.x - width / 2 : best.x - 6;
-      const box = { left, right:left + width, top:best.y - 13, bottom:best.y + 5 };
+      const box = { left, right:left + width, top:best.y - 13 * k, bottom:best.y + 5 * k };
       appendMarkerBadge(best.x, best.y, item.text, best.anchor, item.className);
       placedBoxes.push(box);
     });
@@ -452,6 +468,10 @@
     markers.replaceChildren();
     area.setAttribute('d','');const valid=(points||[]).filter(p=>p.every(Number.isFinite));const scatter=(scatterPoints||[]).filter(p=>p.every(Number.isFinite));const all=[...valid,...scatter];if(valid.length<2&&scatter.length<1){line.setAttribute('d','');point.style.display='none';return null;}
     const xs=all.map(p=>p[0]),ys=all.map(p=>p[1]);let xmin=Math.min(...xs),xmax=Math.max(...xs),ymin=Math.min(...ys),ymax=Math.max(...ys);if(xmin===xmax){xmin-=1;xmax+=1;}if(ymin===ymax){ymin-=1;ymax+=1;}const pad=(ymax-ymin)*.12;ymin-=pad;ymax+=pad;if(bounds){({xmin,xmax,ymin,ymax}=bounds);if(bounds.equalScale){const centerX=(xmin+xmax)/2,centerY=(ymin+ymax)/2,unitSpan=Math.max((xmax-xmin)/600,(ymax-ymin)/330);const halfX=unitSpan*600/2,halfY=unitSpan*330/2;xmin=centerX-halfX;xmax=centerX+halfX;ymin=centerY-halfY;ymax=centerY+halfY;}}
+    const chartTitle = document.querySelector('#viz-chart-title');
+    if (chartTitle) chartTitle.textContent = `${heading.textContent}: ${equation.textContent}`;
+    if (chartDesc) chartDesc.textContent = readout.textContent || 'The graph updates when an input changes.';
+    chart.querySelectorAll(':scope > text').forEach(t => { const k = textScale().tick; if (k > 12) t.setAttribute('style', `font-size:${k}px!important`); });
     const sx=x=>60+(x-xmin)/(xmax-xmin)*600,sy=y=>370-(y-ymin)/(ymax-ymin)*330;
     const zeroX=Math.max(60,Math.min(660,sx(0))),zeroY=Math.max(30,Math.min(370,sy(0)));
     document.querySelector('.viz-axis').setAttribute('d',`M 40 ${zeroY}H680M${zeroX} 20V380`);
@@ -484,19 +504,31 @@
       tickGroup.replaceChildren();
       const tickStart = Math.ceil(xmin / xTickStep) * xTickStep;
       const tickY = zeroY < 345 ? zeroY + 22 : zeroY - 10;
-      for (let value = tickStart; value <= xmax + xTickStep * 1e-8; value += xTickStep) {
-        if (Math.abs(value) < xTickStep * 1e-8) continue;
+      const ts = textScale().tick;
+      const xBoxes = [];
+      const xLen = Math.max(...[xmin, xmax].map(v => fmt.format(v).length), 2);
+      const xEvery = Math.max(1, Math.ceil((xLen * 0.62 * ts + 8) / (600 * xTickStep / (xmax - xmin))));
+      const yEvery = Math.max(1, Math.ceil((ts * 1.3) / (330 * yTickStep / (ymax - ymin))));
+      for (let value = tickStart, xi = 0; value <= xmax + xTickStep * 1e-8; value += xTickStep, xi++) {
+        if (Math.abs(value) < xTickStep * 1e-8 || (Math.round(value / xTickStep)) % xEvery) continue;
         const label = svgLabel(sx(value), tickY, fmt.format(value));
         label.setAttribute('class', 'viz-tick-label');
         label.setAttribute('text-anchor', 'middle');
+        const lw = fmt.format(value).length * 0.62 * ts;
+        if (ts > 12 && sx(value) + lw / 2 > 652) continue; // keep clear of the static x axis letter
+        xBoxes.push({ left:sx(value) - lw / 2, right:sx(value) + lw / 2, top:tickY - ts, bottom:tickY + 3 });
         tickGroup.append(label);
       }
       const yLabelX = zeroX > 90 ? zeroX - 9 : zeroX + 9;
       const yAnchor = zeroX > 90 ? 'end' : 'start';
       const firstYTick = Math.ceil(ymin / yTickStep) * yTickStep;
       for (let value = firstYTick; value <= ymax + yTickStep * 1e-8; value += yTickStep) {
-        if (Math.abs(value) < yTickStep * 1e-8) continue;
-        const label = svgLabel(yLabelX, sy(value) + 4, fmt.format(value));
+        if (Math.abs(value) < yTickStep * 1e-8 || (Math.round(value / yTickStep)) % yEvery) continue;
+        const yw = fmt.format(value).length * 0.62 * ts, yy = sy(value) + 4;
+        const yl = yAnchor === 'end' ? yLabelX - yw : yLabelX;
+        // Drop a y label that would sit on an x label near the axis crossing.
+        if (xBoxes.some(b => yl < b.right + 2 && yl + yw > b.left - 2 && yy - ts < b.bottom && yy > b.top)) continue;
+        const label = svgLabel(yLabelX, yy, fmt.format(value));
         label.setAttribute('class', 'viz-tick-label');
         label.setAttribute('text-anchor', yAnchor);
         tickGroup.append(label);
@@ -516,6 +548,14 @@
   }
   function showTable(table) { const target=document.querySelector('#viz-alt-visual');target.classList.remove('viz-geometry-study');target.replaceChildren();const t=document.createElement('table');const head=document.createElement('thead');const hr=document.createElement('tr');table.headers.forEach(label=>{const th=document.createElement('th');th.scope='col';th.textContent=label;hr.append(th);});head.append(hr);const body=document.createElement('tbody');table.rows.forEach(row=>{const tr=document.createElement('tr');row.forEach(value=>{const td=document.createElement('td');td.textContent=value;tr.append(td);});body.append(tr);});t.append(head,body);target.append(t);target.hidden=false;chart.hidden=true;document.querySelector('.viz-chart-caption').hidden=true;document.querySelector('.viz-chart-wrap').classList.add('viz-alt-view-active'); }
   function showGraph(points, scatterPoints, focus, areaThrough, bounds) { const alternate=document.querySelector('#viz-alt-visual');alternate.classList.remove('viz-geometry-study');alternate.hidden=true;chart.hidden=false;document.querySelector('.viz-chart-caption').hidden=false;document.querySelector('.viz-chart-wrap').classList.remove('viz-alt-view-active');return renderPlot(points,scatterPoints,focus,areaThrough,bounds); }
+  // Re-render on a real width change so chart text stays legible when the viewport changes.
+  let lastChartWidth = chart.clientWidth || 0;
+  if (typeof window.addEventListener === 'function') window.addEventListener('resize', () => {
+    const w = chart.clientWidth || 0;
+    if (!w || Math.abs(w - lastChartWidth) < 24) return;
+    lastChartWidth = w;
+    controls.querySelector('input,select')?.dispatchEvent(new Event('input', { bubbles: true }));
+  });
   function renderSelected() {
     const key=topic.value;activeSpec=specs[key];const generic=topics[key];const studio=studios[key];
     if (geometryVisualizer) { geometryVisualizer.dispose(); geometryVisualizer = null; }

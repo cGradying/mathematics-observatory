@@ -31,7 +31,7 @@ test('Gemini proxy rejects non-POST requests', async () => {
     const response = createResponse();
     await assistantApi({ method: 'GET', headers: {} }, response);
     assert.equal(response.statusCode, 405);
-    assert.equal(response.headers.allow, 'POST');
+    assert.equal(response.headers.allow, 'POST, OPTIONS');
 });
 
 test('Gemini proxy reports missing server-side credentials without calling Google', async () => {

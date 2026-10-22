@@ -20,19 +20,19 @@
 .challenge-hero { padding: 64px 0 57px; color: var(--op-ink); background: linear-gradient(135deg, var(--op-peach), var(--op-blush) 70%, var(--op-lav)); border-bottom: 2px solid var(--op-ink); }
 .challenge-hero-inner { display: grid; grid-template-columns: 1fr 370px; align-items: center; gap: 60px; }
 .challenge-feature { position: relative; padding: 25px 25px 22px; color: var(--op-ink); background: var(--op-card); border: 2px solid var(--op-ink); border-radius: 18px; box-shadow: 5px 5px 0 rgba(40,36,53,.9); }
-.challenge-feature-label, .challenge-feature-number { color: var(--op-accent); font: 600 .58rem "IBM Plex Mono",monospace; letter-spacing: .1em; }
+.challenge-feature-label, .challenge-feature-number { color: var(--op-accent); font: 600 .6875rem "IBM Plex Mono",monospace; letter-spacing: .1em; }
 .challenge-feature-number { position: absolute; top: 25px; right: 25px; }
 .challenge-feature > p { margin: 34px 0 8px; color: var(--op-muted); font-size: .75rem; }
 .challenge-feature > strong { display: block; font-family: "Archivo Black", "Archivo", sans-serif; font-weight: 400; font-size: 2.3rem; }
-.challenge-feature-meta { display: block; margin-top: 7px; color: var(--op-muted); font-size: .68rem; }
+.challenge-feature-meta { display: block; margin-top: 7px; color: var(--op-muted); font-size: .75rem; }
 .challenge-feature a { margin-top: 20px; padding-top: 13px; display: flex; justify-content: space-between; border-top: 1px solid rgba(77,55,41,.18); color: var(--op-accent); font-size: .75rem; font-weight: 700; text-decoration: none; }
 .challenge-search { width: 100%; min-height: 44px; padding: 0 12px; border: 2px solid var(--op-ink); border-radius: 12px; color: var(--op-ink); background: #fff; font: .75rem "Archivo",sans-serif; }
 .challenge-filters button.is-active { color: var(--op-ink); background: var(--op-lime); border-color: var(--op-ink); }
 .challenge-prompt { padding: 33px 30px 25px; }
-.challenge-prompt-label { color: var(--op-accent); font: 600 .62rem "IBM Plex Mono",monospace; letter-spacing: .13em; }
+.challenge-prompt-label { color: var(--op-accent); font: 600 .6875rem "IBM Plex Mono",monospace; letter-spacing: .13em; }
 .challenge-prompt h2 { max-width: 730px; margin: 12px 0 23px; font-family: "Archivo", sans-serif; font-weight: 700; font-size: clamp(1.45rem,3vw,2.15rem); line-height: 1.35; letter-spacing: -0.01em; }
 .challenge-given { padding: 13px 16px; border-radius: 12px; border: 2px solid var(--op-ink); border-left-width: 6px; border-left-color: var(--op-accent); background: var(--op-peach); }
-.challenge-given > span:first-child { color: var(--op-accent); font: 600 .58rem "IBM Plex Mono",monospace; letter-spacing: .1em; text-transform: uppercase; }
+.challenge-given > span:first-child { color: var(--op-accent); font: 600 .6875rem "IBM Plex Mono",monospace; letter-spacing: .1em; text-transform: uppercase; }
 .challenge-given p { margin: 5px 0 0; color: var(--op-ink); font-size: .8rem; }
 .challenge-hint { margin: 12px 0 0; }
 .challenge-hint[hidden] { display: none; }

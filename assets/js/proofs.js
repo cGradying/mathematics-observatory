@@ -167,7 +167,17 @@ function initFormulaTabs() {
     const panels = document.querySelectorAll('.formula-panel');
 
     tabs.forEach(tab => {
+        tab.tabIndex = tab.classList.contains('active') ? 0 : -1;
+        tab.addEventListener('keydown', e => {
+            const keys = { ArrowRight: 1, ArrowLeft: -1, Home: 'first', End: 'last' };
+            if (!(e.key in keys)) return;
+            e.preventDefault();
+            const list = Array.from(tabs), i = list.indexOf(tab), d = keys[e.key];
+            const next = d === 'first' ? list[0] : d === 'last' ? list.at(-1) : list[(i + d + list.length) % list.length];
+            next.focus(); next.click();
+        });
         tab.addEventListener('click', function() {
+            tabs.forEach(t => { t.tabIndex = t === this ? 0 : -1; });
             const targetId = this.getAttribute('data-formula');
 
             // Remove active class from all tabs

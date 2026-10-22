@@ -1,3 +1,5 @@
+const DEFAULT_MODEL = 'gemini-3.5-flash-lite'; // stable Flash-Lite per ai.google.dev/gemini-api/docs/models
+const UPSTREAM_TIMEOUT_MS = 45_000;
 const MAX_BODY_BYTES = 48_000;
 const MAX_MESSAGES = 8;
 const MAX_MESSAGE_CHARACTERS = 16_000;
@@ -11,6 +13,10 @@ function sendJson(response, status, body) {
     response.setHeader('Content-Type', 'application/json; charset=utf-8');
     response.setHeader('Cache-Control', 'no-store');
     return response.status(status).json(body);
+}
+
+function fail(response, status, code, error) {
+    return sendJson(response, status, { error, code });
 }
 
 function parseBody(body) {
@@ -73,21 +79,28 @@ function allowRequest(ip, now = Date.now()) {
 }
 
 async function assistant(request, response) {
+    if (request.method === 'OPTIONS') {
+        // No CORS headers are sent: the endpoint is same-origin only.
+        response.setHeader('Allow', 'POST, OPTIONS');
+        return response.status(204).end();
+    }
     if (request.method !== 'POST') {
-        response.setHeader('Allow', 'POST');
-        return sendJson(response, 405, { error: 'Use POST to send an assistant question.' });
+        response.setHeader('Allow', 'POST, OPTIONS');
+        return fail(response, 405, 'method_not_allowed', 'Use POST to send an assistant question.');
     }
 
+    // Same-origin only. Works for custom domains, *.vercel.app previews and `vercel dev`
+    // because the browser Origin must match the host the request arrived on.
     const requestHost = String(request.headers?.['x-forwarded-host'] || request.headers?.host || '')
         .split(',')[0].trim().toLowerCase();
     const origin = request.headers?.origin;
     if (origin && requestHost) {
         try {
             if (new URL(origin).host.toLowerCase() !== requestHost) {
-                return sendJson(response, 403, { error: 'Cross-origin assistant requests are not allowed.' });
+                return fail(response, 403, 'bad_origin', 'Cross-origin assistant requests are not allowed.');
             }
         } catch {
-            return sendJson(response, 403, { error: 'Invalid request origin.' });
+            return fail(response, 403, 'bad_origin', 'Invalid request origin.');
         }
     }
 
@@ -95,30 +108,30 @@ async function assistant(request, response) {
     try {
         body = parseBody(request.body);
     } catch {
-        return sendJson(response, 400, { error: 'Request body must be valid JSON.' });
+        return fail(response, 400, 'bad_request', 'Request body must be valid JSON.');
     }
     let bodySize;
     try {
         bodySize = Buffer.byteLength(JSON.stringify(body ?? null), 'utf8');
     } catch {
-        return sendJson(response, 400, { error: 'Request body must be JSON data.' });
+        return fail(response, 400, 'bad_request', 'Request body must be JSON data.');
     }
-    if (bodySize > MAX_BODY_BYTES) return sendJson(response, 413, { error: 'The request is too large.' });
+    if (bodySize > MAX_BODY_BYTES) return fail(response, 413, 'too_large', 'The request is too large.');
 
     const validationError = validateRequest(body);
-    if (validationError) return sendJson(response, 400, { error: validationError });
+    if (validationError) return fail(response, 400, 'bad_request', validationError);
 
     const forwardedFor = request.headers?.['x-forwarded-for'];
     const clientIp = String(forwardedFor || request.socket?.remoteAddress || '').split(',')[0].trim();
     if (!allowRequest(clientIp)) {
-        return sendJson(response, 429, { error: 'Too many questions. Please wait a minute and try again.' });
+        return fail(response, 429, 'rate_limited', 'Too many questions. Please wait a minute and try again.');
     }
 
     const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) return sendJson(response, 503, { error: 'Gemini is not configured for this deployment.' });
+    if (!apiKey) return fail(response, 503, 'not_configured', 'The AI tutor is not configured yet. Please try again later.');
 
-    const model = process.env.GEMINI_MODEL || 'gemini-3.5-flash-lite';
-    if (!/^[a-zA-Z0-9._-]+$/.test(model)) return sendJson(response, 500, { error: 'The configured Gemini model name is invalid.' });
+    const model = process.env.GEMINI_MODEL || DEFAULT_MODEL;
+    if (!/^[a-zA-Z0-9._-]+$/.test(model)) return fail(response, 500, 'bad_model', 'The configured Gemini model name is invalid.');
 
     const systemMessage = body.messages.find(message => message.role === 'system');
     const contents = body.messages
@@ -128,13 +141,10 @@ async function assistant(request, response) {
             parts: [{ text: message.content }]
         }));
     if (!contents.length || contents[contents.length - 1].role !== 'user') {
-        return sendJson(response, 400, { error: 'The final conversation message must be a user question.' });
+        return fail(response, 400, 'bad_request', 'The final conversation message must be a user question.');
     }
 
-    const generationConfig = {
-        temperature: 0.2,
-        maxOutputTokens: 768
-    };
+    const generationConfig = { temperature: 0.2, maxOutputTokens: 768 };
     const responseSchema = mapSchema(body.format);
     if (responseSchema) {
         generationConfig.responseMimeType = 'application/json';
@@ -146,41 +156,51 @@ async function assistant(request, response) {
             `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,
             {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'x-goog-api-key': apiKey
-                },
+                headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
                 body: JSON.stringify({
                     systemInstruction: systemMessage ? { parts: [{ text: systemMessage.content }] } : undefined,
                     contents,
                     generationConfig
                 }),
-                signal: AbortSignal.timeout(45_000)
+                signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS)
             }
         );
 
         if (!upstream.ok) {
-            return sendJson(response, upstream.status === 429 ? 429 : 502, {
-                error: upstream.status === 429
-                    ? 'Gemini rate limit reached. Please wait and try again.'
-                    : 'Gemini could not complete the request. Please try again later.'
-            });
+            // Log status only: never the request body, the response body or the key.
+            console.error(`assistant: Gemini HTTP ${upstream.status}`);
+            if (upstream.status === 429) return fail(response, 429, 'upstream_rate_limited', 'The AI tutor is busy right now. Please wait a moment and try again.');
+            if (upstream.status === 401 || upstream.status === 403) return fail(response, 503, 'upstream_auth', 'The AI tutor is not available right now. Please try again later.');
+            if (upstream.status === 404) return fail(response, 503, 'upstream_model', 'The AI tutor is not available right now. Please try again later.');
+            return fail(response, 502, 'upstream_error', 'The AI tutor could not answer just now. Please try again.');
         }
 
         const result = await upstream.json();
-        const content = (result.candidates?.[0]?.content?.parts || [])
-            .map(part => part.text || '')
-            .join('')
-            .trim();
-        if (!content) return sendJson(response, 502, { error: 'Gemini returned an empty response.' });
+        const blockReason = result.promptFeedback?.blockReason;
+        const candidate = result.candidates?.[0];
+        if (blockReason || ['SAFETY', 'PROHIBITED_CONTENT', 'BLOCKLIST', 'SPII', 'RECITATION'].includes(candidate?.finishReason)) {
+            return fail(response, 422, 'blocked', 'That question could not be answered. Try rewording it as a Grade 11 maths question.');
+        }
+        const content = (candidate?.content?.parts || []).map(part => part.text || '').join('').trim();
+        if (!content) return fail(response, 502, 'empty', 'The AI tutor returned an empty answer. Please try again.');
+        if (candidate.finishReason === 'MAX_TOKENS' && responseSchema) {
+            try { JSON.parse(content); } catch {
+                return fail(response, 502, 'truncated', 'That answer was too long to finish. Please ask a shorter or more specific question.');
+            }
+        }
 
         // Keep the Ollama response shape so the existing tutor formatter remains provider-independent.
         return sendJson(response, 200, { message: { content } });
-    } catch {
-        return sendJson(response, 502, { error: 'The Gemini service could not be reached. Please try again.' });
+    } catch (error) {
+        const timedOut = error?.name === 'TimeoutError' || error?.name === 'AbortError';
+        console.error(`assistant: upstream ${timedOut ? 'timeout' : 'network error'}`);
+        return timedOut
+            ? fail(response, 504, 'timeout', 'The AI tutor took too long. Please try again.')
+            : fail(response, 502, 'unreachable', 'The AI tutor could not be reached. Please try again.');
     }
 }
 
 module.exports = assistant;
 module.exports.mapSchema = mapSchema;
 module.exports.validateRequest = validateRequest;
+module.exports.DEFAULT_MODEL = DEFAULT_MODEL;

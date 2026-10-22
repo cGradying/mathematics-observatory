@@ -83,11 +83,12 @@
 
     const panel = document.createElement('section');
     panel.className = 'assistant-panel';
+    panel.setAttribute('role', 'dialog');
     panel.setAttribute('aria-label', 'Mathematics assistant');
     panel.innerHTML = `
         <header class="assistant-header">
             <div class="assistant-title">
-                <div class="assistant-avatar" aria-hidden="true">∫</div>
+                <div class="assistant-avatar" aria-hidden="true">&int;</div>
                 <div>
                     <div class="assistant-heading">Math Assistant</div>
                     <div class="assistant-status">Ready to help</div>
@@ -98,11 +99,16 @@
                 <button class="assistant-close" type="button" aria-label="Close mathematics assistant">&times;</button>
             </div>
         </header>
-        <div class="assistant-messages" aria-live="polite">
+        <div class="assistant-messages" role="log" aria-live="polite" aria-label="Conversation" tabindex="0">
             <div class="assistant-message bot">Hi! Ask me about a formula, concept, or problem you are exploring.</div>
         </div>
+        <div class="assistant-suggestions" role="group" aria-label="Example questions">
+            <button type="button" class="assistant-chip">What is 15% of 80?</button>
+            <button type="button" class="assistant-chip">Explain the sine rule</button>
+            <button type="button" class="assistant-chip">Find the 10th term of 3,5,7</button>
+        </div>
         <form class="assistant-form">
-            <input class="assistant-input" type="text" placeholder="Ask a math question..." autocomplete="off" aria-label="Ask a math question">
+            <textarea class="assistant-input" rows="1" maxlength="1500" placeholder="Ask a math question..." autocomplete="off" aria-label="Ask a math question"></textarea>
             <button class="assistant-send" type="submit" aria-label="Send question">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
             </button>
@@ -116,6 +122,8 @@
     const form = panel.querySelector('.assistant-form');
     const input = panel.querySelector('.assistant-input');
     const messages = panel.querySelector('.assistant-messages');
+    const sendButton = panel.querySelector('.assistant-send');
+    const suggestions = panel.querySelector('.assistant-suggestions');
     const rawMessageText = new WeakMap();
 
     function loadMathRenderer() {
@@ -135,26 +143,19 @@
             document.head.appendChild(katexScript);
         });
 
-        const asset = relativePath => new URL(relativePath, document.baseURI).href;
-        const katexCdn = 'https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/';
-        const loadWithFallback = (load, localSource, fallbackSource) => load(localSource).catch(() => load(fallbackSource));
-        const markdownScripts = [
-            'https://cdn.jsdelivr.net/npm/marked@15.0.7/marked.min.js',
-            'https://cdn.jsdelivr.net/npm/dompurify@3.2.6/dist/purify.min.js'
-        ];
+        // Self-hosted under public/vendor so the strict CSP needs no CDN and nothing 404s.
+        const asset = relativePath => new URL(`/vendor/${relativePath}`, document.baseURI).href;
+        const optionalScripts = ['marked.min.js', 'purify.min.js'];
 
         return Promise.all([
-            loadWithFallback(loadStylesheet, asset('node_modules/katex/dist/katex.min.css'), `${katexCdn}katex.min.css`),
-            loadWithFallback(loadScript, asset('node_modules/katex/dist/katex.min.js'), `${katexCdn}katex.min.js`)
-        ]).then(() => loadWithFallback(
-            loadScript,
-            asset('node_modules/katex/dist/contrib/auto-render.min.js'),
-            `${katexCdn}contrib/auto-render.min.js`
-        ))
+            loadStylesheet(asset('katex/katex.min.css')),
+            loadScript(asset('katex/katex.min.js'))
+        ]).then(() => loadScript(asset('katex/contrib/auto-render.min.js')))
             .then(async () => {
-                for (const source of markdownScripts) {
+                // Markdown is optional: without it replies render as plain text.
+                for (const name of optionalScripts) {
                     try {
-                        await loadScript(source);
+                        await loadScript(asset(name));
                     } catch {
                         return true;
                     }
@@ -183,6 +184,7 @@
 
     async function renderMessage(element, text) {
         rawMessageText.set(element, text);
+        element.className = element.className.replace(/\s*\bis-loading\b/, '');
         await katexReady;
         const normalizedText = text.replace(/\\\$/g, '$');
 
@@ -243,9 +245,35 @@
     }
 
     function setOpen(isOpen) {
+        const hadFocus = !isOpen && panel.contains?.(document.activeElement);
         panel.classList.toggle('is-open', isOpen);
         launcher.setAttribute('aria-expanded', String(isOpen));
-        if (isOpen) input.focus();
+        if (isOpen) {
+            input.focus();
+            scrollToLatest();
+        } else if (hadFocus) {
+            (document.querySelector('.header-ai') || launcher).focus();
+        }
+    }
+
+    function scrollToLatest() {
+        messages.scrollTop = messages.scrollHeight;
+    }
+
+    function syncSuggestions() {
+        suggestions.hidden = messages.children.length > 1;
+    }
+
+    function growInput() {
+        if (!input.style) return;
+        input.style.height = 'auto';
+        input.style.height = `${Math.min(input.scrollHeight, 120)}px`;
+    }
+
+    function setBusy(busy) {
+        input.disabled = busy;
+        sendButton.disabled = busy;
+        messages.setAttribute('aria-busy', String(busy));
     }
 
     function addMessage(text, type) {
@@ -254,7 +282,8 @@
         message.textContent = text;
         rawMessageText.set(message, text);
         messages.appendChild(message);
-        messages.scrollTop = messages.scrollHeight;
+        syncSuggestions();
+        scrollToLatest();
         return message;
     }
 
@@ -262,11 +291,12 @@
         try {
             const savedMessages = Array.from(messages.children)
                 .slice(1)
+                .filter(message => !/\bis-(?:loading|error)\b/.test(message.className))
                 .map(message => ({
                     type: message.className.split(/\s+/).includes('user') ? 'user' : 'bot',
                     text: rawMessageText.get(message) ?? message.textContent
                 }))
-                .filter(message => message.text && message.text !== 'Thinking...')
+                .filter(message => message.text)
                 .slice(-40);
             const savedConversation = conversation.slice(1)
                 .filter(message => ['user', 'assistant'].includes(message.role) && typeof message.content === 'string')
@@ -1088,6 +1118,8 @@
         messages.replaceChildren(firstMessage);
         conversation.length = 1;
         chatGeneration += 1;
+        setBusy(false);
+        syncSuggestions();
         try {
             window.localStorage?.removeItem(chatStorageKey);
         } catch {
@@ -1102,40 +1134,86 @@
         input.focus();
     });
 
-    form.addEventListener('submit', async event => {
-        event.preventDefault();
-        await restoredMessages;
-        const question = input.value.trim();
-        if (!question) return;
+    // Escape closes; Tab stays inside the panel while it is open.
+    panel.addEventListener('keydown', event => {
+        if (event.key === 'Escape') {
+            event.preventDefault?.();
+            setOpen(false);
+            return;
+        }
+        if (event.key !== 'Tab') return;
+        const focusable = Array.from(panel.querySelectorAll?.('button:not([disabled]):not([hidden]), textarea:not([disabled]), [tabindex="0"]') || [])
+            .filter(element => !element.closest?.('[hidden]'));
+        if (!focusable.length) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+        else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    });
 
-        addMessage(question, 'user');
-        input.value = '';
-        input.disabled = true;
-        const reply = addMessage('Thinking...', 'bot');
+    input.addEventListener('input', growInput);
+    input.addEventListener('keydown', event => {
+        if (event.key === 'Enter' && !event.shiftKey && !event.isComposing) {
+            event.preventDefault();
+            form.requestSubmit ? form.requestSubmit() : form.dispatchEvent(new Event('submit', { cancelable: true }));
+        }
+    });
+    suggestions.addEventListener('click', event => {
+        const chip = event.target.closest?.('.assistant-chip');
+        if (!chip || input.disabled) return;
+        input.value = chip.textContent;
+        form.requestSubmit?.();
+    });
+
+    function friendlyError(error) {
+        if (error.message?.includes('KaTeX')) return 'The answer is ready, but the math display could not load. Refresh the page and try again.';
+        if (error.message?.startsWith('API: ')) return error.message.slice('API: '.length);
+        if (error instanceof TypeError) return 'The mathematics service is unavailable right now. Please check your connection and try again.';
+        return error.message || 'I could not reach the mathematics service. Please try again.';
+    }
+
+    async function ask(question, reply) {
         const requestGeneration = chatGeneration;
-
+        reply.className = 'assistant-message bot is-loading';
+        reply.textContent = 'Thinking';
+        setBusy(true);
         try {
             await Promise.all([
                 window.GRADE_11_MATH_KNOWLEDGE_READY,
                 window.GRADE_11_MATH_EXAMPLES_READY
             ]);
             await getReply(question, reply);
+            reply.className = 'assistant-message bot';
         } catch (error) {
             if (conversation.at(-1)?.role === 'user') conversation.pop();
-            if (error.message?.includes('KaTeX')) {
-                reply.textContent = 'The answer is ready, but KaTeX could not load its local assets. Check the KaTeX files and refresh the page.';
-            } else if (error.message?.startsWith('API: ')) {
-                reply.textContent = error.message.slice('API: '.length);
-            } else if (error instanceof TypeError) {
-                reply.textContent = 'The mathematics service is unavailable right now. Please check your connection and try again.';
-            } else {
-                reply.textContent = error.message || 'I could not reach the mathematics service. Please try again.';
-            }
+            reply.className = 'assistant-message bot is-error';
+            reply.textContent = friendlyError(error);
+            const retry = document.createElement('button');
+            retry.type = 'button';
+            retry.className = 'assistant-retry';
+            retry.textContent = 'Retry';
+            retry.addEventListener('click', () => {
+                if (!input.disabled) ask(question, reply);
+            });
+            reply.appendChild(retry);
         } finally {
             if (requestGeneration === chatGeneration) saveChatState();
             else conversation.length = 1;
-            input.disabled = false;
+            setBusy(false);
+            scrollToLatest();
             input.focus();
         }
+    }
+
+    form.addEventListener('submit', async event => {
+        event.preventDefault();
+        await restoredMessages;
+        const question = input.value.trim();
+        if (!question || input.disabled) return;
+
+        addMessage(question, 'user');
+        input.value = '';
+        growInput();
+        await ask(question, addMessage('Thinking', 'bot'));
     });
 })();

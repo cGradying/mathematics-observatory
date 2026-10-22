@@ -35,3 +35,13 @@ for (const f of pages) {
     assert.deepEqual(errs, [], `${f}: ${errs.join('; ')}`);
   });
 }
+
+test('charts and canvases expose role=img with a name', () => {
+  const read = f => require('node:fs').readFileSync(require('node:path').join(__dirname, '..', f), 'utf8');
+  assert.match(read('visualize.html'), /<svg class="viz-chart"[^>]*role="img"[^>]*aria-labelledby="viz-chart-title viz-chart-desc"/);
+  assert.match(read('laboratory.html'), /<svg id="lab-chart"[^>]*role="img"/);
+  for (const m of read('proofs.html').matchAll(/<canvas\b[^>]*>/g)) assert.match(m[0], /role="img"[^>]*aria-label=/);
+  // dynamic names are kept in step with the current result
+  assert.match(read('assets/js/visualize.js'), /chartTitle\.textContent/);
+  assert.match(read('assets/js/laboratory.js'), /cvs\.setAttribute\('aria-label',chartName\)/);
+});

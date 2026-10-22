@@ -29,7 +29,7 @@
 .op-kicker {
   margin: 0 0 16px;
   color: var(--op-accent);
-  font: 600 0.68rem/1.4 "IBM Plex Mono", monospace;
+  font: 600 0.7rem/1.4 "IBM Plex Mono", monospace;
   letter-spacing: 0.14em;
   text-transform: uppercase;
 }
@@ -98,7 +98,7 @@
   border-radius: 999px;
   background: var(--op-lime);
   box-shadow: 3px 3px 0 rgba(40, 36, 53, .9);
-  font: 600 0.68rem/1.4 "IBM Plex Mono", monospace;
+  font: 600 0.7rem/1.4 "IBM Plex Mono", monospace;
   letter-spacing: 0.14em;
   text-transform: uppercase;
 }
@@ -182,7 +182,7 @@
   display: block;
   margin-bottom: 12px;
   color: var(--op-accent);
-  font: 600 0.68rem/1.4 "IBM Plex Mono", monospace;
+  font: 600 0.7rem/1.4 "IBM Plex Mono", monospace;
   letter-spacing: 0.14em;
   text-transform: uppercase;
 }
@@ -411,7 +411,7 @@
 .formula-name {
   margin-bottom: 10px;
   color: var(--op-muted);
-  font: 600 0.62rem "IBM Plex Mono", monospace;
+  font: 600 0.7rem "IBM Plex Mono", monospace;
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
@@ -438,7 +438,7 @@
 .formula-origin h4 {
   margin: 20px 0 12px;
   color: var(--op-accent-deep);
-  font: 600 0.68rem "IBM Plex Mono", monospace;
+  font: 600 0.7rem "IBM Plex Mono", monospace;
   letter-spacing: 0.1em;
   text-transform: uppercase;
 }
@@ -471,7 +471,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font: 700 0.68rem "IBM Plex Mono", monospace;
+  font: 700 0.7rem "IBM Plex Mono", monospace;
 }
 
 .formula-insight {
@@ -848,7 +848,7 @@
   border-radius: 999px;
   background: var(--op-plum);
   color: var(--op-lime);
-  font: 600 0.62rem "IBM Plex Mono", monospace;
+  font: 600 0.7rem "IBM Plex Mono", monospace;
   letter-spacing: 0.1em;
   text-transform: uppercase;
 }
@@ -1013,3 +1013,6 @@
 
 /* ---- UX pass: tap target ---- */
 .step-toggle { min-width:44px; min-height:44px; align-items:center; justify-content:center; }
+
+/* ---- a11y sweep: 44px tap targets ---- */
+.formula-tab, .derivation-btn { min-height:44px; }

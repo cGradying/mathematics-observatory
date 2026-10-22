@@ -1106,7 +1106,7 @@
     copyBtn.style.marginLeft='8px';
     modelCopy.parentNode.insertBefore(copyBtn, modelCopy.nextSibling);
     copyBtn.addEventListener('click',()=>{
-      navigator.clipboard.writeText(exp.model).then(()=>{
+      navigator.clipboard.writeText(current.model).then(()=>{
         copyBtn.textContent='Copied!';
         setTimeout(()=>{copyBtn.textContent='Copy model';},1500);
       }).catch(()=>{copyBtn.textContent='Copy failed';});
@@ -1186,6 +1186,14 @@
         }
       }
       document.querySelector('#lab-observation-text').textContent=result.note;
+      // Keep the chart's accessible name in step with the current experiment and result.
+      const chartName=`${exp.title}: ${balance.textContent}. ${result.note}`;
+      const cvs=document.getElementById('lab-chart-canvas');
+      if(cvs){cvs.setAttribute('role','img');cvs.setAttribute('aria-label',chartName);}
+      const svgTitle=document.getElementById('lab-chart-title'),svgDesc=document.getElementById('lab-chart-desc');
+      if(svgTitle)svgTitle.textContent=exp.title;
+      if(svgDesc)svgDesc.textContent=`${balance.textContent}. ${result.note}`;
+      if(stage){stage.setAttribute('role','group');stage.setAttribute('aria-label',`${exp.title} interactive model`);}
       document.querySelector('#lab-guided-question').textContent=result.question;
       document.querySelector('#lab-hint').textContent=result.hint;
     }catch(error){

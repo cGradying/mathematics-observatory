@@ -98,24 +98,24 @@ if (canvas) {
     window.addEventListener('beforeunload', () => cancelAnimationFrame(animationFrameId));
 }
 
-// Close mobile menu when clicking a link
-document.querySelectorAll('.nav-link').forEach(link => {
-    link.addEventListener('click', () => {
-        if (!navLinks || !menuToggle) return;
-        navLinks.classList.remove('active');
-        menuToggle.classList.remove('active');
-        menuToggle.setAttribute('aria-expanded', 'false');
-    });
+// Dismiss the mobile menu: link activation, outside click, Escape, resize to desktop, bfcache restore.
+function closeMenu(returnFocus) {
+    if (!menuToggle || menuToggle.getAttribute('aria-expanded') !== 'true') return;
+    navLinks?.classList.remove('active');
+    menuToggle.classList.remove('active');
+    menuToggle.setAttribute('aria-expanded', 'false');
+    if (returnFocus) menuToggle.focus();
+}
+document.querySelectorAll('.nav-link').forEach(link => link.addEventListener('click', () => closeMenu(false)));
+document.addEventListener('click', event => {
+    if (!event.target.closest?.('.nav-container')) closeMenu(false);
 });
-
 document.addEventListener('keydown', event => {
-    if (event.key === 'Escape' && menuToggle?.getAttribute('aria-expanded') === 'true') {
-        navLinks?.classList.remove('active');
-        menuToggle.classList.remove('active');
-        menuToggle.setAttribute('aria-expanded', 'false');
-        menuToggle.focus();
-    }
+    if (event.key === 'Escape') closeMenu(true);
 });
+window.addEventListener('resize', () => { if (window.innerWidth > 1200) closeMenu(false); });
+window.addEventListener('pageshow', () => closeMenu(false));
+window.addEventListener('hashchange', () => closeMenu(false));
 
 // ============================================
 // SCROLL ANIMATIONS
@@ -183,46 +183,14 @@ function setupTicker() {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const track = document.getElementById('ticker-track');
     if (!track || track.dataset.loopReady === 'true') return;
-    track.innerHTML += track.innerHTML;
+    [...track.children].forEach(item => { const copy = item.cloneNode(true); copy.setAttribute('aria-hidden', 'true'); track.append(copy); });
     track.dataset.loopReady = 'true';
 }
 
-// Animate hero stat numbers from zero the first time they scroll into view.
-function setupCounters() {
-    const counters = document.querySelectorAll('.home-page .hero-stats dt[data-count]');
-    if (!counters.length) return;
-    if (
-        !('IntersectionObserver' in window) ||
-        window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    ) {
-        return;
-    }
-    const counterObserver = new IntersectionObserver(entries => {
-        entries.forEach(entry => {
-            if (!entry.isIntersecting) return;
-            const target = entry.target;
-            counterObserver.unobserve(target);
-            const finalValue = Number(target.dataset.count);
-            if (!Number.isFinite(finalValue)) return;
-            const duration = 900;
-            const start = performance.now();
-            const tick = now => {
-                const progress = Math.min((now - start) / duration, 1);
-                const eased = 1 - Math.pow(1 - progress, 3);
-                target.textContent = String(Math.round(finalValue * eased));
-                if (progress < 1) requestAnimationFrame(tick);
-            };
-            requestAnimationFrame(tick);
-        });
-    }, { threshold: 0.6 });
-    counters.forEach(counter => counterObserver.observe(counter));
-}
-
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => { setupTicker(); setupCounters(); });
+    document.addEventListener('DOMContentLoaded', () => { setupTicker(); });
 } else {
     setupTicker();
-    setupCounters();
 }
 
 // ============================================

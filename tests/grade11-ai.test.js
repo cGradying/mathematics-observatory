@@ -442,10 +442,10 @@ for (const scenario of assistantScenarios) {
         assert.equal(request.format.type, 'object', 'assistant requests its structured response schema');
         assert.ok(reply.textContent.includes(scenario.answer), `Expected answer ${scenario.answer}; got ${reply.textContent}`);
         assert.doesNotMatch(reply.textContent, /\*\*(?:Topic|Given|Find|Method|Working|Check):\*\*/);
-        assert.ok(harness.assets.some(asset => asset.includes('node_modules/katex/dist/katex.min.css')));
-        assert.ok(harness.assets.some(asset => asset.includes('node_modules/katex/dist/katex.min.js')));
-        assert.ok(harness.assets.some(asset => asset.includes('node_modules/katex/dist/contrib/auto-render.min.js')));
-        assert.ok(harness.assets.filter(asset => asset?.includes('katex')).every(asset => !asset.includes('jsdelivr')));
+        assert.ok(harness.assets.some(asset => asset.includes('/vendor/katex/katex.min.css')));
+        assert.ok(harness.assets.some(asset => asset.includes('/vendor/katex/katex.min.js')));
+        assert.ok(harness.assets.some(asset => asset.includes('/vendor/katex/contrib/auto-render.min.js')));
+        assert.ok(harness.assets.every(asset => !asset?.includes('jsdelivr') && !asset?.includes('node_modules')));
         assert.ok(harness.mathRenders.length > 0, 'answer passes through the math renderer');
         assert.ok(harness.mathRenders[0].options.delimiters.some(delimiter => delimiter.left === '$'));
     });
@@ -653,17 +653,27 @@ test('assistant retrieves and explains sequential percentage prices', async () =
     assert.match(reply.textContent, /Apply 12% vat: \$112\.5\(1 \+ 12\/100\) = 126/);
 });
 
-test('assistant falls back to CDN KaTeX assets when local files are unavailable', async () => {
+test('assistant shows a friendly error with Retry when KaTeX assets fail', async () => {
     const harness = createAssistantHarness({
         topic: 'Functions', given: 'x^2 = 9', find: 'the solutions', method: 'Take the square root of both sides.',
         working: ['x = 3 or x = -3.'], check: 'Both values square to 9.', answer: '$x = -3$ or $x = 3$.'
-    }, { failLocalKatexAssets: true });
+    }, { failKatexAssets: true });
 
     const reply = await harness.submit('Explain how to solve x^2 = 9.');
 
-    assert.match(reply.textContent, /x = -3/);
-    assert.equal(harness.assets.filter(asset => asset?.includes('cdn.jsdelivr.net/npm/katex@0.16.22/')).length, 3);
-    assert.ok(harness.mathRenders.length > 0);
+    assert.match(reply.textContent, /math display could not load/i);
+    assert.match(reply.className, /is-error/);
+    assert.ok(harness.assets.every(asset => !asset?.includes('jsdelivr')), 'no CDN fallback');
+});
+
+test('assistant marks API failures as errors and keeps them out of saved chat', async () => {
+    const harness = createAssistantHarness({}, {
+        provider: 'gemini', endpoint: '/api/assistant',
+        fetch: async () => ({ ok: false, status: 503, json: async () => ({ error: 'The AI tutor is not configured yet. Please try again later.', code: 'not_configured' }) })
+    });
+    const reply = await harness.submit('What is 15% of 80 plus 3x = 9?');
+    assert.match(reply.className, /is-error/);
+    assert.match(reply.textContent, /not configured yet/);
 });
 
 test('assistant does not leak the inline-math placeholder text into piecewise function output', async () => {

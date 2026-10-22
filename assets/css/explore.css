@@ -362,7 +362,7 @@
     justify-content: space-between;
     padding: 2px 6px 15px;
     color: #655E71;
-    font: 500 0.68rem/1 "IBM Plex Mono", monospace;
+    font: 500 0.7rem/1 "IBM Plex Mono", monospace;
     text-transform: uppercase;
     letter-spacing: 0.09em;
 }
@@ -466,7 +466,7 @@
     display: block;
     margin-bottom: 5px;
     color: #888298;
-    font: 500 0.65rem/1 "IBM Plex Mono", monospace;
+    font: 500 0.7rem/1 "IBM Plex Mono", monospace;
 }
 
 .explore-page .floating-equation strong {
@@ -500,7 +500,7 @@
 .explore-page .observation-notes span {
     margin-bottom: 5px;
     color: #655E71;
-    font: 500 0.6rem/1 "IBM Plex Mono", monospace;
+    font: 500 0.7rem/1 "IBM Plex Mono", monospace;
     text-transform: uppercase;
 }
 
@@ -647,7 +647,7 @@
     border-radius: 5px;
     color: #655E71;
     background: var(--ex-white);
-    font: 500 0.68rem/1 "IBM Plex Mono", monospace;
+    font: 500 0.7rem/1 "IBM Plex Mono", monospace;
 }
 
 .explore-page .formula-filter-group {
@@ -720,7 +720,7 @@
     justify-content: space-between;
     padding: 0 7px 16px;
     color: #5F5A6A;
-    font: 600 0.66rem/1 "IBM Plex Mono", monospace;
+    font: 600 0.7rem/1 "IBM Plex Mono", monospace;
     letter-spacing: 0.08em;
     text-transform: uppercase;
 }
@@ -773,7 +773,7 @@
     border-radius: 10px;
     color: #282435;
     background: #D9CFF5;
-    font: 600 0.68rem/1 "IBM Plex Mono", monospace;
+    font: 600 0.7rem/1 "IBM Plex Mono", monospace;
 }
 
 .explore-page .formula-card.is-selected .card-index {
@@ -801,7 +801,7 @@
 
 .explore-page .formula-card-copy span {
     color: #7f7988;
-    font: 500 0.63rem/1 "IBM Plex Mono", monospace;
+    font: 500 0.7rem/1 "IBM Plex Mono", monospace;
 }
 
 .explore-page .card-arrow {
@@ -839,7 +839,7 @@
     color: #282435;
     background: var(--ex-lime);
     box-shadow: 3px 3px 0 rgba(40, 36, 53, 0.9);
-    font: 600 0.62rem/1 "IBM Plex Mono", monospace;
+    font: 600 0.7rem/1 "IBM Plex Mono", monospace;
     letter-spacing: 0.08em;
     text-transform: uppercase;
 }
@@ -856,7 +856,7 @@
 
 .explore-page .formula-number {
     color: #655E71;
-    font: 500 0.67rem/1 "IBM Plex Mono", monospace;
+    font: 500 0.7rem/1 "IBM Plex Mono", monospace;
     white-space: nowrap;
 }
 
@@ -884,7 +884,7 @@
     display: block;
     margin-bottom: 0;
     color: #57436E;
-    font: 600 0.62rem/1 "IBM Plex Mono", monospace;
+    font: 600 0.7rem/1 "IBM Plex Mono", monospace;
     letter-spacing: 0.1em;
     text-transform: uppercase;
 }
@@ -962,7 +962,7 @@
 
 .explore-page .subsection-heading span {
     color: #918b99;
-    font: 500 0.62rem/1 "IBM Plex Mono", monospace;
+    font: 500 0.7rem/1 "IBM Plex Mono", monospace;
     text-transform: uppercase;
     letter-spacing: 0.08em;
 }
@@ -1036,7 +1036,7 @@
     display: block;
     margin-bottom: 5px;
     color: #57436E;
-    font: 600 0.6rem/1 "IBM Plex Mono", monospace;
+    font: 600 0.7rem/1 "IBM Plex Mono", monospace;
     text-transform: uppercase;
     letter-spacing: 0.1em;
 }
@@ -1056,7 +1056,7 @@
     border-radius: 8px;
     color: #282435;
     background: #FFFDF9;
-    font: 500 0.59rem/1 "IBM Plex Mono", monospace;
+    font: 500 0.7rem/1 "IBM Plex Mono", monospace;
     text-transform: uppercase;
 }
 
@@ -1079,7 +1079,7 @@
 .explore-page .difficulty-label {
     margin-right: 4px;
     color: #655E71;
-    font: 600 0.62rem/1 "IBM Plex Mono", monospace;
+    font: 600 0.7rem/1 "IBM Plex Mono", monospace;
     letter-spacing: 0.08em;
     text-transform: uppercase;
 }
@@ -1153,7 +1153,7 @@
 .explore-page .solution-heading {
     margin: 0 0 13px;
     color: #57436E;
-    font: 600 0.67rem/1 "IBM Plex Mono", monospace;
+    font: 600 0.7rem/1 "IBM Plex Mono", monospace;
     text-transform: uppercase;
     letter-spacing: 0.08em;
 }
@@ -1184,7 +1184,7 @@
     border-radius: 50%;
     color: #282435;
     background: var(--ex-lime);
-    font: 700 0.62rem/1 "IBM Plex Mono", monospace;
+    font: 700 0.7rem/1 "IBM Plex Mono", monospace;
 }
 
 .explore-page .solution-math {
@@ -1283,14 +1283,14 @@
     top: 24px;
     right: 25px;
     color: #655E71;
-    font: 600 0.67rem/1 "IBM Plex Mono", monospace;
+    font: 600 0.7rem/1 "IBM Plex Mono", monospace;
 }
 
 .explore-page .path-meta {
     display: block;
     margin: 18px 0 9px;
     color: #57436E;
-    font: 600 0.63rem/1 "IBM Plex Mono", monospace;
+    font: 600 0.7rem/1 "IBM Plex Mono", monospace;
     text-transform: uppercase;
     letter-spacing: 0.09em;
 }
@@ -2046,7 +2046,7 @@
     }
 
     .explore-page .hero-stats dd {
-        font-size: 0.59rem;
+        font-size: 0.7rem;
     }
 
     .explore-page .hero-observatory {
@@ -2056,7 +2056,7 @@
     }
 
     .explore-page .observation-topline {
-        font-size: 0.56rem;
+        font-size: 0.7rem;
     }
 
     .explore-page .floating-equation {
@@ -2187,3 +2187,9 @@
     scrollbar-width: thin;
 }
 .explore-page .difficulty-button { min-height: 44px; }
+
+/* ---- a11y sweep: 44px tap targets ---- */
+.explore-page .explore-theme-toggle { min-height:44px; }
+.explore-page .search-field input { min-height:44px; }
+.explore-page .button { min-height:44px; }
+.explore-page a[href="#formula-lab"] { display:inline-flex; align-items:center; min-height:44px; }

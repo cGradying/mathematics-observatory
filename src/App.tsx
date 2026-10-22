@@ -457,10 +457,10 @@ export default function App() {
                 style={{ "--topic-color": topic.color, "--topic-soft": topic.softColor } as React.CSSProperties}
               >
                 <div className="card-cover">
-                  <span className="card-number">0{index + 1}</span>
-                  {courseDone(topic.title) && <span className="course-badge">Complete ✓</span>}
-                  <div className="topic-icon">{topic.icon}</div>
-                  <div className="cover-formula">
+                  <span className="card-number" aria-hidden="true">0{index + 1}</span>
+                  {courseDone(topic.title) && <span className="course-badge">Complete <span aria-hidden="true">✓</span></span>}
+                  <div className="topic-icon" aria-hidden="true">{topic.icon}</div>
+                  <div className="cover-formula" aria-hidden="true">
                     {topic.formula}
                   </div>
                 </div>
@@ -478,8 +478,8 @@ export default function App() {
                         <li key={lesson}>
                           {lesson}
                           {prog() && (
-                            <button className="read-toggle" type="button" aria-pressed={done} onClick={(e) => toggle(topic.title, lesson, e.currentTarget)}>
-                              {done ? "Read ✓" : "Mark as read"}
+                            <button className="read-toggle" type="button" aria-pressed={done} aria-label={`Mark as read: ${lesson}`} onClick={(e) => toggle(topic.title, lesson, e.currentTarget)}>
+                              {done ? <>Read <span aria-hidden="true">✓</span></> : "Mark as read"}
                             </button>
                           )}
                         </li>
