@@ -1178,7 +1178,8 @@ h4 {
 
 .formula-math {
   overflow-x: auto;
-  overflow-y: hidden;
+  overflow-y: visible;
+  padding-bottom: 2px;
 }
 
 .stats-band {
@@ -2802,7 +2803,8 @@ h4 {
   height: 100%;
   border-radius: 50%;
   object-fit: cover;
-  object-position: center top;
+  object-position: center 18%;
+  aspect-ratio: 166 / 210;
   filter: sepia(.12) saturate(.86) contrast(.98);
   transform: scale(1.025);
   transition: filter 520ms cubic-bezier(.22, 1, .36, 1), transform 520ms cubic-bezier(.22, 1, .36, 1);

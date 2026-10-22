@@ -140,7 +140,7 @@
         // Match the standalone quadratic grapher's green/yellow/red coding.
         const natureTone = disc > 0 ? '#22c55e' : disc === 0 ? '#a16207' : '#dc2626';
         let roots = 'None';
-        if (disc > 0) roots = `x₁ ${fmt.format((-v.b + Math.sqrt(disc)) / (2 * v.a))}, x₂ ${fmt.format((-v.b - Math.sqrt(disc)) / (2 * v.a))}`;
+        if (disc > 0) roots = `x₁ = ${fmt.format((-v.b + Math.sqrt(disc)) / (2 * v.a))}, x₂ = ${fmt.format((-v.b - Math.sqrt(disc)) / (2 * v.a))}`;
         else if (disc === 0) roots = `x = ${fmt.format(vx)}`;
         return [['Discriminant Δ', fmt.format(disc)], ['Nature of roots', nature, natureTone], ['Roots', roots], ['Vertex', `(${fmt.format(vx)}, ${fmt.format(vy)})`]];
       },

@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>The Mathematics Observatory | Grade 11 General Mathematics</title>
   <meta name="description" content="A Grade 11 General Mathematics study site with lessons, interactive graphs, experiments, practice challenges and an AI tutor.">
-    <link rel="stylesheet" href="assets/css/styles.css?v=17" />
-    <link rel="stylesheet" href="assets/css/dashboard.css?v=1" />
+    <link rel="stylesheet" href="assets/css/styles.css?v=18" />
+    <link rel="stylesheet" href="assets/css/dashboard.css?v=2" />
     <link rel="stylesheet" href="assets/css/assistant.css?v=7" />
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="preload" href="/fonts/archivo-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin>
@@ -17,40 +17,34 @@
   <meta property="og:description" content="A Grade 11 General Mathematics study site with lessons, interactive graphs, experiments, practice challenges and an AI tutor.">
   <meta name="twitter:card" content="summary">
   <meta name="theme-color" content="#15120F">
+  <script defer src="assets/js/header-ai.js"></script>
+  <link rel="stylesheet" href="assets/css/fun.css">
+  <script defer src="assets/js/fun.js"></script>
 </head>
   <body class="home-page">
 <a class="skip-link" href="#main">Skip to main content</a>
     <!-- Navigation -->
-    <nav class="main-nav" aria-label="Main navigation">
-      <div class="nav-container">
-        <a class="logo" href="index.html" aria-label="The Mathematics Observatory home">
-          <span class="logo-mascot" aria-hidden="true"><span class="logo-symbol">∫</span></span>
-          <span class="logo-text"><span class="logo-words"><span class="logo-word-1">The Mathematics</span> <span class="logo-word-2">Observatory</span></span><span class="logo-tagline">Grade 11 · General Mathematics</span></span>
-        </a>
-        <button
-          class="menu-toggle"
-          type="button"
-          aria-label="Toggle menu"
-          aria-controls="site-navigation"
-          aria-expanded="false"
-        >
-          <span></span>
-          <span></span>
-          <span></span>
-        </button>
-        <ul class="nav-links" id="site-navigation">
-        <li><a href="index.html" class="nav-link active" aria-current="page">Home</a></li>
-        <li><a href="learn.html" class="nav-link">Learn</a></li>
-        <li><a href="explore.html" class="nav-link">Explore</a></li>
-        <li><a href="visualize.html" class="nav-link">Visualize</a></li>
-        <li><a href="laboratory.html" class="nav-link">Laboratory</a></li>
-        <li><a href="challenges.html" class="nav-link">Challenges</a></li>
-        <li><a href="history.html" class="nav-link">History</a></li>
-        <li><a href="proofs.html" class="nav-link">Why It Works</a></li>
-      </ul>
-        <a class="nav-cta" href="#sections">Begin Exploration <span aria-hidden="true">↓</span></a>
-      </div>
-    </nav>
+    <header class="site-header">
+<nav class="main-nav" aria-label="Main navigation">
+  <div class="nav-container">
+    <a class="logo" href="index.html" aria-label="The Mathematics Observatory home"><svg class="logo-mark" viewBox="0 0 32 32" width="32" height="32" aria-hidden="true" focusable="false"><defs><linearGradient id="logo-grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFE08A"/><stop offset="1" stop-color="#FFB89A"/></linearGradient></defs><rect x="1.5" y="1.5" width="29" height="29" rx="9" fill="url(#logo-grad)" stroke="#282435" stroke-width="2"/><path d="M19.5 7.5c-2.6-.9-4 .6-4 3.4v10.2c0 2.8-1.4 4.3-4 3.4" fill="none" stroke="#282435" stroke-width="2.4" stroke-linecap="round"/><circle cx="20.8" cy="8.2" r="1.5" fill="#282435"/><circle cx="10.8" cy="23.8" r="1.5" fill="#282435"/></svg><span class="logo-text"><span class="logo-the">The </span>Mathematics Observatory</span></a>
+    <ul class="nav-links" id="site-navigation">
+      <li><a href="index.html" class="nav-link active" aria-current="page">Home</a></li>
+      <li><a href="learn.html" class="nav-link">Learn</a></li>
+      <li><a href="explore.html" class="nav-link">Explore</a></li>
+      <li><a href="visualize.html" class="nav-link">Visualize</a></li>
+      <li><a href="laboratory.html" class="nav-link">Laboratory</a></li>
+      <li><a href="challenges.html" class="nav-link">Challenges</a></li>
+      <li><a href="history.html" class="nav-link">History</a></li>
+      <li><a href="proofs.html" class="nav-link">Why It Works</a></li>
+    </ul>
+    <div class="nav-actions">
+      <button class="header-ai" type="button" aria-label="Ask the math tutor" aria-pressed="false" title="Ask the math tutor"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 11.5a7.5 7.5 0 0 1-8 7.5 8.6 8.6 0 0 1-3.2-.6L4 20l1.7-3.8A7.2 7.2 0 0 1 4.5 12 7.5 7.5 0 0 1 12 4.5a7.5 7.5 0 0 1 8 7Z"/><path d="M12 8.2l.9 2.4 2.4.9-2.4.9-.9 2.4-.9-2.4-2.4-.9 2.4-.9z" fill="currentColor" stroke="none"/></svg></button>
+      <button class="menu-toggle" type="button" aria-label="Toggle menu" aria-controls="site-navigation" aria-expanded="false"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+</nav>
+</header>
 
     <main id="main">
     <!-- Hero Section -->
@@ -84,6 +78,14 @@
       </div>
     </section>
 
+    <!-- Your path today (revealed by dashboard.js; hidden without JS or storage) -->
+    <section class="path" id="path" aria-labelledby="path-title" hidden>
+      <div class="path-inner">
+        <div class="path-head"><h2 class="path-title" id="path-title">Your path today</h2><button type="button" class="path-skip" id="path-skip">Skip for now</button></div>
+        <ol class="path-list" id="path-list"></ol>
+      </div>
+    </section>
+
     <!-- Personal dashboard (revealed by assets/js/dashboard.js; stays hidden without JS) -->
     <section class="dash" id="dashboard" aria-labelledby="dash-title" hidden>
       <div class="dash-inner">
@@ -101,7 +103,18 @@
           <p class="grid-kicker">Your progress</p>
           <h2 class="dash-title" id="dash-title">Your study dashboard</h2>
           <p class="dash-note" id="dash-activity"></p>
+          <ol class="dash-week" id="dash-week" aria-label="Answers in the last 7 days"></ol>
           <div class="dash-top">
+            <article class="dash-card dash-rank-card">
+              <p class="card-eyebrow">Observatory rank</p>
+              <h3 class="dash-card-title" id="dash-rank"></h3>
+              <p class="dash-meta" id="dash-rank-next"></p>
+            </article>
+            <article class="dash-card dash-goal-card">
+              <p class="card-eyebrow">Daily goal</p>
+              <div class="dash-ring" id="dash-ring" aria-hidden="true"></div>
+              <h3 class="dash-card-title" id="dash-goal-text"></h3>
+            </article>
             <article class="dash-card" id="dash-continue" hidden>
               <p class="card-eyebrow">Continue</p>
               <h3 class="dash-card-title" id="dash-continue-label"></h3>

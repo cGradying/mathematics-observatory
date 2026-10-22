@@ -16,10 +16,45 @@
     return e;
   }
 
+  const storageOk = (() => { try { window.localStorage.getItem('observatory-progress-v1'); return true; } catch { return false; } })();
+  let skipped = false;
+  try { skipped = window.sessionStorage.getItem('path-skip') === '1'; } catch { /* ignore */ }
+  const STEPS = [
+    { key: 'read', text: 'Learn a lesson', href: 'learn.html' },
+    { key: 'quiz', text: 'Quiz 5', href: 'challenges.html' },
+    { key: 'tool', text: 'Explore a tool', href: 'visualize.html' },
+  ];
+  function renderPath(s) {
+    const box = $('path');
+    box.hidden = !storageOk || skipped;
+    if (box.hidden) return;
+    const done = P.pathToday(s);
+    const n = P.activity(s).today;
+    const list = $('path-list');
+    list.replaceChildren();
+    STEPS.forEach((st, i) => {
+      const ok = done[st.key];
+      const li = el('li', 'path-item' + (ok ? ' is-done' : ''));
+      const a = el('a', 'path-step');
+      a.href = st.href;
+      const sub = st.key === 'quiz' && !ok && n ? `${n} of 5 answered` : ok ? 'Done' : 'To do';
+      a.append(el('span', 'path-mark', ok ? '\u2713' : String(i + 1)), el('span', 'path-text', st.text), el('span', 'path-state', sub));
+      li.append(a);
+      list.append(li);
+    });
+    $('path-title').textContent = done.read && done.quiz && done.tool ? 'Path complete. Well charted.' : 'Your path today';
+  }
+  $('path-skip').addEventListener('click', () => {
+    skipped = true;
+    try { window.sessionStorage.setItem('path-skip', '1'); } catch { /* ignore */ }
+    $('path').hidden = true;
+  });
+
   function render() {
     const s = P.load();
     const show = !!s.goal || P.hasHistory(s);
     root.hidden = false;
+    renderPath(s);
     $('dash-goal').hidden = show;
     $('dash-main').hidden = !show;
     document.body.classList.toggle('has-dashboard', show);
@@ -36,6 +71,27 @@
     const n = P.nextStep(s);
     $('dash-next-label').textContent = n.label;
     $('dash-next-link').href = n.href;
+
+    const r = P.rank(s.ok);
+    $('dash-rank').textContent = `${r.name} \u00b7 rank ${r.index + 1} of ${r.of}`;
+    $('dash-rank-next').textContent = r.next ? `${r.toNext} more correct answer${r.toNext === 1 ? '' : 's'} to ${r.next}.` : 'Top rank reached. The whole sky is open.';
+    $('dash-title').textContent = `${P.greeting()}. ${s.ok ? 'Welcome back to the sky.' : 'Ready to chart something new?'}`;
+    const goalN = P.activity(s).today;
+    $('dash-ring').style.setProperty?.('--p', Math.min(goalN / P.DAILY_GOAL, 1) * 100 + '%');
+    $('dash-ring').textContent = Math.min(goalN, P.DAILY_GOAL) + '/' + P.DAILY_GOAL;
+    $('dash-goal-text').textContent = goalN >= P.DAILY_GOAL ? `Goal reached: ${goalN} answers today` : `${goalN} of ${P.DAILY_GOAL} answers today`;
+    const wk = $('dash-week');
+    wk.replaceChildren();
+    const peak = Math.max(1, ...P.week(s).map(d => d.n));
+    for (const d of P.week(s)) {
+      const li = el('li', 'dash-day' + (d.today ? ' is-today' : '') + (d.n ? ' has-n' : ''));
+      const bar = el('span', 'dash-day-bar');
+      bar.style.setProperty?.('--h', Math.round(d.n / peak * 100) + '%');
+      bar.setAttribute('aria-hidden', 'true');
+      li.append(bar, el('span', 'dash-day-n', String(d.n)), el('span', 'dash-day-label', d.today ? 'Today' : d.label));
+      li.setAttribute('aria-label', `${d.today ? 'Today' : d.label}: ${d.n} answer${d.n === 1 ? '' : 's'}`);
+      wk.append(li);
+    }
 
     const list = $('dash-topics');
     list.replaceChildren();

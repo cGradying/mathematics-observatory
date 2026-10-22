@@ -31,7 +31,7 @@ const PORTRAITS = {
   "Leonhard Euler": "Leonhard_Euler.jpg",
   "Carl Friedrich Gauss": "Carl_Friedrich_Gauss.jpg",
   "Emmy Noether": "Emmy_Noether.jpg",
-  "Alan Turing": "Alan Turing.webp",
+  "Alan Turing": "Alan_Turing_portrait.webp",
 };
 
 /* One archival accent per person; the portrait and text remain the focus. */
@@ -79,7 +79,7 @@ function renderEra(era, index) {
 }
 
 function renderPeople() {
-  return `<section class="people-section" id="people"><div class="section-heading"><p class="script-label">The hands behind the work</p><h2>Mathematicians</h2><p>Twelve figures whose writing, teaching, and discoveries shaped the mathematical collection. Select a portrait to open its catalog note.</p></div><div class="profile-grid">${mathematicians.map((person) => `<button class="profile-card" type="button" aria-expanded="false"><span class="portrait-frame"><img src="assets/images/mathematicians/${esc(PORTRAITS[person.name] || "Euclid.webp")}" alt="" loading="lazy"></span><span class="profile-summary"><span class="profile-name">${esc(person.name)}</span><span class="profile-years">${esc(person.years)}</span><span class="profile-region">${esc(person.region)}</span><span class="profile-contribution">${esc(PROFILE_SUMMARIES[person.name] || person.contribution)}</span><span class="profile-action"><span>View catalog note</span><i aria-hidden="true">+</i></span></span><span class="profile-details"><span class="profile-explanation">${esc(person.contribution)}</span><span class="detail-label">What they worked on</span><span class="idea-list">${person.ideas.map((idea) => `<span>${esc(idea)}</span>`).join("")}</span><span class="profile-note">${esc(person.note)}</span></span></button>`).join("")}</div></section>`;
+  return `<section class="people-section" id="people"><div class="section-heading"><p class="script-label">The hands behind the work</p><h2>Mathematicians</h2><p>Twelve figures whose writing, teaching, and discoveries shaped the mathematical collection. Select a portrait to open its catalog note.</p></div><div class="profile-grid">${mathematicians.map((person) => `<button class="profile-card" type="button" aria-expanded="false"><span class="portrait-frame"><img src="assets/images/mathematicians/${esc(PORTRAITS[person.name] || "Euclid.webp")}" alt="" width="166" height="210" loading="lazy" decoding="async"></span><span class="profile-summary"><span class="profile-name">${esc(person.name)}</span><span class="profile-years">${esc(person.years)}</span><span class="profile-region">${esc(person.region)}</span><span class="profile-contribution">${esc(PROFILE_SUMMARIES[person.name] || person.contribution)}</span><span class="profile-action"><span>View catalog note</span><i aria-hidden="true">+</i></span></span><span class="profile-details"><span class="profile-explanation">${esc(person.contribution)}</span><span class="detail-label">What they worked on</span><span class="idea-list">${person.ideas.map((idea) => `<span>${esc(idea)}</span>`).join("")}</span><span class="profile-note">${esc(person.note)}</span></span></button>`).join("")}</div></section>`;
 }
 
 function wirePeopleProfiles() {

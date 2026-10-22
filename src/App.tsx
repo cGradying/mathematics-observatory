@@ -20,6 +20,8 @@ const prog = (): ProgressApi | undefined => (window as unknown as { Progress?: P
 const lessonKey = (course: string, lesson: string) => `${course}: ${lesson}`;
 const readNow = (course: string, lesson: string) =>
   !!prog()?.isRead(SLUGS[course], lessonKey(course, lesson));
+type FunApi = { pop(el: Element): void; toast(text: string): void };
+const fun = () => (window as unknown as { Fun?: FunApi }).Fun;
 
 type Topic = {
   title: string;
@@ -322,14 +324,34 @@ export default function App() {
   const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [, bump] = useState(0);
+  const [pulse, setPulse] = useState<string | null>(null);
 
   const open = (topic: Topic) => {
     setSelectedTopic(topic.title);
     prog()?.setLast(SLUGS[topic.title], "learn", `Reading ${topic.title}`, `learn.html?topic=${SLUGS[topic.title]}`);
   };
-  const toggle = (course: string, lesson: string) => {
-    prog()?.markRead(SLUGS[course], lessonKey(course, lesson), !readNow(course, lesson));
+  const toggle = (course: string, lesson: string, el: Element) => {
+    const nowRead = !readNow(course, lesson);
+    prog()?.markRead(SLUGS[course], lessonKey(course, lesson), nowRead);
     bump((n) => n + 1);
+    if (!nowRead) return;
+    setPulse(course);
+    fun()?.pop(el);
+    const t = topics.find((x) => x.title === course);
+    if (t && t.lessons.every((l) => readNow(course, l))) fun()?.toast(`Course complete: ${course}`);
+  };
+  const courseDone = (title: string) => {
+    const t = topics.find((x) => x.title === title);
+    return !!t && !!prog() && t.lessons.every((l) => readNow(title, l));
+  };
+  const stepCourses = (title: string) => (title === "Statistics & Probability" ? ["Statistics", "Probability"] : [title]);
+  const nextStep = paths.findIndex(([title]) => !stepCourses(title).every(courseDone));
+  const nextLesson = (title: string) => {
+    for (const c of stepCourses(title)) {
+      const l = topics.find((x) => x.title === c)?.lessons.find((x) => !readNow(c, x));
+      if (l) return l;
+    }
+    return null;
   };
 
   useEffect(() => {
@@ -429,13 +451,14 @@ export default function App() {
           <div className="topics-grid">
             {topics.map((topic, index) => (
               <article
-                className={`topic-card reveal ${selectedTopic === topic.title ? "is-selected" : ""}`}
+                className={`topic-card reveal ${selectedTopic === topic.title ? "is-selected" : ""} ${courseDone(topic.title) ? "is-complete" : ""}`}
                 id={slugId(topic.title)}
                 key={topic.title}
                 style={{ "--topic-color": topic.color, "--topic-soft": topic.softColor } as React.CSSProperties}
               >
                 <div className="card-cover">
                   <span className="card-number">0{index + 1}</span>
+                  {courseDone(topic.title) && <span className="course-badge">Complete ✓</span>}
                   <div className="topic-icon">{topic.icon}</div>
                   <div className="cover-formula">
                     {topic.formula}
@@ -455,7 +478,7 @@ export default function App() {
                         <li key={lesson}>
                           {lesson}
                           {prog() && (
-                            <button className="read-toggle" type="button" aria-pressed={done} onClick={() => toggle(topic.title, lesson)}>
+                            <button className="read-toggle" type="button" aria-pressed={done} onClick={(e) => toggle(topic.title, lesson, e.currentTarget)}>
                               {done ? "Read ✓" : "Mark as read"}
                             </button>
                           )}
@@ -464,7 +487,10 @@ export default function App() {
                     })}
                   </ul>
                   {prog() && (
-                    <p className="read-count">
+                    <p
+                      className={`read-count ${pulse === topic.title ? "is-bumped" : ""}`}
+                      key={pulse === topic.title ? topic.lessons.filter((l) => readNow(topic.title, l)).length : "s"}
+                    >
                       {topic.lessons.filter((l) => readNow(topic.title, l)).length} of {topic.lessons.length} lessons read
                     </p>
                   )}
@@ -497,12 +523,19 @@ export default function App() {
           </div>
           <div className="path-steps" id="path-steps">
             {paths.map(([title, text], index) => (
-              <article className="path-step reveal" key={title}>
+              <article
+                className={`path-step reveal ${index === nextStep ? "is-next" : ""} ${stepCourses(title).every(courseDone) ? "is-done" : ""}`}
+                key={title}
+                aria-current={index === nextStep ? "step" : undefined}
+              >
                 <div className="path-number">{String(index + 1).padStart(2, "0")}</div>
                 <div>
-                  <span>Step {index + 1}</span>
+                  <span>Step {index + 1}{index === nextStep && prog() ? " · Up next" : ""}</span>
                   <h3>{title}</h3>
                   <p>{text}</p>
+                  {index === nextStep && prog() && nextLesson(title) && (
+                    <p className="next-lesson">Next lesson: {nextLesson(title)}</p>
+                  )}
                 </div>
               </article>
             ))}

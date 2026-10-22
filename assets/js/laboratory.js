@@ -1180,6 +1180,7 @@
         }else{
           destroyChart();
           canvas.style.display='none';
+          canvas.parentElement.style.minHeight='';
           svgEl.style.display='block';
           draw(result.points,exp.drawMode||'line');
         }

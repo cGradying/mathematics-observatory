@@ -21,7 +21,8 @@ async function boot({ hash = '', seed } = {}) {
   doc.createElement = t => { const e = mk(t); made.push(e); return e; };
   const keys = ['all', 'business', 'sequences', 'measurement', 'functions', 'statistics', 'trigonometry', 'logic'];
   const buttons = keys.map(k => Object.assign(makeEl('button', doc.registry), { dataset: { challengeFilter: k } }));
-  doc.querySelectorAll = sel => (sel === '[data-challenge-filter]' ? buttons : []);
+  const modes = ['quick', 'topic', 'free'].map(k => Object.assign(makeEl('button', doc.registry), { dataset: { mode: k } }));
+  doc.querySelectorAll = sel => (sel === '[data-challenge-filter]' ? buttons : sel === '[data-mode]' ? modes : []);
   const win = makeWindow(doc, storage, { GRADE_11_MATH_DATA_READY: Promise.resolve(DATA), CustomEvent: class { constructor(type) { this.type = type; } } });
   win.location.hash = hash;
   const ctx = vm.createContext({ ...win, window: win, document: doc, CustomEvent: win.CustomEvent, URL, URLSearchParams, console });
@@ -37,13 +38,23 @@ async function boot({ hash = '', seed } = {}) {
   const answer = text => { q('#challenge-answer').value = text; q('#challenge-answer-form').fire('submit'); };
   const levelUp = () => made.find(e => e.className === 'challenge-levelup');
   const related = () => made.find(e => e.id === 'challenge-related');
-  return { ctx, calls, q, levelUp, related, answer, buttons, win };
+  const start = (topic, mode = 'quick') => {
+    if (topic) { q('#quiz-topic').value = topic; q('#quiz-topic').fire('change', { target: q('#quiz-topic') }); }
+    modes.find(m => m.dataset.mode === mode).fire('click');
+    q('#quiz-start').fire('click');
+  };
+  const next = () => q('#challenge-next').fire('click');
+  return { ctx, calls, q, levelUp, related, answer, buttons, win, start, next, made };
 }
 
-test('deep link #topic=statistics selects that filter', async () => {
-  const { q } = await boot({ hash: '#topic=statistics' });
-  assert.match(q('#challenge-bank-count').textContent, /^2 matching questions/);
+test('deep link #topic=statistics preselects the quiz topic and browse filter', async () => {
+  const { q, start } = await boot({ hash: '#topic=statistics' });
+  assert.match(q('#quiz-setup-note').textContent, /Only 2 questions match/);
+  assert.equal(q('#quiz-topic').value, 'statistics');
+  start();
   assert.match(q('#challenge-question').textContent, /mean|median/);
+  assert.equal(q('#quiz-play').hidden, false);
+  assert.equal(q('#quiz-setup').hidden, true);
 });
 
 test('unknown deep link falls back to all topics', async () => {
@@ -52,15 +63,18 @@ test('unknown deep link falls back to all topics', async () => {
 });
 
 test('submitting records the right slug and pass flag', async () => {
-  const { calls, ctx, answer } = await boot({ hash: '#topic=functions' });
+  const { calls, ctx, answer, start, q } = await boot({ hash: '#topic=functions' });
+  start();
   answer('99');
+  q('#challenge-retry').fire('click');
   answer('3');
   assert.deepEqual(calls, [['functions', false], ['functions', true]]);
   assert.equal(ctx.Progress.mastery('functions').n, 2);
 });
 
 test('first answer reads "Just started", not "Practising", and shows related tools', async () => {
-  const { ctx, q, answer, levelUp, related } = await boot({ hash: '#topic=functions' });
+  const { ctx, q, answer, levelUp, related, start } = await boot({ hash: '#topic=functions' });
+  start();
   answer('3');
   assert.equal(ctx.Progress.describe('functions').label, 'Just started');
   assert.equal(q('#challenge-solution').hidden, false);
@@ -71,9 +85,11 @@ test('first answer reads "Just started", not "Practising", and shows related too
 });
 
 test('no level-up message when the level does not change; message when it does', async () => {
-  const { answer, levelUp } = await boot({ hash: '#topic=functions', seed: { v: 1, answers: { functions: [true, true, true] } } });
+  const { answer, levelUp, start, q } = await boot({ hash: '#topic=functions', seed: { v: 1, answers: { functions: [true, true, true] } } });
+  start('functions', 'free');
   answer('3'); // 4th answer: still practising
   assert.equal(levelUp().textContent, '');
+  q('#challenge-retry').fire('click');
   answer('3'); // 5th answer at 100%: Confident
   assert.equal(levelUp().textContent, 'Level up: Functions is now Confident.');
 });
@@ -82,4 +98,35 @@ test('page wires progress.js before challenges.js and has no old harsh wording',
   const h = src('challenges.html');
   assert.ok(h.indexOf('assets/js/progress.js') > 0 && h.indexOf('assets/js/progress.js') < h.indexOf('assets/js/challenges.js'));
   assert.doesNotMatch(src('assets/js/challenges.js') + src('assets/js/dashboard.js'), /Not started/);
+});
+
+test('quiz session: scoring, review, and retry-missed', async () => {
+  const { q, start, answer, next, calls, made } = await boot({ hash: '#topic=statistics' });
+  start('statistics', 'topic'); // 2 statistics questions available
+  assert.equal(q('#challenge-count').textContent, 'Question 1 of 2');
+  const first = q('#challenge-question').textContent;
+  const right = first.includes('mean') ? '4' : '5';
+  answer(right); // first correct
+  assert.equal(q('#challenge-next').hidden, false);
+  assert.equal(q('#challenge-next').firstChild.textContent, 'Next question ');
+  next();
+  assert.equal(q('#challenge-count').textContent, 'Question 2 of 2');
+  answer('wrong'); // second missed
+  assert.equal(q('#challenge-retry').hidden, false);
+  assert.equal(q('#challenge-next').firstChild.textContent, 'See results ');
+  next();
+  assert.equal(q('#quiz-results').hidden, false);
+  assert.equal(q('#quiz-score').textContent, '1 of 2 correct');
+  const review = q('#quiz-review').children;
+  assert.equal(review.length, 2);
+  assert.match(review[1].text, /Missed.*Your answer: wrong.*Expected:/);
+  assert.equal(q('#quiz-retry-missed').firstChild.textContent, 'Retry missed (1)');
+  const link = q('#quiz-topics').children.find(c => c.href);
+  assert.equal(link.href, 'learn.html?topic=statistics');
+  assert.deepEqual(calls.map(c => c[1]), [true, false]);
+  q('#quiz-retry-missed').fire('click');
+  assert.equal(q('#quiz-play').hidden, false);
+  assert.equal(q('#challenge-count').textContent, 'Question 1 of 1');
+  q('#quiz-new').fire('click');
+  assert.equal(q('#quiz-setup').hidden, false);
 });

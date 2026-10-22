@@ -8,32 +8,65 @@
     trigonometry: 'trigonometry',
     logic: 'logic-and-mathematical-reasoning',
   };
-  const list = document.querySelector('#challenge-list');
+  const SIZES = { quick: 5, topic: 10, free: 0 };
+  const $ = (id) => document.querySelector(`#${id}`);
+  const list = $('challenge-list');
   const filters = [...document.querySelectorAll('[data-challenge-filter]')];
-  const answerInput = document.querySelector('#challenge-answer');
-  const searchInput = document.querySelector('#challenge-search');
+  const answerInput = $('challenge-answer');
+  const searchInput = $('challenge-search');
+  const feedback = $('challenge-feedback');
+  const nextBtn = $('challenge-next');
+  const retryBtn = $('challenge-retry');
+  const nextStepEl = $('challenge-next-step');
+  const views = { setup: $('quiz-setup'), play: $('quiz-play'), results: $('quiz-results') };
   let allQuestions = [];
   let filteredQuestions = [];
-  let category = 'all';
-  let difficulty = 'all';
-  let currentIndex = 0;
+  let category = 'all'; // browse drawer filter
+  let difficulty = 'all'; // browse drawer filter
+  let mode = 'quick';
+  let setupTopic = 'all';
+  let S = null; // current quiz session
   let katexReady;
   const P = () => window.Progress;
   const slugOf = (key) => categoryIds[key];
   const titleOf = (slug) => P()?.TOPICS.find((t) => t.id === slug)?.title || slug;
-  const nextStepEl = document.createElement('p');
-  nextStepEl.id = 'challenge-next-step';
-  nextStepEl.className = 'challenge-next-step';
-  list.before(nextStepEl);
   const toolsEl = document.createElement('p');
   toolsEl.id = 'challenge-related';
   toolsEl.className = 'challenge-related';
   toolsEl.hidden = true;
-  document.querySelector('#challenge-solution').append(toolsEl);
+  $('challenge-solution').append(toolsEl);
   const levelEl = document.createElement('p');
   levelEl.className = 'challenge-levelup';
   levelEl.setAttribute('role', 'status');
-  document.querySelector('#challenge-feedback').after(levelEl);
+  feedback.after(levelEl);
+
+  // Playful, never childish. Picked by question index so wording rotates.
+  const OK = ['Correct.', 'Spot on.', 'That is it.', 'Clean work.', 'Exactly right.'];
+  const RETRY = ['Not quite yet.', 'Close, but not there.', 'Almost. Check the method below.', 'A useful miss.'];
+  const pick = (arr, i) => arr[i % arr.length];
+  const reduced = () => !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  // Quiet sparkle burst: 12 nodes, removed after 1.2s. Skipped under reduced motion (text carries the meaning).
+  function burst(host) {
+    if (!host || reduced()) return;
+    const box = document.createElement('span');
+    box.className = 'sparkle';
+    box.setAttribute('aria-hidden', 'true');
+    for (let k = 0; k < 12; k++) {
+      const dot = document.createElement('i');
+      dot.style.setProperty?.('--a', `${k * 30}deg`);
+      dot.style.setProperty?.('--d', `${44 + (k % 3) * 14}px`);
+      box.append(dot);
+    }
+    host.append(box);
+    if (typeof setTimeout === 'function') setTimeout(() => box.remove(), 1200);
+  }
+  const setText = (id, value) => { $(id).textContent = value ?? ''; };
+  function showView(name) { Object.entries(views).forEach(([k, el]) => { el.hidden = k !== name; }); }
+  function shuffle(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+    return a;
+  }
 
   function refreshProgress() {
     if (!P()) return;
@@ -62,17 +95,23 @@
     const slug = item.topicId;
     P().setLast(slug, 'challenges', `Practising ${titleOf(slug)}`, `challenges.html#topic=${slug}`);
   }
-  function pickRandom() {
+
+  // Order a pool for a quiz. Exam / catch-up goals interleave topics weakest-first.
+  function pickSet(pool, size) {
+    const shuffled = shuffle(pool);
     const goal = P()?.load().goal;
-    let pool = filteredQuestions.map((_, i) => i);
-    if (P() && (goal === 'exam' || goal === 'catchup') && pool.length > 1) {
-      const stat = (i) => P().mastery(filteredQuestions[i].topicId);
-      const score = goal === 'exam' ? (i) => stat(i).n : (i) => stat(i).pct;
-      const best = Math.min(...pool.map(score));
-      pool = pool.filter((i) => score(i) === best);
+    let out = shuffled;
+    if (P() && (goal === 'exam' || goal === 'catchup')) {
+      const score = (t) => (goal === 'exam' ? P().mastery(t).n : P().mastery(t).pct);
+      const groups = new Map();
+      shuffled.forEach((q) => { if (!groups.has(q.topicId)) groups.set(q.topicId, []); groups.get(q.topicId).push(q); });
+      const order = [...groups.keys()].sort((a, b) => score(a) - score(b));
+      out = [];
+      for (let r = 0; out.length < shuffled.length; r++) order.forEach((t) => { if (groups.get(t)[r]) out.push(groups.get(t)[r]); });
     }
-    return pool[Math.floor(Math.random() * pool.length)];
+    return size ? out.slice(0, size) : out;
   }
+  const poolFor = (topicKey, diff) => allQuestions.filter((q) => (topicKey === 'all' || q.topicId === categoryIds[topicKey]) && (diff === 'all' || q.difficulty.toLowerCase() === diff));
 
   function loadKatex() {
     if (window.katex?.render) return Promise.resolve(window.katex);
@@ -185,20 +224,64 @@
     return Math.abs(expected - actual) <= tolerance;
   }
 
-  function currentQuestion() { return filteredQuestions[currentIndex]; }
-  function setText(id, value) { document.querySelector(`#${id}`).textContent = value ?? ''; }
+  // ---- setup view -------------------------------------------------------
+  function buildTopicSelect() {
+    const sel = $('quiz-topic');
+    sel.replaceChildren();
+    [['all', 'All topics'], ...Object.entries(categoryIds).map(([k, slug]) => [k, titleOf(slug)])].forEach(([value, text]) => {
+      const o = document.createElement('option');
+      o.value = value;
+      o.textContent = text;
+      sel.append(o);
+    });
+    sel.value = setupTopic;
+  }
+  function updateSetupNote() {
+    const pool = poolFor(setupTopic, ($('quiz-difficulty').value || 'all'));
+    const size = SIZES[mode];
+    const note = $('quiz-setup-note');
+    const start = $('quiz-start');
+    start.disabled = !pool.length;
+    note.textContent = !pool.length ? 'No questions match this topic and level. Try another combination.'
+      : size && pool.length < size ? `Only ${pool.length} question${pool.length === 1 ? '' : 's'} match, so this quiz will be shorter.`
+      : `${pool.length} questions available${size ? `, ${size} picked at random` : ''}.`;
+  }
+  function setMode(next) {
+    mode = next;
+    document.querySelectorAll('[data-mode]').forEach((b) => {
+      const on = b.dataset.mode === next;
+      b.classList.toggle('is-active', on);
+      b.setAttribute('aria-pressed', String(on));
+    });
+    updateSetupNote();
+  }
+  function toSetup() { showView('setup'); S = null; updateSetupNote(); $('quiz-setup-title').focus(); }
 
-  function selectQuestion(index, focus = false) {
-    if (!filteredQuestions.length) return;
-    currentIndex = (index + filteredQuestions.length) % filteredQuestions.length;
-    const item = currentQuestion();
-    setText('challenge-topic', item.topicName.toUpperCase());
-    setText('challenge-difficulty', `${item.difficulty.toUpperCase()} · QUESTION ${currentIndex + 1}`);
+  // ---- quiz session -----------------------------------------------------
+  function startSession(kind, qs, { focus = true } = {}) {
+    if (!qs.length) return;
+    const pre = {};
+    qs.forEach((q) => { if (P() && !(q.topicId in pre)) pre[q.topicId] = P().LEVEL_NAMES.indexOf(P().mastery(q.topicId).level); });
+    S = { kind, qs: qs.slice(), i: 0, res: [], pre, answered: false, streak: 0 };
+    buildTicks();
+    showView('play');
+    showQuestion(focus);
+  }
+  function showQuestion(focus = true) {
+    if (S.kind === 'free' && S.i >= S.qs.length) S.qs.push(...shuffle(S.qs));
+    const item = S.qs[S.i];
+    const n = S.kind === 'free' ? 0 : S.qs.length;
+    S.answered = false;
+    setText('challenge-count', n ? `Question ${S.i + 1} of ${n}` : `Question ${S.i + 1} · free practice`);
+    setText('challenge-num', `Q${S.i + 1}`);
+    setText('challenge-topic', item.topicName);
+    setText('challenge-difficulty', item.difficulty);
+    setProgress(S.i);
     setText('challenge-question', item.question);
-    renderMathText(document.querySelector('#challenge-given p'), item.given || 'Use the information stated in the problem.');
-    const hint = document.querySelector('#challenge-hint');
-    const hintToggle = document.querySelector('#challenge-hint-toggle');
-    const formula = document.querySelector('#challenge-formula');
+    renderMathText($('challenge-given').querySelector('p'), item.given || 'Use the information stated in the problem.');
+    const hint = $('challenge-hint');
+    const hintToggle = $('challenge-hint-toggle');
+    const formula = $('challenge-formula');
     hint.hidden = !item.formula;
     formula.hidden = true;
     hintToggle.setAttribute('aria-expanded', 'false');
@@ -208,21 +291,182 @@
     if (item.formula) {
       const label = document.createElement('span');
       label.textContent = 'Hint: ';
-      formula.append(label);
       renderMathText(formula, item.formula);
       formula.prepend(label);
     }
-    setText('challenge-count', `Question ${currentIndex + 1} of ${filteredQuestions.length}`);
-    answerInput.value = '';
-    document.querySelector('#challenge-feedback').textContent = ''; levelEl.textContent = '';
-    document.querySelector('#challenge-feedback').className = 'challenge-feedback';
-    document.querySelector('#challenge-solution').hidden = true;
-    [...list.querySelectorAll('[data-question-index]')].forEach((button) => button.classList.toggle('is-current', Number(button.dataset.questionIndex) === currentIndex));
-    toolsEl.hidden = true;
+    clearAnswerState();
+    nextBtn.hidden = true;
+    retryBtn.hidden = true;
     markLast(item);
-    if (focus) answerInput.focus({ preventScroll: true });
+    if (focus) { $('challenge-question').focus(); }
+  }
+  function buildTicks() {
+    const track = $('quiz-track');
+    track.querySelectorAll?.('.quiz-tick').forEach((t) => t.remove());
+    const n = S.kind === 'free' ? 0 : S.qs.length;
+    for (let k = 1; k < n; k++) {
+      const t = document.createElement('i');
+      t.className = 'quiz-tick';
+      t.dataset.k = String(k);
+      t.style.left = `${(k / n) * 100}%`;
+      track.append(t);
+    }
+  }
+  function setProgress(done) {
+    const n = S.kind === 'free' ? 0 : S.qs.length;
+    $('quiz-track').hidden = !n;
+    if (!n) return;
+    $('quiz-track').setAttribute('aria-valuemax', String(n));
+    $('quiz-track').setAttribute('aria-valuenow', String(done));
+    $('quiz-fill').style.width = `${(done / n) * 100}%`;
+    $('quiz-track').querySelectorAll?.('.quiz-tick').forEach((t) => t.classList.toggle('is-hit', Number(t.dataset.k) <= done));
+  }
+  function clearAnswerState() {
+    answerInput.value = '';
+    answerInput.readOnly = false;
+    feedback.textContent = '';
+    feedback.className = 'challenge-feedback';
+    levelEl.textContent = '';
+    setText('quiz-keys-text', 'to check');
+    $('challenge-solution').hidden = true;
+    toolsEl.hidden = true;
   }
 
+  function submitAnswer() {
+    if (!S) return;
+    if (S.answered) { goNext(); return; } // Enter again moves on
+    const item = S.qs[S.i];
+    const value = answerInput.value;
+    const passed = answerMatches(item, value);
+    if (!S.res[S.i]) S.res[S.i] = { q: item, answer: value, passed };
+    S.answered = true;
+    answerInput.readOnly = true;
+    S.streak = passed ? S.streak + 1 : 0;
+    feedback.textContent = passed
+      ? `${pick(OK, S.i)}${S.streak >= 2 ? ` ${S.streak} in a row.` : ''} Review the worked steps below.`
+      : `${pick(RETRY, S.i)} Read the method and the common mistake below, then try again or move on.`;
+    if (passed && S.streak % 3 === 0) burst($('quiz-after'));
+    setText('quiz-keys-text', 'to continue');
+    feedback.className = `challenge-feedback ${passed ? 'is-correct' : 'is-retry'}`;
+    setText('challenge-method', item.expectedMethod);
+    setText('challenge-worked', item.workedSolution);
+    setText('challenge-final', item.finalAnswer);
+    setText('challenge-mistake', item.commonMistake ? `Watch for: ${item.commonMistake}` : '');
+    $('challenge-solution').hidden = false;
+    setProgress(S.i + 1);
+    if (P()) {
+      const before = P().LEVEL_NAMES.indexOf(P().mastery(item.topicId).level);
+      P().recordAnswer(item.topicId, passed);
+      const after = P().describe(item.topicId);
+      const now = P().LEVEL_NAMES.indexOf(after.level);
+      levelEl.textContent = now > before ? (before === 0 ? `Nice start on ${titleOf(item.topicId)}.` : `Level up: ${titleOf(item.topicId)} is now ${after.label}.`) : '';
+      markLast(item);
+      const slug = item.topicId;
+      toolsEl.replaceChildren('Related tools: ');
+      [['Visualize', 'visualize'], ['Laboratory', 'laboratory'], ['Learn', 'learn']].forEach(([label, page], i) => {
+        const a = document.createElement('a');
+        a.href = `${page}.html?topic=${slug}`;
+        a.textContent = label;
+        toolsEl.append(i ? ' · ' : '', a);
+      });
+      toolsEl.hidden = false;
+    }
+    const last = S.kind !== 'free' && S.i === S.qs.length - 1;
+    nextBtn.firstChild.textContent = last ? 'See results ' : 'Next question ';
+    nextBtn.hidden = false;
+    retryBtn.hidden = passed;
+    feedback.focus(); // next Tab stop is Try again / Next
+  }
+  function goNext() {
+    if (!S || !S.answered) return;
+    if (S.kind !== 'free' && S.i >= S.qs.length - 1) { showResults(); return; }
+    S.i++;
+    showQuestion();
+  }
+  function retryQuestion() {
+    S.answered = false;
+    clearAnswerState();
+    nextBtn.hidden = true;
+    retryBtn.hidden = true;
+    answerInput.focus();
+  }
+
+  // ---- results view -----------------------------------------------------
+  function showResults() {
+    const res = S.res.filter(Boolean);
+    if (!res.length) { toSetup(); return; }
+    const right = res.filter((r) => r.passed).length;
+    const missed = res.filter((r) => !r.passed);
+    showView('results');
+    S.final = res;
+    setText('quiz-score', `${right} of ${res.length} correct`);
+    const pct = right / res.length;
+    const nStars = P() ? P().stars(right, res.length) : 0;
+    const starEl = $('quiz-stars');
+    starEl.textContent = '\u2605'.repeat(nStars) + '\u2606'.repeat(3 - nStars);
+    starEl.setAttribute('aria-label', `${nStars} of 3 stars`);
+    setText('quiz-score-note', pct === 1 ? 'A clean sweep. Every star earned.' : pct >= 0.7 ? 'Solid work. Look over the misses below.' : pct >= 0.4 ? 'Getting there. The review below shows where to look again.' : 'Every attempt maps the sky a little better. Start with the review below.');
+    let bestNote = '';
+    if (P() && (S.kind === 'quick' || S.kind === 'topic') && res.length === S.qs.length && !S.saved) {
+      S.saved = true;
+      const b = P().recordBest(S.kind, right, res.length);
+      bestNote = !b.prev ? 'First score on the board. This is your best to beat.'
+        : b.isNew ? `New best. Your previous best was ${b.prev.right} of ${b.prev.total}.`
+        : `Your best ${S.kind} score is ${b.prev.right} of ${b.prev.total}.`;
+    }
+    setText('quiz-best', bestNote);
+    if (nStars === 3) burst($('quiz-results'));
+    const levels = $('quiz-levels');
+    levels.replaceChildren();
+    if (P()) {
+      Object.keys(S.pre).forEach((slug) => {
+        const d = P().describe(slug);
+        const now = P().LEVEL_NAMES.indexOf(d.level);
+        const li = document.createElement('li');
+        if (now > S.pre[slug]) li.textContent = S.pre[slug] === 0 ? `Nice start on ${titleOf(slug)}.` : `Level up: ${titleOf(slug)} is now ${d.label}.`;
+        else li.textContent = `${titleOf(slug)}: ${d.label}. ${d.next}.`;
+        levels.append(li);
+      });
+    }
+    const review = $('quiz-review');
+    review.replaceChildren();
+    res.forEach((r, i) => {
+      const li = document.createElement('li');
+      li.className = r.passed ? 'is-right' : 'is-miss';
+      const head = document.createElement('strong');
+      head.textContent = `${i + 1}. ${r.passed ? 'Correct' : 'Missed'}`;
+      const q = document.createElement('p');
+      q.className = 'quiz-review-q';
+      q.textContent = r.q.question;
+      const mine = document.createElement('p');
+      mine.textContent = `Your answer: ${r.answer || '(blank)'}`;
+      const exp = document.createElement('p');
+      exp.textContent = `Expected: ${r.q.finalAnswer}`;
+      li.append(head, q, mine, exp);
+      review.append(li);
+    });
+    const slugs = [...new Set(missed.map((r) => r.q.topicId))];
+    const wrap = $('quiz-topics-wrap');
+    wrap.hidden = !slugs.length;
+    const topics = $('quiz-topics');
+    topics.replaceChildren();
+    slugs.forEach((slug, i) => {
+      const a = document.createElement('a');
+      a.href = `learn.html?topic=${slug}`;
+      a.textContent = titleOf(slug);
+      topics.append(i ? ' · ' : '', a);
+    });
+    const rm = $('quiz-retry-missed');
+    rm.hidden = !missed.length;
+    rm.firstChild.textContent = `Retry missed (${missed.length})`;
+    $('quiz-score').focus();
+  }
+  function retryMissed() {
+    const missed = (S.final || []).filter((r) => !r.passed).map((r) => r.q);
+    if (missed.length) startSession('retry', shuffle(missed));
+  }
+
+  // ---- browse drawer ----------------------------------------------------
   function renderList() {
     const query = normalize(searchInput.value);
     filteredQuestions = allQuestions.filter((item) => {
@@ -231,7 +475,6 @@
       const searchMatch = !query || normalize(`${item.topicName} ${item.question} ${item.given} ${item.formula}`).includes(query);
       return categoryMatch && difficultyMatch && searchMatch;
     });
-    currentIndex = Math.min(currentIndex, Math.max(filteredQuestions.length - 1, 0));
     list.replaceChildren();
     const fragment = document.createDocumentFragment();
     filteredQuestions.forEach((item, index) => {
@@ -251,28 +494,19 @@
       arrow.setAttribute('aria-hidden', 'true');
       arrow.textContent = '→';
       button.append(number, copy, arrow);
-      button.addEventListener('click', () => selectQuestion(index, true));
+      button.addEventListener('click', () => {
+        startSession('free', [...filteredQuestions.slice(index), ...filteredQuestions.slice(0, index)]);
+        $('challenge-browse').open = false;
+        $('quiz-stage').scrollIntoView?.({ block: 'start' });
+      });
       fragment.append(button);
     });
     list.append(fragment);
     setText('challenge-bank-count', `${filteredQuestions.length} matching question${filteredQuestions.length === 1 ? '' : 's'} · ${allQuestions.length} curriculum examples available`);
-    if (filteredQuestions.length) selectQuestion(currentIndex);
-    else {
-      setText('challenge-topic', 'NO MATCHING QUESTIONS');
-      setText('challenge-difficulty', 'CHANGE THE SEARCH OR FILTER');
-      setText('challenge-question', 'Try a broader search or another topic and difficulty.');
-      document.querySelector('#challenge-given p').textContent = '';
-      setText('challenge-count', 'Question 0 of 0');
-      document.querySelector('#challenge-hint').hidden = true;
-      document.querySelector('#challenge-formula').hidden = true;
-      document.querySelector('#challenge-solution').hidden = true;
-      document.querySelector('#challenge-feedback').textContent = ''; levelEl.textContent = '';
-    }
   }
 
   function setCategory(key) {
     category = key;
-    currentIndex = 0;
     const button = filters.find((b) => b.dataset.challengeFilter === key);
     filters.forEach((item) => {
       const active = item === button;
@@ -281,83 +515,64 @@
     });
     if (allQuestions.length) renderList();
   }
-  filters.forEach((button) => button.addEventListener('click', () => setCategory(button.dataset.challengeFilter)));
   function applyHash() {
     const slug = new URLSearchParams(location.hash.slice(1)).get('topic');
     const key = Object.keys(categoryIds).find((k) => categoryIds[k] === slug);
-    if (key && key !== category) setCategory(key);
+    if (!key) return false;
+    setupTopic = key;
+    $('quiz-topic').value = key;
+    if (key !== category) setCategory(key);
+    updateSetupNote();
+    return true;
   }
+
+  filters.forEach((button) => button.addEventListener('click', () => setCategory(button.dataset.challengeFilter)));
+  document.querySelectorAll('[data-mode]').forEach((b) => b.addEventListener('click', () => setMode(b.dataset.mode)));
   window.addEventListener('hashchange', applyHash);
   window.addEventListener('progress-change', refreshProgress);
-  searchInput.addEventListener('input', () => { currentIndex = 0; renderList(); });
-  document.querySelector('#challenge-difficulty-filter').addEventListener('change', (event) => { difficulty = event.target.value; currentIndex = 0; renderList(); });
-  document.querySelector('#challenge-random').addEventListener('click', () => {
-    if (!filteredQuestions.length) return;
-    const next = filteredQuestions.length < 2 ? 0 : pickRandom();
-    selectQuestion(next, true);
+  searchInput.addEventListener('input', renderList);
+  $('challenge-difficulty-filter').addEventListener('change', (event) => { difficulty = event.target.value; renderList(); });
+  $('quiz-topic').addEventListener('change', (event) => { setupTopic = event.target.value; updateSetupNote(); });
+  $('quiz-difficulty').addEventListener('change', updateSetupNote);
+  $('quiz-start').addEventListener('click', () => {
+    const pool = poolFor(setupTopic, ($('quiz-difficulty').value || 'all'));
+    startSession(mode, pickSet(pool, SIZES[mode]));
   });
-  document.querySelector('#challenge-next').addEventListener('click', () => selectQuestion(currentIndex + 1, true));
-  document.querySelector('#challenge-hint-toggle').addEventListener('click', () => {
-    const formula = document.querySelector('#challenge-formula');
-    const toggle = document.querySelector('#challenge-hint-toggle');
+  $('quiz-finish').addEventListener('click', showResults);
+  $('quiz-new').addEventListener('click', toSetup);
+  $('quiz-retry-missed').addEventListener('click', retryMissed);
+  nextBtn.addEventListener('click', goNext);
+  retryBtn.addEventListener('click', retryQuestion);
+  feedback.addEventListener('keydown', (event) => { if (event.key === 'Enter') goNext(); });
+  $('challenge-hint-toggle').addEventListener('click', () => {
+    const formula = $('challenge-formula');
+    const toggle = $('challenge-hint-toggle');
     const revealed = formula.hidden;
     formula.hidden = !revealed;
     toggle.setAttribute('aria-expanded', String(revealed));
     toggle.firstChild.textContent = revealed ? 'Hide hint ' : 'Reveal hint ';
     toggle.querySelector('span').textContent = revealed ? '−' : '+';
   });
-  document.querySelector('#challenge-answer-form').addEventListener('submit', (event) => {
-    event.preventDefault();
-    const item = currentQuestion();
-    if (!item) return;
-    const passed = answerMatches(item, answerInput.value);
-    const feedback = document.querySelector('#challenge-feedback');
-    feedback.textContent = passed ? 'Correct. Review the worked steps below.' : 'Not quite. Use the method and common-mistake note below, then retry.';
-    feedback.className = `challenge-feedback ${passed ? 'is-correct' : 'is-retry'}`;
-    setText('challenge-method', item.expectedMethod);
-    setText('challenge-worked', item.workedSolution);
-    setText('challenge-final', item.finalAnswer);
-    setText('challenge-mistake', item.commonMistake ? `Watch for: ${item.commonMistake}` : '');
-    document.querySelector('#challenge-solution').hidden = false;
-    if (P()) {
-      const before = P().LEVEL_NAMES.indexOf(P().mastery(item.topicId).level);
-      P().recordAnswer(item.topicId, passed);
-      const after = P().describe(item.topicId);
-      const now = P().LEVEL_NAMES.indexOf(after.level);
-      levelEl.textContent = now > before ? (before === 0 ? `Nice start on ${titleOf(item.topicId)}.` : `Level up: ${titleOf(item.topicId)} is now ${after.label}.`) : '';
-      markLast(item);
-      const slug = item.topicId;
-      toolsEl.replaceChildren('Related tools: ');
-      [['Visualize', 'visualize'], ['Laboratory', 'laboratory'], ['Learn', 'learn']].forEach(([label, page], i) => {
-        const a = document.createElement('a');
-        a.href = `${page}.html?topic=${slug}`;
-        a.textContent = label;
-        toolsEl.append(i ? ' · ' : '', a);
-      });
-      toolsEl.hidden = false;
-    }
-  });
-  document.querySelector('#challenge-retry').addEventListener('click', () => {
-    answerInput.value = '';
-    document.querySelector('#challenge-feedback').textContent = ''; levelEl.textContent = '';
-    document.querySelector('#challenge-solution').hidden = true;
-    answerInput.focus();
-  });
+  $('challenge-answer-form').addEventListener('submit', (event) => { event.preventDefault(); submitAnswer(); });
   document.querySelector('[data-load-feature]').addEventListener('click', () => {
-    filters.find((button) => button.dataset.challengeFilter === 'sequences')?.click();
-    const featured = filteredQuestions.findIndex((item) => /10th term.*arithmetic sequence.*first term 3/i.test(item.question));
-    if (featured >= 0) selectQuestion(featured, true);
+    const pool = poolFor('sequences', 'all');
+    const featured = pool.find((item) => /10th term.*arithmetic sequence.*first term 3/i.test(item.question));
+    if (featured) startSession('free', [featured, ...shuffle(pool.filter((q) => q !== featured))]);
   });
 
   window.GRADE_11_MATH_DATA_READY?.then((data) => {
     allQuestions = data.modules.flatMap(({ id, topic, exampleBank }) => exampleBank.examples.map((item) => ({ ...item, topicId: id, topicName: topic.topicName })));
     if (!allQuestions.length) {
-      setText('challenge-question', 'The curriculum question bank could not be loaded. Please refresh the page or try Learn.');
+      setText('quiz-setup-note', 'The curriculum question bank could not be loaded. Please refresh the page or try Learn.');
       setText('challenge-bank-count', 'No questions loaded.');
       return;
     }
+    setupTopic = Object.keys(categoryIds).find((k) => categoryIds[k] === P()?.nextStep()?.topic) || 'all';
+    buildTopicSelect();
     applyHash();
+    $('quiz-topic').value = setupTopic;
     renderList();
     refreshProgress();
+    updateSetupNote();
   });
 })();

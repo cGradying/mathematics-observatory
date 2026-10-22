@@ -1,6 +1,6 @@
 /* ----- BEGIN NAV‑BACKGROUND OVERRIDES ----- */
 .visualize-page.observatory-page { padding-top: 0 !important; }
-.visualize-page .viz-hero { padding-top: 152px !important; }
+.visualize-page .viz-hero { padding-top: 112px !important; }
 /* ----- END NAV‑BACKGROUND OVERRIDES ----- }
    Shared observatory tokens, pill nav, press-down buttons, plum footer,
    and entrance live in assets/css/styles.css (.observatory-page);
@@ -84,7 +84,7 @@
   .viz-workbench { grid-template-columns: minmax(0,1fr) 225px; }
 }
 @media (max-width: 700px) {
-  .observatory-page { padding-top: 76px; }
+  .observatory-page { padding-top: 56px; }
   .op-shell { width: min(100% - 32px, 1180px); }
   .viz-hero { min-height: 0; padding: 56px 22px 35px; grid-template-columns: 1fr; }
   .viz-hero-mark { min-height: 175px; max-width: 450px; width: 100%; margin: 16px auto 0; }
@@ -305,3 +305,16 @@
 .viz-rise-label { fill:#258b4c; font:600 11px 'IBM Plex Mono',monospace; }
 .viz-equation-tag-bg { fill:#222630; stroke:#374151; stroke-width:1.5; }
 .viz-equation-tag { fill:#fff!important; font:700 11px 'Archivo',sans-serif!important; text-anchor:middle; }
+
+/* ---- UX pass: tap targets and small-screen chart text ---- */
+.viz-preset-btn, .study-action { min-height:44px; display:inline-flex; align-items:center; }
+.viz-topic-controls input[type="range"] { min-height:44px; }
+.viz-topic-controls .viz-geometry-color { min-height:44px; }
+.viz-topic-controls .viz-geometry-color input[type="color"] { width:36px; height:36px; }
+.viz-controls, .viz-result strong, .viz-readout, .viz-metrics { overflow-wrap:anywhere; }
+.viz-intro > div { min-width:0; }
+@media (max-width: 700px) {
+  .viz-chart text, .viz-tick-label { font-size:20px; }
+  .viz-chart-wrap { padding:16px 12px 12px; }
+}
+.viz-slider-row input[type="number"] { min-height:44px; }

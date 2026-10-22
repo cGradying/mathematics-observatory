@@ -1,0 +1,65 @@
+/* Site-wide delight. transform/opacity only; every motion is opt-out via reduced motion. */
+
+/* (1) Cross-page transitions: Chromium only, silently ignored elsewhere. */
+@view-transition { navigation: auto; }
+.main-nav { view-transition-name: site-nav; }
+::view-transition-group(site-nav) { animation-duration: 0s; }
+::view-transition-old(root) { animation: fun-out 160ms ease both; }
+::view-transition-new(root) { animation: fun-in 220ms cubic-bezier(0.22, 0.68, 0, 1) both; }
+@keyframes fun-out { to { opacity: 0; } }
+@keyframes fun-in { from { opacity: 0; transform: translateY(8px); } }
+
+/* (2) Scroll reveal (class only added by fun.js, so content is never hidden without JS). */
+.reveal.fun-pre, .fun-pre { opacity: 0; transform: translateY(14px); }
+.reveal[data-fun]:not(.fun-pre) {
+  transition: opacity 480ms ease calc(var(--fun-i, 0) * 70ms), transform 480ms cubic-bezier(0.22, 0.68, 0, 1) calc(var(--fun-i, 0) * 70ms);
+}
+
+/* (3) Press feedback: hard shadow lift on hover, press down on active. */
+:where(.primary-button, .start-button, .read-toggle, .btn, button.cta, .section-card, .topic-card, .resource-card, .path-step) {
+  transition: transform 140ms ease, box-shadow 140ms ease;
+}
+@media (hover: hover) {
+  :where(.primary-button, .start-button, .btn, .resource-card):hover { transform: translate(-1px, -2px); box-shadow: 4px 5px 0 rgba(40, 36, 53, 0.85); }
+}
+:where(.primary-button, .start-button, .read-toggle, .btn, .resource-card):active { transform: translate(2px, 2px); box-shadow: 0 0 0 rgba(40, 36, 53, 0.85); }
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible { outline: 3px solid var(--color-purple, #7928b8); outline-offset: 3px; }
+
+/* (4) Pop + toast */
+.fun-pop { position: fixed; width: 0; height: 0; z-index: 2000; pointer-events: none; }
+.fun-pop i {
+  position: absolute; left: -4px; top: -4px; width: 8px; height: 8px; border-radius: 2px;
+  background: var(--color-gold, #eba85e); transform: rotate(45deg);
+  animation: fun-spark 650ms cubic-bezier(0.22, 0.68, 0, 1) forwards;
+}
+.fun-pop i:nth-child(3n) { background: var(--color-pink, #f06fc0); }
+.fun-pop i:nth-child(3n+1) { background: var(--color-cyan, #54d3df); }
+@keyframes fun-spark { from { transform: translate(0, 0) scale(0.4) rotate(45deg); opacity: 1; } to { transform: translate(var(--dx), var(--dy)) scale(1) rotate(225deg); opacity: 0; } }
+.fun-toast {
+  position: fixed; left: 50%; bottom: 24px; z-index: 2000; max-width: min(92vw, 420px);
+  padding: 12px 18px; border: 2px solid #282435; border-radius: 14px; background: #fffaf6; color: #171126;
+  font: 600 0.95rem/1.3 var(--font-primary, sans-serif); box-shadow: 4px 4px 0 #282435;
+  opacity: 0; transform: translate(-50%, 12px); pointer-events: none; visibility: hidden;
+  transition: opacity 200ms ease, transform 200ms ease, visibility 0s 200ms;
+}
+.fun-toast.is-on { opacity: 1; transform: translate(-50%, 0); visibility: visible; transition-delay: 0s; }
+
+/* Scroll progress hairline under the header (Chromium; elsewhere it simply is not drawn). */
+@supports (animation-timeline: scroll()) {
+  body::after {
+    content: ""; position: fixed; left: 0; top: 0; z-index: 1001; width: 100%; height: 3px;
+    background: linear-gradient(90deg, var(--color-pink, #f06fc0), var(--color-purple, #7928b8));
+    transform: scaleX(0); transform-origin: 0 50%; pointer-events: none;
+    animation: fun-progress linear both; animation-timeline: scroll(root block);
+  }
+  @keyframes fun-progress { to { transform: scaleX(1); } }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  @view-transition { navigation: none; }
+  .reveal.fun-pre, .fun-pre { opacity: 1; transform: none; }
+  :where(.primary-button, .start-button, .btn, .resource-card):hover,
+  :where(.primary-button, .start-button, .read-toggle, .btn, .resource-card):active { transform: none; }
+  .fun-toast, .fun-toast.is-on { transition: none; transform: translate(-50%, 0); }
+  body::after { display: none; }
+}

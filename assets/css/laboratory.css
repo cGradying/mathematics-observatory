@@ -2,7 +2,7 @@
 
 .laboratory-page { --op-accent: #226841; --op-paper: #FFF8F1; --op-card: #FFFDF9; }
 .laboratory-page.observatory-page { padding-top: 0; }
-.laboratory-page .lab-masthead { padding-top: 152px; }
+.laboratory-page .lab-masthead { padding-top: 112px; }
 .observatory-page main { min-height: 70vh; }
 .op-shell { width: min(1180px, calc(100% - 48px)); margin-inline: auto; }
 .op-kicker { margin: 0 0 16px; color: var(--op-accent); }
@@ -83,7 +83,7 @@
   .lab-queue-inner { grid-template-columns: 220px 1fr; gap: 18px 28px; }
 }
 @media (max-width: 700px) {
-  .observatory-page { padding-top: 76px; }
+  .observatory-page { padding-top: 56px; }
   .op-shell { width: min(100% - 32px, 1180px); }
   .lab-masthead { min-height: 430px; padding: 56px 22px 28px; }
   .lab-index { gap: 8px; font-size: .56rem; }
@@ -133,3 +133,21 @@
 .lab-compare-diff{color:var(--op-ink);}
 
 @media (prefers-reduced-motion:reduce){.lab-tracker{transition:none!important;}}
+
+/* ---- UX pass: hidden attr, tap targets, small-screen chart text ---- */
+.lab-custom-stage[hidden], .lab-compare-panel[hidden], .lab-hint[hidden] { display:none; }
+.lab-observation-note p, .lab-guided > p, .lab-result-head strong { overflow-wrap:anywhere; }
+.lab-guided button, .lab-observation .op-text-button { min-height:44px; }
+.lab-custom-head .lab-toggle button, .lab-zoom button { min-height:44px; min-width:44px; }
+.lab-control select, .lab-generated-input { min-height:44px; width:100%; padding:8px 10px; border:1px solid rgba(247,240,231,.3); border-radius:8px; color:#fff; background:rgba(255,255,255,.08); font:.85rem "IBM Plex Mono",monospace; }
+.lab-control select option { color:#25272b; background:#fff; }
+.lab-range-row input[type="range"] { min-height:44px; }
+.lab-chart-wrap:has(.lab-chart[style*="none"]) { border-bottom:0; }
+@media (max-width: 700px) {
+  .lab-chart text { font-size:20px; }
+  .lab-custom-canvas-wrap { height:300px; }
+  .lab-compare-box { min-width:0; flex-basis:100%; }
+}
+@media (max-width: 420px) { .lab-chart text { font-size:26px; } }
+#lab-copy-btn { min-height:44px; margin-top:12px; padding:8px 14px; border:2px solid var(--op-ink); border-radius:12px; color:var(--op-ink); background:#fff; font-size:.76rem; font-weight:700; cursor:pointer; }
+#lab-copy-btn:hover, #lab-copy-btn:focus-visible { background:var(--op-lime); }

@@ -654,16 +654,12 @@
     min-width: 0;
     display: flex;
     align-items: center;
-    gap: 5px;
-    overflow-x: auto;
-    overflow-y: hidden;
-    overscroll-behavior-x: contain;
-    scrollbar-width: thin;
-    scrollbar-color: #c4b7d8 transparent;
+    flex-wrap: wrap;
+    gap: 6px;
 }
 
 .explore-page .formula-filter {
-    min-height: 40px;
+    min-height: 44px;
     padding: 0 14px;
     border: 2px solid transparent;
     border-radius: 999px;
@@ -796,11 +792,11 @@
 
 .explore-page .formula-card-copy strong {
     margin-bottom: 5px;
-    overflow: hidden;
     font-size: 0.86rem;
     font-weight: 700;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    line-height: 1.3;
+    white-space: normal;
+    overflow-wrap: anywhere;
 }
 
 .explore-page .formula-card-copy span {
@@ -1958,7 +1954,6 @@
     .explore-page .formula-filter-group {
         grid-column: 1 / -1;
         grid-row: 2;
-        overflow-x: auto;
         padding: 4px 0 1px;
     }
 }
@@ -2183,3 +2178,12 @@
 .explore-page .katex .vlist-t {
     display: inline-table !important;
 }
+
+/* Long formulas scroll inside their box instead of being cut */
+.explore-page .formula-expression {
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-bottom: 6px;
+    scrollbar-width: thin;
+}
+.explore-page .difficulty-button { min-height: 44px; }

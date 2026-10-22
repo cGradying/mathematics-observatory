@@ -52,7 +52,7 @@ body.learn-page,
 /* Hero extends under fixed nav with extra top padding */
 .learn-page .hero {
   min-height: 100vh;
-  margin-top: -88px;
+  margin-top: -64px;
   padding-top: 24px;
   padding-bottom: 0;
 }
@@ -868,7 +868,7 @@ body.learn-page,
   border-top: 2px solid #282435;
   color: #FFFDF9;
   display: grid;
-  grid-template-columns: minmax(260px, 0.78fr) minmax(500px, 1.22fr);
+  grid-template-columns: minmax(0, 0.78fr) minmax(0, 1.22fr);
   min-height: 670px;
   padding: 95px max(7vw, 30px);
   position: relative;

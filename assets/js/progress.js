@@ -14,9 +14,10 @@
     { id: 'trigonometry', title: 'Trigonometry' },
     { id: 'logic-and-mathematical-reasoning', title: 'Logic and Mathematical Reasoning' },
   ];
+  const BEST_MODES = ['quick', 'topic'];
   const ids = new Set(TOPICS.map(t => t.id));
 
-  const empty = () => ({ v: 1, goal: null, answers: {}, read: {}, last: null, act: null });
+  const empty = () => ({ v: 1, goal: null, answers: {}, read: {}, last: null, act: null, ok: 0, days: {}, best: {}, path: null });
 
   function store() {
     try { return root.localStorage || null; } catch { return null; }
@@ -39,6 +40,21 @@
     if (a && typeof a.day === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(a.day)) {
       s.act = { day: a.day, n: Math.min(Math.max(Math.floor(Number(a.n)) || 0, 0), 9999), run: Math.min(Math.max(Math.floor(Number(a.run)) || 1, 1), 9999) };
     }
+    const cnt = (v, max) => Math.min(Math.max(Math.floor(Number(v)) || 0, 0), max);
+    const DAY = /^\d{4}-\d{2}-\d{2}$/;
+    // ok: lifetime correct answers (answers[] is only a 10-answer window). Legacy saves fall back to the window.
+    s.ok = raw.ok == null ? Object.values(s.answers).reduce((t, a) => t + a.filter(Boolean).length, 0) : cnt(raw.ok, 99999);
+    if (raw.days && typeof raw.days === 'object') { // answers per day, newest 14 days kept
+      Object.keys(raw.days).filter(k => DAY.test(k)).sort().slice(-14).forEach(k => { s.days[k] = cnt(raw.days[k], 9999); });
+    }
+    if (raw.best && typeof raw.best === 'object') { // best quiz score per mode
+      for (const m of BEST_MODES) {
+        const b = raw.best[m];
+        if (b && typeof b === 'object') { const total = cnt(b.total, 999), right = Math.min(cnt(b.right, 999), total); if (total) s.best[m] = { right, total }; }
+      }
+    }
+    const pa = raw.path; // which of today's path steps are done
+    if (pa && typeof pa.day === 'string' && DAY.test(pa.day)) s.path = { day: pa.day, read: !!pa.read, tool: !!pa.tool };
     const l = raw.last;
     if (l && ids.has(l.topic) && typeof l.href === 'string' && /^[\w./#?=&%-]+$/.test(l.href) && !/^(?:[a-z]+:)?\/\//i.test(l.href)) {
       s.last = { topic: l.topic, page: String(l.page || '').slice(0, 40), label: String(l.label || '').slice(0, 120), href: l.href, at: Number(l.at) || 0 };
@@ -75,6 +91,39 @@
   const LEVEL_NAMES = ['new', 'practising', 'confident', 'mastered'];
   const dayKey = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   const yesterdayKey = () => { const d = new Date(); d.setDate(d.getDate() - 1); return dayKey(d); };
+
+  function touchPath(s, key) {
+    const day = dayKey();
+    if (!s.path || s.path.day !== day) s.path = { day, read: false, tool: false };
+    s.path[key] = true;
+  }
+
+  // Observatory rank from lifetime correct answers.
+  const RANKS = [[0, 'Stargazer'], [10, 'Navigator'], [30, 'Astronomer'], [70, 'Cartographer'], [150, 'Luminary']];
+  function rank(correct) {
+    const n = Math.max(0, Math.floor(Number(correct)) || 0);
+    let i = 0;
+    RANKS.forEach(([min], k) => { if (n >= min) i = k; });
+    const next = RANKS[i + 1];
+    return { name: RANKS[i][1], index: i, of: RANKS.length, correct: n, next: next ? next[1] : null, toNext: next ? next[0] - n : 0 };
+  }
+  // 0-3 stars for a quiz score.
+  const stars = (right, total) => (!total ? 0 : right === total ? 3 : right / total >= 0.7 ? 2 : right / total >= 0.4 ? 1 : 0);
+  // Last 7 days ending at `now`, oldest first.
+  function week(state = load(), now = new Date()) {
+    return Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(now); d.setDate(d.getDate() - (6 - i));
+      const day = dayKey(d), a = state.act;
+      const n = state.days[day] || (a && a.day === day ? a.n : 0);
+      return { day, n, label: d.toLocaleDateString('en', { weekday: 'short' }), today: i === 6 };
+    });
+  }
+  const greeting = (hour = new Date().getHours()) => (hour < 5 ? 'Still up, stargazer?' : hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening');
+  // Today's path: lesson read, a quiz answer, a tool visited.
+  function pathToday(state = load()) {
+    const p = state.path && state.path.day === dayKey() ? state.path : {};
+    return { read: !!p.read, quiz: activity(state).today >= 5, tool: !!p.tool };
+  }
 
   // Gentle display wording; levels in the store stay new/practising/confident/mastered.
   function describe(topic, state = load()) {
@@ -128,19 +177,34 @@
     recordAnswer: (topic, correct) => ids.has(topic) && mutate(s => {
       s.answers[topic] = [...(s.answers[topic] || []), !!correct].slice(-WINDOW);
       const day = dayKey(), a = s.act;
+      if (correct) s.ok += 1;
+      s.days[day] = (s.days[day] || 0) + 1;
+      Object.keys(s.days).sort().slice(0, -14).forEach(k => { delete s.days[k]; });
       s.act = a && a.day === day ? { day, n: a.n + 1, run: a.run }
         : { day, n: 1, run: a && a.day === yesterdayKey() ? a.run + 1 : 1 };
     }),
     markRead: (topic, lesson, read = true) => ids.has(topic) && mutate(s => {
       const r = s.read[topic] || (s.read[topic] = {});
-      if (read) r[String(lesson).slice(0, 120)] = true; else delete r[lesson];
+      if (read) { r[String(lesson).slice(0, 120)] = true; touchPath(s, 'read'); } else delete r[lesson];
     }),
     isRead: (topic, lesson, s = load()) => !!(s.read[topic] && s.read[topic][lesson]),
     readCount: (topic, s = load()) => Object.keys(s.read[topic] || {}).length,
     setLast: (topic, page, label, href) => ids.has(topic) && mutate(s => {
+      if (page !== 'challenges' && page !== 'learn') touchPath(s, 'tool');
       s.last = { topic, page, label, href: href || root.location?.pathname.split('/').pop() || 'index.html', at: Date.now() };
     }),
-    mastery, describe, activity, nextStep,
+    mastery, describe, activity, nextStep, rank, stars, week, greeting, pathToday, DAILY_GOAL: 5,
+    // Store the best score for a quiz mode; returns { isNew, prev }.
+    recordBest(mode, right, total) {
+      let out = { isNew: false, prev: null };
+      if (!BEST_MODES.includes(mode) || !(total > 0)) return out;
+      mutate(s => {
+        const prev = s.best[mode] || null;
+        out = { isNew: !!prev && right / total > prev.right / prev.total, prev };
+        if (!prev || right / total > prev.right / prev.total) s.best[mode] = { right: Math.min(right, total), total };
+      });
+      return out;
+    },
     exportJSON: () => JSON.stringify(load(), null, 2),
     importJSON(text) {
       let parsed;

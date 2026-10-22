@@ -4,7 +4,7 @@
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Run interactive Grade 11 mathematics experiments and observe how changing a parameter changes the result.">
   <title>Laboratory | The Mathematics Observatory</title>
-  <link rel="stylesheet" href="assets/css/styles.css?v=16"><link rel="stylesheet" href="assets/css/assistant.css?v=7"><link rel="stylesheet" href="assets/css/laboratory.css?v=5">
+  <link rel="stylesheet" href="assets/css/styles.css?v=18"><link rel="stylesheet" href="assets/css/assistant.css?v=7"><link rel="stylesheet" href="assets/css/laboratory.css?v=6">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="preload" href="/fonts/archivo-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/fonts/fonts.css">
@@ -14,25 +14,39 @@
   <meta property="og:description" content="Run interactive Grade 11 mathematics experiments and observe how changing a parameter changes the result.">
   <meta name="twitter:card" content="summary">
   <meta name="theme-color" content="#15120F">
+  <script defer src="assets/js/header-ai.js"></script>
+  <link rel="stylesheet" href="assets/css/fun.css">
+  <script defer src="assets/js/fun.js"></script>
 </head>
 <body class="observatory-page laboratory-page" data-section="laboratory">
 <a class="skip-link" href="#main">Skip to main content</a>
-  <nav class="main-nav" aria-label="Main navigation"><div class="nav-container"><a class="logo" href="index.html" aria-label="The Mathematics Observatory home"><span class="logo-symbol" aria-hidden="true">∫</span><span class="logo-text">The Mathematics Observatory</span></a><button class="menu-toggle" type="button" aria-label="Toggle menu" aria-controls="site-navigation" aria-expanded="false"><span></span><span></span><span></span></button><ul class="nav-links" id="site-navigation">
-        <li><a href="index.html" class="nav-link">Home</a></li>
-        <li><a href="learn.html" class="nav-link">Learn</a></li>
-        <li><a href="explore.html" class="nav-link">Explore</a></li>
-        <li><a href="visualize.html" class="nav-link">Visualize</a></li>
-        <li><a href="laboratory.html" class="nav-link active" aria-current="page">Laboratory</a></li>
-        <li><a href="challenges.html" class="nav-link">Challenges</a></li>
-        <li><a href="history.html" class="nav-link">History</a></li>
-        <li><a href="proofs.html" class="nav-link">Why It Works</a></li>
-      </ul></div></nav>
+  <header class="site-header">
+<nav class="main-nav" aria-label="Main navigation">
+  <div class="nav-container">
+    <a class="logo" href="index.html" aria-label="The Mathematics Observatory home"><svg class="logo-mark" viewBox="0 0 32 32" width="32" height="32" aria-hidden="true" focusable="false"><defs><linearGradient id="logo-grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFE08A"/><stop offset="1" stop-color="#FFB89A"/></linearGradient></defs><rect x="1.5" y="1.5" width="29" height="29" rx="9" fill="url(#logo-grad)" stroke="#282435" stroke-width="2"/><path d="M19.5 7.5c-2.6-.9-4 .6-4 3.4v10.2c0 2.8-1.4 4.3-4 3.4" fill="none" stroke="#282435" stroke-width="2.4" stroke-linecap="round"/><circle cx="20.8" cy="8.2" r="1.5" fill="#282435"/><circle cx="10.8" cy="23.8" r="1.5" fill="#282435"/></svg><span class="logo-text"><span class="logo-the">The </span>Mathematics Observatory</span></a>
+    <ul class="nav-links" id="site-navigation">
+      <li><a href="index.html" class="nav-link">Home</a></li>
+      <li><a href="learn.html" class="nav-link">Learn</a></li>
+      <li><a href="explore.html" class="nav-link">Explore</a></li>
+      <li><a href="visualize.html" class="nav-link">Visualize</a></li>
+      <li><a href="laboratory.html" class="nav-link active" aria-current="page">Laboratory</a></li>
+      <li><a href="challenges.html" class="nav-link">Challenges</a></li>
+      <li><a href="history.html" class="nav-link">History</a></li>
+      <li><a href="proofs.html" class="nav-link">Why It Works</a></li>
+    </ul>
+    <div class="nav-actions">
+      <button class="header-ai" type="button" aria-label="Ask the math tutor" aria-pressed="false" title="Ask the math tutor"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 11.5a7.5 7.5 0 0 1-8 7.5 8.6 8.6 0 0 1-3.2-.6L4 20l1.7-3.8A7.2 7.2 0 0 1 4.5 12 7.5 7.5 0 0 1 12 4.5a7.5 7.5 0 0 1 8 7Z"/><path d="M12 8.2l.9 2.4 2.4.9-2.4.9-.9 2.4-.9-2.4-2.4-.9 2.4-.9z" fill="currentColor" stroke="none"/></svg></button>
+      <button class="menu-toggle" type="button" aria-label="Toggle menu" aria-controls="site-navigation" aria-expanded="false"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+</nav>
+</header>
   <main id="main">
     <section class="lab-masthead"><div class="lab-masthead-inner"><p class="op-kicker">Mathematics · under examination</p><h1>Change one thing.<br><em>Notice what follows.</em></h1><p>Experiments turn formulas into questions. Adjust a condition, observe the result, and explain the relationship you uncover.</p><a class="op-button op-button-lab" href="#experiment">Begin an experiment <span aria-hidden="true">↓</span></a></div><div class="lab-index" aria-label="Laboratory guide"><span>OBSERVE</span><i>→</i><span>CHANGE</span><i>→</i><span>EXPLAIN</span></div></section>
     <section class="lab-questions op-shell"><div class="lab-question-intro"><p class="op-kicker">Choose an investigation</p><h2 id="lab-title">Compound growth</h2><p class="lab-objective" id="lab-objective"><b>Question</b> How do the rate and time affect an investment that compounds once per year?</p><label class="lab-experiment-picker" for="lab-experiment-select">Experiment <select id="lab-experiment-select"><option value="compound-chartjs">Compound interest</option><option value="compare-interest">Simple vs compound interest</option><option value="sequence">Geometric sequences</option><option value="fibonacci">Fibonacci pattern</option><option value="function">Function coefficients</option><option value="regression">Correlation and regression</option><option value="distribution">Expected value</option><option value="loan">Loan repayment</option><option value="geometry">Solid geometry</option><option value="triangle">Heron's formula</option><option value="temperature">Temperature conversion</option><option value="price">Markup, discount, VAT</option><option value="sampling">Sampling variation</option></select></label><p class="lab-source" id="lab-source">Curriculum connection · Compound interest and geometric sequences</p></div><div class="lab-notes"><span id="lab-model-label">Working model</span><strong id="lab-model">A = P(1 + r)<sup>t</sup></strong><p id="lab-model-copy">Each year, the balance is multiplied by the same growth factor.</p></div></section>
     <section class="lab-workspace op-shell" id="experiment"><div class="lab-control-rail"><p class="op-kicker">Experiment 01</p><h2>Set the conditions</h2><label class="lab-control" for="lab-principal"><span>Starting amount <small>P</small></span><span class="lab-input-wrap"><span>$</span><input id="lab-principal" type="number" min="100" max="100000" step="100" value="1000"></span></label><label class="lab-control" for="lab-rate"><span>Annual rate <small>r</small></span><span class="lab-range-row"><input id="lab-rate" type="range" min="1" max="15" step="0.5" value="5"><output id="lab-rate-value">5%</output></span></label><label class="lab-control" for="lab-years"><span>Time <small>t</small></span><span class="lab-range-row"><input id="lab-years" type="range" min="1" max="30" step="1" value="10"><output id="lab-years-value">10 years</output></span></label><button type="button" class="op-button op-button-lab lab-reset" id="lab-reset">Reset conditions <span aria-hidden="true">↺</span></button></div>
       <div class="lab-observation"><div class="lab-result-head"><div><span>Observed final balance</span><strong id="lab-balance" aria-live="polite">$1,628.89</strong></div><span class="lab-result-tag">COMPOUNDED ANNUALLY</span></div><div class="lab-compare-panel" id="lab-compare-panel" hidden><div class="lab-compare-box"><span class="lab-compare-title">Simple Interest Total</span><strong class="lab-compare-value lab-compare-simple" id="lab-compare-simple">$0.00</strong></div><div class="lab-compare-box"><span class="lab-compare-title">Compound Interest Total</span><strong class="lab-compare-value lab-compare-compound" id="lab-compare-compound">$0.00</strong></div><div class="lab-compare-box"><span class="lab-compare-title">The Compound Advantage</span><strong class="lab-compare-value lab-compare-diff" id="lab-compare-diff">$0.00</strong></div></div><div class="lab-chart-wrap">
-  <svg id="lab-chart" class="lab-chart" viewBox="0 0 680 270" role="img" aria-labelledby="lab-chart-title lab-chart-desc"><title id="lab-chart-title">Investment balance by year</title><desc id="lab-chart-desc">A curve showing how the investment balance grows each year.</desc><path class="lab-chart-grid" d="M54 34H658M54 84H658M54 134H658M54 184H658M54 234H658M54 34V234"/><path class="lab-chart-area" id="lab-area"/><path class="lab-chart-line" id="lab-line"/><circle class="lab-chart-dot" id="lab-dot" r="5"/><text x="56" y="259">Year 0</text><text id="lab-year-label" x="618" y="259">Year 10</text><text x="57" y="23">BALANCE ($)</text></svg>
+  <svg id="lab-chart" class="lab-chart" viewBox="0 0 680 270" role="img" aria-labelledby="lab-chart-title lab-chart-desc"><title id="lab-chart-title">Investment balance by year</title><desc id="lab-chart-desc">A curve showing how the investment balance grows each year.</desc><path class="lab-chart-grid" d="M54 34H658M54 84H658M54 134H658M54 184H658M54 234H658M54 34V234"/><path class="lab-chart-area" id="lab-area"/><path class="lab-chart-line" id="lab-line"/><circle class="lab-chart-dot" id="lab-dot" r="5"/><text x="56" y="259">Year 0</text><text id="lab-year-label" x="658" y="259" text-anchor="end">Year 10</text><text x="57" y="23">BALANCE ($)</text></svg>
   <canvas id="lab-chart-canvas" class="lab-chart-canvas" style="width:100%; height:270px;" aria-label="Compound interest chart"></canvas>
   <div id="lab-custom-stage" class="lab-custom-stage" hidden></div>
 </div><div class="lab-observation-note"><span class="lab-note-mark">↗</span><p id="lab-observation-text" aria-live="polite">At 5% annual growth, the balance increases by a larger dollar amount each year because each year’s interest is earned on the growing balance.</p></div><div class="lab-guided"><span>Think about it</span><p id="lab-guided-question">If the rate stays fixed, does adding more years add the same dollar amount each year?</p><button id="lab-reveal" type="button" aria-expanded="false">Reveal a hint <span aria-hidden="true">＋</span></button><p class="lab-hint" id="lab-hint" hidden>Compare the gap between consecutive yearly balances. The growth factor is fixed, but the amount it acts on gets larger.</p></div></div></section>

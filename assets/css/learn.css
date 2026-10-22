@@ -790,7 +790,7 @@ a {
     #2e204e;
   color: white;
   display: grid;
-  grid-template-columns: minmax(260px, 0.78fr) minmax(500px, 1.22fr);
+  grid-template-columns: minmax(0, 0.78fr) minmax(0, 1.22fr);
   min-height: 670px;
   padding: 95px max(7vw, 30px);
   position: relative;
@@ -1302,3 +1302,17 @@ a {
 .read-toggle[aria-pressed="true"]{font-weight:700;background:var(--topic-soft,rgba(0,0,0,.08))}
 .read-toggle:focus-visible{outline:2px solid currentColor;outline-offset:2px}
 .read-count{margin:.5rem 0 0;font-size:.85rem;opacity:.8}
+
+.path-steps, .path-step > div { min-width: 0; }
+.path-step h3, .path-step p { overflow-wrap: anywhere; }
+
+/* Delight: course completion, count bump, roadmap next step */
+.course-badge{position:absolute;top:14px;right:14px;z-index:2;padding:4px 10px;border-radius:999px;background:var(--topic-color);color:#fff;font:700 .75rem/1.2 inherit;letter-spacing:.02em;animation:learn-badge 420ms cubic-bezier(.34,1.56,.64,1) both}
+.topic-card.is-complete{box-shadow:0 0 0 2px var(--topic-color)}
+.read-count.is-bumped{animation:learn-bump 420ms ease}
+.path-step.is-next{border-color:var(--color-purple,#7928b8);box-shadow:4px 4px 0 var(--color-purple,#7928b8)}
+.path-step.is-done .path-number{opacity:.55}
+.next-lesson{font-weight:700}
+@keyframes learn-badge{from{transform:scale(.5);opacity:0}}
+@keyframes learn-bump{40%{transform:scale(1.08)}}
+@media (prefers-reduced-motion:reduce){.course-badge,.read-count.is-bumped{animation:none}}
