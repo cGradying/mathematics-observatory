@@ -5,29 +5,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Why It Works - The Mathematics Observatory</title>
     <meta name="description" content="Discover the reasoning behind mathematical concepts. Understand why formulas work, not just how to use them.">
-    <link rel="stylesheet" href="assets/css/styles.css?v=3">
-    <link rel="stylesheet" href="assets/css/assistant.css?v=3">
-    <link rel="stylesheet" href="assets/css/proofs.css">
+    <link rel="stylesheet" href="assets/css/styles.css?v=16">
+    <link rel="stylesheet" href="assets/css/assistant.css?v=7">
+    <link rel="stylesheet" href="assets/css/proofs.css?v=6">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Archivo+Black&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
-<body class="proofs-page">
-    <nav class="main-nav">
+<body class="observatory-page proofs-page" data-section="proofs">
+    <nav class="main-nav" aria-label="Main navigation">
         <div class="nav-container">
             <a href="index.html" class="logo" aria-label="Home">
                 <span class="logo-symbol">∫</span>
                 <span class="logo-text">The Mathematics Observatory</span>
             </a>
-            <button class="menu-toggle" aria-label="Toggle menu">
+            <button class="menu-toggle" type="button" aria-label="Toggle menu" aria-controls="site-navigation" aria-expanded="false">
                 <span></span>
                 <span></span>
                 <span></span>
             </button>
-            <ul class="nav-links">
-                <li><a href="index.html" class="nav-link">Home</a></li>
-                <li><a href="learn.html" class="nav-link">Learn</a></li>
-                <li><a href="explore.html" class="nav-link">Explore</a></li>
-                <li><a href="history.html" class="nav-link">History</a></li>
-                <li><a href="proofs.html" class="nav-link active">Why It Works</a></li>
-            </ul>
+            <ul class="nav-links" id="site-navigation">
+        <li><a href="index.html" class="nav-link">Home</a></li>
+        <li><a href="learn.html" class="nav-link">Learn</a></li>
+        <li><a href="explore.html" class="nav-link">Explore</a></li>
+        <li><a href="visualize.html" class="nav-link">Visualize</a></li>
+        <li><a href="laboratory.html" class="nav-link">Laboratory</a></li>
+        <li><a href="challenges.html" class="nav-link">Challenges</a></li>
+        <li><a href="history.html" class="nav-link">History</a></li>
+        <li><a href="proofs.html" class="nav-link active" aria-current="page">Why It Works</a></li>
+      </ul>
         </div>
     </nav>
 
@@ -35,8 +41,8 @@
         <!-- Hero Section -->
         <section class="proofs-hero">
             <div class="hero-content">
-                <div class="hero-badge">Understanding Mathematics</div>
-                <h1 class="hero-title">Why It Works</h1>
+                <div class="hero-badge">Proofs &amp; reasoning · Grade 11</div>
+                <h1 class="hero-title">See the reason<br>behind the rule.</h1>
                 <p class="hero-subtitle">Move beyond memorization. Discover the reasoning, logic, and beauty behind every formula and theorem.</p>
                 <div class="hero-stats">
                     <div class="stat-item">
@@ -57,9 +63,9 @@
 
         <!-- Mathematical Intuition Section -->
         <section class="intuition-section">
-            <div class="container">
+            <div class="container op-shell">
                 <div class="section-header">
-                    <h2>Mathematical Intuition</h2>
+                    <h2 data-kicker="Start with intuition · Grade 11">Mathematical Intuition</h2>
                     <p>Understanding the "why" transforms formulas from mysterious symbols into logical tools.</p>
                 </div>
 
@@ -229,9 +235,9 @@
 
         <!-- Behind the Formula Section -->
         <section class="formula-section">
-            <div class="container">
+            <div class="container op-shell">
                 <div class="section-header">
-                    <h2>Behind the Formula</h2>
+                    <h2 data-kicker="Formulas with a backstory">Behind the Formula</h2>
                     <p>Every formula has a story. Here's how mathematicians discovered and developed them.</p>
                 </div>
 
@@ -357,9 +363,9 @@
 
         <!-- Step-by-Step Derivations Section -->
         <section class="derivations-section">
-            <div class="container">
+            <div class="container op-shell">
                 <div class="section-header">
-                    <h2>Step-by-Step Derivations</h2>
+                    <h2 data-kicker="Line by line">Step-by-Step Derivations</h2>
                     <p>Watch formulas emerge naturally through logical reasoning.</p>
                 </div>
 
@@ -674,7 +680,7 @@
                                     <div class="step-content">
                                         <p><strong>Divide by (1 - r):</strong></p>
                                         <p class="step-math-final">S = a(1 - r^n)/(1 - r)</p>
-                                        <p class="step-insight">For infinite series with |r| < 1, as n→∞, r^n→0, giving S = a/(1-r). This describes everything from compound interest to fractal patterns!</p>
+                                        <p class="step-insight">For infinite series with |r| &lt; 1, as n→∞, r^n→0, giving S = a/(1-r). This describes everything from compound interest to fractal patterns!</p>
                                     </div>
                                 </div>
                             </div>
@@ -793,9 +799,9 @@
 
         <!-- Visual Proofs Section -->
         <section class="visual-proofs-section">
-            <div class="container">
+            <div class="container op-shell">
                 <div class="section-header">
-                    <h2>Visual Proofs</h2>
+                    <h2 data-kicker="Pictures that prove">Visual Proofs</h2>
                     <p>Sometimes a picture is worth a thousand equations. These proofs need no words.</p>
                 </div>
 
@@ -853,9 +859,9 @@
 
         <!-- Famous Theorems Section -->
         <section class="theorems-section">
-            <div class="container">
+            <div class="container op-shell">
                 <div class="section-header">
-                    <h2>Famous Theorems Explained</h2>
+                    <h2 data-kicker="Landmark results">Famous Theorems Explained</h2>
                     <p>The great results that shaped mathematics, made accessible.</p>
                 </div>
 
@@ -925,9 +931,9 @@
 
         <!-- Explore the Reasoning Section -->
         <section class="explore-reasoning-section">
-            <div class="container">
+            <div class="container op-shell">
                 <div class="section-header">
-                    <h2>Explore the Reasoning</h2>
+                    <h2 data-kicker="Test yourself">Explore the Reasoning</h2>
                     <p>Interactive challenges to test and deepen your understanding of mathematical logic.</p>
                 </div>
 
@@ -1036,40 +1042,13 @@
         </section>
     </main>
 
-    <footer class="main-footer">
-        <div class="footer-content">
-            <div class="footer-section">
-                <h3>The Mathematics Observatory</h3>
-                <p>A Grade 11 exploration project</p>
-            </div>
-            <div class="footer-section">
-                <h4>Quick Links</h4>
-                <ul>
-                    <li><a href="index.html">Home</a></li>
-                    <li><a href="learn.html">Learn</a></li>
-                    <li><a href="explore.html">Explore</a></li>
-                    <li><a href="history.html">History</a></li>
-                    <li><a href="proofs.html">Why It Works</a></li>
-                </ul>
-            </div>
-            <div class="footer-section">
-                <h4>Resources</h4>
-                <ul>
-                    <li><a href="index.html#about">About</a></li>
-                    <li><a href="docs/references/G11-General-Mathematics.pdf">Curriculum source</a></li>
-                    <li><a href="explore.html">Formula practice</a></li>
-                </ul>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <p>&copy; 2026 The Mathematics Observatory. Created with precision and passion.</p>
-        </div>
-    </footer>
+    <footer class="op-footer"><a href="index.html">The Mathematics Observatory</a><nav class="op-more" aria-label="More mathematics studios"><a href="explore.html">Explore</a><a href="visualize.html">Visualize</a><a href="laboratory.html">Laboratory</a><a href="proofs.html" aria-current="page">Why It Works</a></nav><span>Why It Works · See the reasoning</span><a href="explore.html">Practice in Explore ↗</a></footer>
 
     <script src="assets/js/script.js"></script>
-    <script src="assets/js/curriculum-data.js?v=6"></script>
-    <script src="assets/js/math-calculator.js?v=6"></script>
-    <script src="assets/js/assistant.js?v=42"></script>
+    <script src="assets/js/curriculum-data.js?v=7"></script>
+    <script src="assets/js/math-calculator.js?v=7"></script>
+    <script src="assets/js/assistant-config.js"></script>
+    <script src="assets/js/assistant.js?v=46"></script>
     <script src="assets/js/proofs.js"></script>
 </body>
 </html>

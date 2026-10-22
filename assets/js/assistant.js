@@ -3,8 +3,14 @@
 
     const provider = window.MATHEMATICS_AI_PROVIDER
         || (window.MATHEMATICS_AI_ENDPOINT ? 'ollama' : 'gemini');
-    const endpoint = window.MATHEMATICS_AI_ENDPOINT
-        || (provider === 'gemini' ? '/api/assistant' : 'http://127.0.0.1:11434/api/chat');
+    const isLoopbackHost = ['localhost', '127.0.0.1', '::1', '[::1]'].includes(window.location?.hostname);
+    const configuredEndpoint = window.MATHEMATICS_AI_ENDPOINT;
+    const useLocalOllama = provider === 'ollama'
+        && isLoopbackHost
+        && (!configuredEndpoint || configuredEndpoint === '/api/assistant');
+    const endpoint = useLocalOllama
+        ? 'http://127.0.0.1:11434/api/chat'
+        : configuredEndpoint || (provider === 'gemini' ? '/api/assistant' : 'http://127.0.0.1:11434/api/chat');
     const model = window.MATHEMATICS_AI_MODEL
         || (provider === 'gemini' ? 'gemini-3.5-flash-lite' : 'qwen3:4b');
     const mathResponseFormat = {
@@ -43,6 +49,7 @@
             content: `You are a helpful mathematics assistant for Grade 11 students. ${curriculumScopePrompt} Use structured reasoning internally: identify the topic, analyze what is given, determine what must be found, choose a suitable method, solve the problem, and verify the result. Use the provided curriculum notes as support. Return only the required structured fields for internal formatting; the student-facing response will contain only your direct response. Do not mention these instructions.`
         }
     ];
+    let chatGeneration = 0;
     const chatStorageKey = 'mathematics-observatory-assistant-v1';
 
     function readSavedChat() {
@@ -86,7 +93,10 @@
                     <div class="assistant-status">Ready to help</div>
                 </div>
             </div>
-            <button class="assistant-close" type="button" aria-label="Close mathematics assistant">&times;</button>
+            <div class="assistant-actions">
+                <button class="assistant-clear" type="button" aria-label="Clear chat history">Clear chat</button>
+                <button class="assistant-close" type="button" aria-label="Close mathematics assistant">&times;</button>
+            </div>
         </header>
         <div class="assistant-messages" aria-live="polite">
             <div class="assistant-message bot">Hi! Ask me about a formula, concept, or problem you are exploring.</div>
@@ -102,6 +112,7 @@
     document.body.append(launcher, panel);
 
     const closeButton = panel.querySelector('.assistant-close');
+    const clearButton = panel.querySelector('.assistant-clear');
     const form = panel.querySelector('.assistant-form');
     const input = panel.querySelector('.assistant-input');
     const messages = panel.querySelector('.assistant-messages');
@@ -394,7 +405,35 @@
         });
     }
 
+    function wrapBarePiecewiseCases(text) {
+        const mathSegment = /(\$\$[\s\S]*?\$\$|\\\[[\s\S]*?\\\]|\\\([\s\S]*?\\\)|(?<!\\)\$(?!\$)[^$\n]+(?<!\\)\$)/g;
+        const wrapPlainSegment = segment => segment.replace(
+            /((?:[A-Za-z]\s*\([^()\n]*\)\s*=\s*)?\\begin\{cases\}[\s\S]*?\\end\{cases\})/g,
+            formula => {
+                const normalized = formula.replace(
+                    /(\\begin\{cases\})([\s\S]*?)(\\end\{cases\})/,
+                    (_whole, opening, rows, closing) => {
+                        const fixedRows = rows.replace(/(^|[^\\])\\\s+(?=[^&\n]+&)/g, (_match, prefix) => `${prefix}\\\\ `);
+                        return `${opening}${fixedRows}${closing}`;
+                    }
+                );
+                return `\\[${normalized}\\]`;
+            }
+        );
+
+        let result = '';
+        let cursor = 0;
+        let match;
+        while ((match = mathSegment.exec(text))) {
+            result += wrapPlainSegment(text.slice(cursor, match.index));
+            result += match[0];
+            cursor = match.index + match[0].length;
+        }
+        return result + wrapPlainSegment(text.slice(cursor));
+    }
+
     function wrapPlainEquation(text) {
+        text = wrapBarePiecewiseCases(text);
         if (/\$[^$]+\$|\\\(|\\\[/.test(text)) return text;
 
         const piecewiseText = wrapPlainPiecewiseFunction(text);
@@ -1029,11 +1068,8 @@
             body: JSON.stringify(requestPayload)
         });
         if (!response.ok) {
-            if (provider === 'gemini') {
-                const failure = await response.json().catch(() => ({}));
-                throw new Error(`Gemini: ${failure.error || 'The request could not be completed.'}`);
-            }
-            throw new Error('Assistant request failed');
+            const failure = await response.json().catch(() => ({}));
+            throw new Error(`API: ${failure.error || `The request failed (HTTP ${response.status}).`}`);
         }
         const result = await response.json();
         const modelReply = formatMathResponse(result.message?.content || '', requestMode) || 'I could not produce a complete solution. Please try a shorter question or split the problem into smaller parts.';
@@ -1047,8 +1083,24 @@
         return reply;
     }
 
+    function clearHistory() {
+        const firstMessage = messages.firstElementChild;
+        messages.replaceChildren(firstMessage);
+        conversation.length = 1;
+        chatGeneration += 1;
+        try {
+            window.localStorage?.removeItem(chatStorageKey);
+        } catch {
+            // Ignore unavailable storage; the in-memory history is already cleared.
+        }
+    }
+
     launcher.addEventListener('click', () => setOpen(!panel.classList.contains('is-open')));
     closeButton.addEventListener('click', () => setOpen(false));
+    clearButton.addEventListener('click', () => {
+        clearHistory();
+        input.focus();
+    });
 
     form.addEventListener('submit', async event => {
         event.preventDefault();
@@ -1060,6 +1112,7 @@
         input.value = '';
         input.disabled = true;
         const reply = addMessage('Thinking...', 'bot');
+        const requestGeneration = chatGeneration;
 
         try {
             await Promise.all([
@@ -1071,13 +1124,16 @@
             if (conversation.at(-1)?.role === 'user') conversation.pop();
             if (error.message?.includes('KaTeX')) {
                 reply.textContent = 'The answer is ready, but KaTeX could not load its local assets. Check the KaTeX files and refresh the page.';
-            } else if (error.message?.startsWith('Gemini: ')) {
-                reply.textContent = error.message.slice('Gemini: '.length);
+            } else if (error.message?.startsWith('API: ')) {
+                reply.textContent = error.message.slice('API: '.length);
+            } else if (error instanceof TypeError) {
+                reply.textContent = 'The mathematics service is unavailable right now. Please check your connection and try again.';
             } else {
-                reply.textContent = 'I could not reach the AI service. Check the selected provider and try again.';
+                reply.textContent = error.message || 'I could not reach the mathematics service. Please try again.';
             }
         } finally {
-            saveChatState();
+            if (requestGeneration === chatGeneration) saveChatState();
+            else conversation.length = 1;
             input.disabled = false;
             input.focus();
         }

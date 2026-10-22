@@ -1,274 +1,64 @@
-// Learn Page JavaScript
+const iconPaths = {
+  functions: '<path d="M4 19V5m0 14h16" stroke="currentColor" stroke-linecap="round" stroke-width="1.8"/><path d="M6.5 15.5c2.4-.2 3.1-2.4 4.3-5.1C12 7.7 14 6.4 18.5 6" stroke="currentColor" stroke-linecap="round" stroke-width="1.8"/><circle cx="11" cy="10" r="1.6" fill="currentColor"/>',
+  algebra: '<path d="M5 7h14M5 17h14M8 4v6m8-6v6M8 14v6m8-6v6" stroke="currentColor" stroke-linecap="round" stroke-width="1.8"/>',
+  trigonometry: '<path d="M4 19 12 5l8 14H4Z" stroke="currentColor" stroke-linejoin="round" stroke-width="1.8"/><path d="M9.5 19a5.4 5.4 0 0 1 2.7-4.7" stroke="currentColor" stroke-linecap="round" stroke-width="1.8"/>',
+  geometry: '<circle cx="10" cy="12" r="6.5" stroke="currentColor" stroke-width="1.8"/><path d="m13.5 6.5 6 3.5-3.2 6.4" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/>',
+  statistics: '<path d="M5 19V9m7 10V5m7 14v-7" stroke="currentColor" stroke-linecap="round" stroke-width="2.4"/><path d="M3 19h18" stroke="currentColor" stroke-linecap="round" stroke-width="1.8"/>',
+  probability: '<rect x="5" y="5" width="14" height="14" rx="3" stroke="currentColor" stroke-width="1.8"/><circle cx="9" cy="9" r="1.2" fill="currentColor"/><circle cx="15" cy="9" r="1.2" fill="currentColor"/><circle cx="9" cy="15" r="1.2" fill="currentColor"/><circle cx="15" cy="15" r="1.2" fill="currentColor"/>',
+};
+const topics = [
+  { id:'functions', title:'Functions', description:'Understand how quantities relate and change together', count:12, duration:'~8 hours', color:'#7c5cff', soft:'#eeeaff', formula:'f(x)', lessons:['Function notation and evaluation','Domain and range','Linear, quadratic, and exponential functions','Function transformations','Inverse functions','Composite functions'] },
+  { id:'algebra', title:'Algebra', description:'Master symbolic manipulation and equation solving', count:14, duration:'~10 hours', color:'#ef5da8', soft:'#ffeaf5', formula:'x²', lessons:['Polynomial operations','Factoring techniques','Rational expressions','Solving equations and inequalities','Systems of equations','Complex numbers'] },
+  { id:'trigonometry', title:'Trigonometry', description:'Explore relationships between angles and sides', count:11, duration:'~9 hours', color:'#ff9d42', soft:'#fff2e5', formula:'θ', lessons:['Unit circle and radian measure','Trigonometric ratios','Trigonometric identities','Graphs of trig functions','Solving trigonometric equations','Law of sines and cosines'] },
+  { id:'geometry', title:'Geometry', description:'Study shapes, spaces, and their properties', count:10, duration:'~7 hours', color:'#2db7a3', soft:'#e5faf7', formula:'○', lessons:['Coordinate geometry','Lines and slopes','Circles and conic sections','Geometric proofs','Transformations','3D geometry basics'] },
+  { id:'statistics', title:'Statistics', description:'Learn to collect, analyze, and interpret data', count:9, duration:'~6 hours', color:'#3f8cff', soft:'#e8f2ff', formula:'μ', lessons:['Measures of central tendency','Measures of spread','Data visualization','Normal distribution','Correlation and regression','Statistical inference basics'] },
+  { id:'probability', title:'Probability', description:'Quantify uncertainty and predict outcomes', count:8, duration:'~6 hours', color:'#7857c8', soft:'#f0ebff', formula:'P', lessons:['Probability fundamentals','Compound events','Conditional probability','Permutations and combinations','Binomial probability','Expected value'] },
+];
+const paths = [
+  ['Functions','Start here to build a strong foundation in mathematical relationships'],
+  ['Algebra','Develop symbolic reasoning and problem-solving skills'],
+  ['Trigonometry','Apply algebraic skills to circular and periodic phenomena'],
+  ['Geometry','Visualize and prove relationships in space'],
+  ['Statistics & Probability','Apply mathematical thinking to real-world data and uncertainty'],
+];
+const resources = [
+  {title:'Formula Explorer',text:'Browse formulas, generate examples, and check your answers.',label:'Explore formulas',href:'explore.html',icon:'ƒx'},
+  {title:'Mathematical Reasoning',text:'Understand why key mathematical ideas and formulas work.',label:'Read explanations',href:'proofs.html',icon:'∵'},
+  {title:'Worked Examples',text:'Practice with generated questions and guided solutions.',label:'Start practicing',href:'explore.html',icon:'✓'},
+  {title:'Curriculum Topics',text:'Review the Grade 11 topics and suggested learning path.',label:'Review topics',href:'#curriculum',icon:'∑'},
+];
+let selectedTopic = '';
+const topicIcon = (id) => `<svg aria-hidden="true" fill="none" viewBox="0 0 24 24" width="34" height="34">${iconPaths[id]}</svg>`;
 
-document.addEventListener('DOMContentLoaded', function() {
+document.querySelector('#topic-shortcuts').innerHTML = topics.map((topic) => `<a href="#${topic.id}"><i style="color:${topic.color}">${topicIcon(topic.id)}</i>${topic.title}</a>`).join('');
+document.querySelector('#topics-grid').innerHTML = topics.map((topic, index) => `<article class="topic-card reveal" id="${topic.id}" style="--topic-color:${topic.color};--topic-soft:${topic.soft}"><div class="card-cover"><span class="card-number">0${index + 1}</span><div class="topic-icon">${topicIcon(topic.id)}</div><div class="cover-formula">${topic.formula}</div></div><div class="card-body"><div class="card-tags"><span>${topic.count} lessons</span><span>${topic.duration}</span></div><h3>${topic.title}</h3><p>${topic.description}</p><ul>${topic.lessons.map((lesson) => `<li>${lesson}</li>`).join('')}</ul><button class="start-button" type="button" data-topic="${topic.id}">Start learning <span aria-hidden="true">›</span></button></div></article>`).join('');
+document.querySelector('#path-steps').innerHTML = paths.map(([title, text], index) => `<article class="path-step reveal"><div class="path-number">${String(index + 1).padStart(2, '0')}</div><div><span>Step ${index + 1}</span><h3>${title}</h3><p>${text}</p></div></article>`).join('');
+document.querySelector('#resources-grid').innerHTML = resources.map((resource, index) => `<a class="resource-card reveal" href="${resource.href}"><span class="resource-icon resource-icon-${index + 1}">${resource.icon}</span><span class="resource-index">0${index + 1}</span><h3>${resource.title}</h3><p>${resource.text}</p><strong>${resource.label} <span>→</span></strong></a>`).join('');
 
-    // Initialize animations
-    initHeroAnimations();
-    initScrollAnimations();
-    initTopicCardAnimations();
-    initPathTimeline();
+function chooseTopic(id) {
+  selectedTopic = id;
+  document.querySelectorAll('.topic-card').forEach((card) => {
+    const selected = card.id === id;
+    card.classList.toggle('is-selected', selected);
+    const button = card.querySelector('.start-button');
+    button.innerHTML = selected ? 'Course selected <span aria-hidden="true">✓</span>' : 'Start learning <span aria-hidden="true">›</span>';
+  });
+}
 
+document.querySelectorAll('.start-button').forEach((button) => button.addEventListener('click', () => chooseTopic(button.dataset.topic)));
+function findCourse() {
+  const query = document.querySelector('#topic-search').value.trim().toLowerCase();
+  const match = topics.find((topic) => topic.title.toLowerCase().includes(query));
+  document.querySelectorAll('.topic-card').forEach((card) => card.classList.toggle('is-hidden', Boolean(query) && !card.id.includes(query)));
+  if (match) {
+    chooseTopic(match.id);
+    document.querySelector(`#${match.id}`).scrollIntoView({behavior:'smooth',block:'center'});
+  } else if (query) {
+    document.querySelector('#curriculum').scrollIntoView({behavior:'smooth'});
+  }
+}
+document.querySelector('#search-course').addEventListener('click', findCourse);
+document.querySelector('#topic-search').addEventListener('keydown', (event) => { if (event.key === 'Enter') findCourse(); });
+document.querySelector('#topic-search').addEventListener('input', () => {
+  if (!document.querySelector('#topic-search').value.trim()) document.querySelectorAll('.topic-card').forEach((card) => card.classList.remove('is-hidden'));
 });
-
-// Hero Section Animations
-function initHeroAnimations() {
-    const heroDecoration = document.querySelector('.hero-decoration');
-
-    if (!heroDecoration) return;
-
-    // Mathematical formulas to display
-    const formulas = [
-        'f(x) = ax² + bx + c',
-        'sin²θ + cos²θ = 1',
-        'y = mx + b',
-        'a² + b² = c²',
-        '∫ f(x)dx',
-        'lim(x→∞)',
-        'Σ (n=1 to ∞)',
-        'dy/dx',
-        '√(a² + b²)',
-        'log₂(x)',
-        'tan(θ) = sin(θ)/cos(θ)',
-        'P(A ∪ B) = P(A) + P(B)',
-        'μ = Σx/n',
-        '(a + b)² = a² + 2ab + b²',
-        'e^(iπ) + 1 = 0'
-    ];
-
-    // Create floating formulas
-    for (let i = 0; i < 8; i++) {
-        const formula = document.createElement('div');
-        formula.className = 'floating-formula';
-        if (i % 3 === 1) formula.classList.add('delay-1');
-        if (i % 3 === 2) formula.classList.add('delay-2');
-
-        formula.textContent = formulas[Math.floor(Math.random() * formulas.length)];
-        formula.style.top = Math.random() * 100 + '%';
-        formula.style.left = Math.random() * 100 + '%';
-        formula.style.animationDuration = (15 + Math.random() * 10) + 's';
-
-        heroDecoration.appendChild(formula);
-    }
-}
-
-// Scroll Animations
-function initScrollAnimations() {
-    const observerOptions = {
-        threshold: 0.1,
-        rootMargin: '0px 0px -100px 0px'
-    };
-
-    const observer = new IntersectionObserver(function(entries) {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.style.opacity = '1';
-                entry.target.style.transform = 'translateY(0)';
-            }
-        });
-    }, observerOptions);
-
-    // Observe all topic cards
-    document.querySelectorAll('.topic-card').forEach((card, index) => {
-        card.style.opacity = '0';
-        card.style.transform = 'translateY(50px)';
-        card.style.transition = `all 0.6s ease ${index * 0.1}s`;
-        observer.observe(card);
-    });
-
-    // Observe path items
-    document.querySelectorAll('.path-item').forEach((item, index) => {
-        item.style.opacity = '0';
-        item.style.transform = 'translateX(-30px)';
-        item.style.transition = `all 0.6s ease ${index * 0.15}s`;
-        observer.observe(item);
-    });
-
-    // Observe resource cards
-    document.querySelectorAll('.resource-card').forEach((card, index) => {
-        card.style.opacity = '0';
-        card.style.transform = 'scale(0.9)';
-        card.style.transition = `all 0.5s ease ${index * 0.1}s`;
-        observer.observe(card);
-    });
-}
-
-// Topic Card Interactive Animations
-function initTopicCardAnimations() {
-    const topicCards = document.querySelectorAll('.topic-card');
-
-    topicCards.forEach(card => {
-        const icon = card.querySelector('.topic-icon');
-
-        card.addEventListener('mouseenter', function() {
-            if (icon) {
-                icon.style.transform = 'rotate(10deg) scale(1.1)';
-                icon.style.transition = 'transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
-            }
-        });
-
-        card.addEventListener('mouseleave', function() {
-            if (icon) {
-                icon.style.transform = 'rotate(0deg) scale(1)';
-            }
-        });
-
-        // Add ripple effect to start button
-        const startBtn = card.querySelector('.topic-start-btn');
-        if (startBtn) {
-            startBtn.addEventListener('click', function(e) {
-                const ripple = document.createElement('span');
-                const rect = this.getBoundingClientRect();
-                const size = Math.max(rect.width, rect.height);
-                const x = e.clientX - rect.left - size / 2;
-                const y = e.clientY - rect.top - size / 2;
-
-                ripple.style.cssText = `
-                    position: absolute;
-                    width: ${size}px;
-                    height: ${size}px;
-                    border-radius: 50%;
-                    background: rgba(255, 255, 255, 0.3);
-                    left: ${x}px;
-                    top: ${y}px;
-                    transform: scale(0);
-                    animation: ripple 0.6s ease-out;
-                    pointer-events: none;
-                `;
-
-                this.style.position = 'relative';
-                this.style.overflow = 'hidden';
-                this.appendChild(ripple);
-
-                setTimeout(() => ripple.remove(), 600);
-            });
-        }
-    });
-
-    // Add ripple animation
-    if (!document.querySelector('#ripple-animation')) {
-        const style = document.createElement('style');
-        style.id = 'ripple-animation';
-        style.textContent = `
-            @keyframes ripple {
-                to {
-                    transform: scale(2);
-                    opacity: 0;
-                }
-            }
-        `;
-        document.head.appendChild(style);
-    }
-}
-
-// Learning Path Timeline Animations
-function initPathTimeline() {
-    const pathItems = document.querySelectorAll('.path-item');
-
-    const observerOptions = {
-        threshold: 0.5
-    };
-
-    const observer = new IntersectionObserver(function(entries) {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                const number = entry.target.querySelector('.path-number');
-                const connector = entry.target.querySelector('.path-connector');
-
-                if (number) {
-                    number.style.animation = 'pulse 0.6s ease-out';
-                    setTimeout(() => {
-                        number.style.animation = '';
-                    }, 600);
-                }
-
-                if (connector) {
-                    connector.style.animation = 'drawLine 0.8s ease-out forwards';
-                }
-            }
-        });
-    }, observerOptions);
-
-    pathItems.forEach(item => {
-        observer.observe(item);
-    });
-
-    // Add animations
-    if (!document.querySelector('#path-animations')) {
-        const style = document.createElement('style');
-        style.id = 'path-animations';
-        style.textContent = `
-            @keyframes pulse {
-                0% { transform: scale(1); }
-                50% { transform: scale(1.15); box-shadow: 0 0 20px rgba(74, 158, 255, 0.5); }
-                100% { transform: scale(1); }
-            }
-
-            @keyframes drawLine {
-                from {
-                    height: 0;
-                    opacity: 0;
-                }
-                to {
-                    height: 100%;
-                    opacity: 1;
-                }
-            }
-        `;
-        document.head.appendChild(style);
-    }
-}
-
-// Topic Progress Tracking (placeholder for future implementation)
-function trackProgress(topicId) {
-    // This would integrate with a backend or localStorage
-    // to track user progress through topics
-    console.log('Starting topic:', topicId);
-}
-
-// Smooth Scroll for Internal Links
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function(e) {
-        e.preventDefault();
-        const target = document.querySelector(this.getAttribute('href'));
-        if (target) {
-            target.scrollIntoView({
-                behavior: 'smooth',
-                block: 'start'
-            });
-        }
-    });
-});
-
-// Add parallax effect to hero on scroll
-window.addEventListener('scroll', function() {
-    const heroContent = document.querySelector('.hero-content');
-    const heroDecoration = document.querySelector('.hero-decoration');
-    const scrolled = window.pageYOffset;
-
-    if (heroContent) {
-        heroContent.style.transform = `translateY(${scrolled * 0.3}px)`;
-        heroContent.style.opacity = 1 - (scrolled / 500);
-    }
-
-    if (heroDecoration) {
-        heroDecoration.style.transform = `translateY(${scrolled * 0.2}px)`;
-    }
-});
-
-// Progress indicator animation
-function updateProgressIndicator() {
-    const sections = document.querySelectorAll('.curriculum-overview, .learning-path, .study-resources');
-    const windowHeight = window.innerHeight;
-    const scrollTop = window.pageYOffset;
-
-    sections.forEach(section => {
-        const sectionTop = section.offsetTop;
-        const sectionHeight = section.offsetHeight;
-
-        if (scrollTop > sectionTop - windowHeight + 100 && scrollTop < sectionTop + sectionHeight) {
-            section.style.opacity = '1';
-        }
-    });
-}
-
-window.addEventListener('scroll', updateProgressIndicator);

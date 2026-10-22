@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fibonacci Sequence Visualizer</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+    :root {
+        --bg: #1f2124; --card: #25272b; --panel: #2a2d32; --line: #34373d;
+        --text: #e8eaed; --muted: #9aa0a8; --accent: #3b6ff0; --stage: #0d1526;
+    }
+    * { box-sizing: border-box; }
+    body {
+        margin: 0; padding: 24px 16px; background: var(--bg); color: var(--text);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    .card {
+        max-width: 760px; margin: 0 auto; background: var(--card); border-radius: 26px;
+        overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,.45); animation: rise .7s ease-out both;
+    }
+    @keyframes rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+
+    /* stage */
+    .stage { position: relative; height: 400px; background: var(--stage); }
+    .stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; transition: opacity .35s ease; }
+    #spiralCanvas { touch-action: none; cursor: grab; }
+    #spiralCanvas.dragging { cursor: grabbing; }
+    #spiralCanvas.hovering { cursor: pointer; }
+    .chart-layer { position: absolute; inset: 0; padding: 18px 18px 10px; transition: opacity .35s ease; }
+    .chart-layer canvas { position: static; width: 100% !important; height: 100% !important; }
+    .stage.mode-chart #spiralCanvas, .stage.mode-chart .overlay { opacity: 0; pointer-events: none; }
+    .stage.mode-spiral .chart-layer { opacity: 0; pointer-events: none; }
+
+    .overlay { position: absolute; top: 12px; right: 12px; display: flex; gap: 6px; transition: opacity .3s; }
+    .icon-btn {
+        width: 32px; height: 32px; border-radius: 9px; border: 1px solid rgba(255,255,255,.12);
+        background: rgba(255,255,255,.06); color: var(--text); font-size: 16px; cursor: pointer;
+        transition: background .2s, transform .15s;
+    }
+    .icon-btn:hover { background: rgba(255,255,255,.14); transform: translateY(-1px); }
+    .hint { position: absolute; left: 14px; bottom: 10px; font-size: 11.5px; color: rgba(255,255,255,.35); pointer-events: none; transition: opacity .3s; }
+    .stage.mode-chart .hint { opacity: 0; }
+    .tooltip {
+        position: absolute; pointer-events: none; padding: 7px 11px; border-radius: 8px; z-index: 5;
+        background: rgba(15,20,35,.95); border: 1px solid rgba(255,255,255,.12); font-size: 12.5px; line-height: 1.45;
+        opacity: 0; transform: translateY(4px); transition: opacity .15s, transform .15s; white-space: nowrap;
+    }
+    .tooltip.show { opacity: 1; transform: none; }
+
+    /* stats */
+    .stats { display: grid; grid-template-columns: repeat(3, 1fr); padding: 18px 20px; border-top: 1px solid var(--line); text-align: center; }
+    .stat .k { font-size: 13px; color: var(--muted); margin-bottom: 4px; }
+    .stat .v { font-size: 17px; font-weight: 700; word-break: break-all; }
+    .stat .sub { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+    .seq { padding: 0 24px 16px; text-align: center; font-size: 12.5px; color: var(--muted); word-break: break-word; }
+
+    /* controls */
+    .controls { display: flex; flex-wrap: wrap; gap: 20px 26px; align-items: center; padding: 18px 24px 24px; border-top: 1px solid var(--line); }
+    .slider-block { flex: 1 1 300px; }
+    .slider-block .head { display: flex; justify-content: space-between; align-items: center; font-size: 15px; color: #c3c8cf; margin-bottom: 12px; }
+    .slider-row { display: flex; align-items: center; gap: 14px; }
+    .term-count { min-width: 26px; text-align: right; font-weight: 700; font-size: 16px; color: var(--text); }
+    input[type=range] {
+        -webkit-appearance: none; appearance: none; flex: 1; height: 6px; border-radius: 6px; outline: none; cursor: pointer;
+        background: linear-gradient(to right, var(--accent) var(--p, 0%), #3a3d44 var(--p, 0%));
+    }
+    input[type=range]::-webkit-slider-thumb {
+        -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: var(--accent);
+        border: 3px solid var(--card); box-shadow: 0 0 0 2px var(--accent); transition: transform .15s;
+    }
+    input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.15); }
+    input[type=range]::-moz-range-thumb { width: 14px; height: 14px; border-radius: 50%; background: var(--accent); border: 3px solid var(--card); box-shadow: 0 0 0 2px var(--accent); }
+
+    .mode-block .label { font-size: 15px; color: #c3c8cf; margin-bottom: 10px; }
+    .toggle { position: relative; display: flex; background: #1b1d21; border-radius: 999px; padding: 5px; width: 330px; max-width: 100%; }
+    .toggle .pill { position: absolute; top: 5px; bottom: 5px; left: 5px; width: calc(50% - 5px); background: var(--accent); border-radius: 999px; transition: transform .3s cubic-bezier(.4,0,.2,1); }
+    .toggle.chart .pill { transform: translateX(100%); }
+    .toggle button { position: relative; flex: 1; border: none; background: none; color: var(--muted); font-size: 15px; font-weight: 600; padding: 11px 0; cursor: pointer; transition: color .25s; }
+    .toggle button.active { color: #fff; }
+    @media (max-width: 560px) { .stage { height: 330px; } .stat .v { font-size: 15px; } }
+</style>
+</head>
+<body>
+
+<div class="card">
+    <div class="stage mode-spiral" id="stage">
+        <canvas id="spiralCanvas"></canvas>
+        <div class="chart-layer"><canvas id="growthChart"></canvas></div>
+        <div class="overlay">
+            <button class="icon-btn" id="zoomOut" title="Zoom out">−</button>
+            <button class="icon-btn" id="zoomIn" title="Zoom in">+</button>
+            <button class="icon-btn" id="fitBtn" title="Fit to view">⤢</button>
+        </div>
+        <div class="hint">Drag to pan · scroll to zoom · click a square · double-click to fit</div>
+        <div class="tooltip" id="tooltip"></div>
+    </div>
+
+    <div class="stats">
+        <div class="stat"><div class="k">Current Term</div><div class="v" id="statTerm">F2 = 1</div></div>
+        <div class="stat"><div class="k">Sequence Sum</div><div class="v" id="statSum">2</div></div>
+        <div class="stat"><div class="k">Ratio Fₙ/Fₙ₋₁</div><div class="v" id="statRatio">1.0000</div><div class="sub">φ ≈ 1.6180</div></div>
+    </div>
+    <div class="seq" id="seqText"></div>
+
+    <div class="controls">
+        <div class="slider-block">
+            <div class="head"><span>Sequence terms</span></div>
+            <div class="slider-row">
+                <input type="range" id="terms" min="2" max="40" step="1" value="2">
+                <span class="term-count" id="termCount">2</span>
+            </div>
+        </div>
+        <div class="mode-block">
+            <div class="label">Visual display mode</div>
+            <div class="toggle" id="toggle">
+                <div class="pill"></div>
+                <button class="active" data-mode="spiral">Golden spiral</button>
+                <button data-mode="chart">Growth curve</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const MAX = 40;
+const fib = [0, 1];
+for (let i = 2; i <= MAX + 1; i++) fib.push(fib[i - 1] + fib[i - 2]);
+
+const stage = document.getElementById('stage');
+const canvas = document.getElementById('spiralCanvas');
+const sctx = canvas.getContext('2d');
+const tooltip = document.getElementById('tooltip');
+const slider = document.getElementById('terms');
+const PALETTE = ['#3b82f6', '#22c55e', '#a855f7', '#f59e0b', '#ec4899'];
+
+/* ---------- build every square once (term t uses the first t squares) ---------- */
+const squares = [];
+const prefix = [];                                   // bounding box after k squares
+(function build() {
+    let minX = 0, minY = 0, maxX = 0, maxY = 0;
+    const PI = Math.PI;
+    for (let i = 0; i < MAX; i++) {
+        const s = fib[i + 1];
+        let x, y, cx, cy, a0, a1;
+        if (i === 0) { x = 0; y = 0; cx = x + s; cy = y; a0 = PI; a1 = PI / 2; }
+        else {
+            const d = (i - 1) % 4;
+            if (d === 0)      { x = maxX;     y = minY;     cx = x;     cy = y;     a0 = PI / 2;  a1 = 0; }
+            else if (d === 1) { x = minX;     y = minY - s; cx = x;     cy = y + s; a0 = 0;       a1 = -PI / 2; }
+            else if (d === 2) { x = minX - s; y = minY;     cx = x + s; cy = y + s; a0 = -PI / 2; a1 = -PI; }
+            else              { x = minX;     y = maxY;     cx = x + s; cy = y;     a0 = PI;      a1 = PI / 2; }
+        }
+        squares.push({ i, x, y, s, cx, cy, a0, a1, index: i + 1 });
+        minX = Math.min(minX, x); minY = Math.min(minY, y);
+        maxX = Math.max(maxX, x + s); maxY = Math.max(maxY, y + s);
+        prefix.push({ minX, minY, maxX, maxY });
+    }
+})();
+
+/* ---------- state ---------- */
+let W = 0, H = 0, dpr = 1;
+let t = 2;                                           // terms shown (target)
+let progress = 0, progT = 2;                         // squares drawn (animated)
+const cam  = { cx: 0, cy: 0, ls: 0 };                // centre (unit coords) + log(scale px/unit)
+const camT = { cx: 0, cy: 0, ls: 0 };
+let hoverIdx = -1, selectedIdx = -1;
+let raf = null, lastTime = 0;
+
+function fitFor(k) {
+    const b = prefix[k - 1], pad = 34;
+    const bw = b.maxX - b.minX, bh = b.maxY - b.minY;
+    const s = Math.min((W - pad * 2) / bw, (H - pad * 2) / bh);
+    return { cx: (b.minX + b.maxX) / 2, cy: (b.minY + b.maxY) / 2, ls: Math.log(s) };
+}
+function setCamTarget(c) { camT.cx = c.cx; camT.cy = c.cy; camT.ls = c.ls; kick(); }
+function snapCam(c) { Object.assign(cam, c); Object.assign(camT, c); }
+
+/* ---------- smooth animation loop (interruptible) ---------- */
+function kick() { if (!raf) { lastTime = performance.now(); raf = requestAnimationFrame(tick); } }
+function tick(now) {
+    const dt = Math.min(0.05, (now - lastTime) / 1000); lastTime = now;
+    const a = 1 - Math.exp(-dt * 6.5);
+    progress += (progT - progress) * a;
+    cam.cx += (camT.cx - cam.cx) * a;
+    cam.cy += (camT.cy - cam.cy) * a;
+    cam.ls += (camT.ls - cam.ls) * a;
+    const settled = Math.abs(progT - progress) < 0.002 &&
+        Math.abs(camT.ls - cam.ls) < 0.0005 &&
+        Math.abs(camT.cx - cam.cx) < 1e-4 * Math.exp(-camT.ls) &&
+        Math.abs(camT.cy - cam.cy) < 1e-4 * Math.exp(-camT.ls);
+    if (settled) { progress = progT; Object.assign(cam, camT); }
+    draw();
+    raf = settled ? null : requestAnimationFrame(tick);
+}
+
+/* ---------- drawing ---------- */
+function resize() {
+    const r = stage.getBoundingClientRect();
+    W = r.width; H = r.height; dpr = window.devicePixelRatio || 1;
+    canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
+    setCamTarget(fitFor(t)); snapCam(fitFor(t)); draw();
+}
+new ResizeObserver(resize).observe(stage);
+
+function draw() {
+    if (!W) return;
+    sctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    sctx.clearRect(0, 0, W, H);
+    const s = Math.exp(cam.ls);
+    const X = ux => W / 2 + (ux - cam.cx) * s;
+    const Y = uy => H / 2 + (uy - cam.cy) * s;
+
+    // moving grid
+    const g = 26, ox = ((W / 2 - cam.cx * s) % g + g) % g, oy = ((H / 2 - cam.cy * s) % g + g) % g;
+    sctx.strokeStyle = 'rgba(120,150,220,.07)'; sctx.lineWidth = 1; sctx.beginPath();
+    for (let x = ox; x < W; x += g) { sctx.moveTo(x, 0); sctx.lineTo(x, H); }
+    for (let y = oy; y < H; y += g) { sctx.moveTo(0, y); sctx.lineTo(W, y); }
+    sctx.stroke();
+
+    const n = Math.ceil(progress);
+    for (let i = 0; i < n; i++) {
+        const q = squares[i], a = Math.max(0, Math.min(1, progress - i));
+        const px = X(q.x), py = Y(q.y), ps = q.s * s;
+        if (ps < 0.6 || px > W || py > H || px + ps < 0 || py + ps < 0) continue;
+        const col = PALETTE[i % PALETTE.length];
+        const hov = i === hoverIdx, sel = i === selectedIdx;
+        sctx.globalAlpha = a;
+        sctx.fillStyle = col + (hov ? '55' : sel ? '44' : '29');
+        sctx.fillRect(px, py, ps, ps);
+        sctx.strokeStyle = sel ? '#fff' : col;
+        sctx.lineWidth = sel ? 2.5 : hov ? 2 : 1.2;
+        sctx.strokeRect(px, py, ps, ps);
+        if (ps > 24) {
+            sctx.fillStyle = '#e6edf7';
+            sctx.font = `600 ${Math.min(28, ps / 3)}px sans-serif`;
+            sctx.textAlign = 'center'; sctx.textBaseline = 'middle';
+            sctx.fillText(fib[i + 1].toLocaleString(), px + ps / 2, py + ps / 2);
+            if (ps > 80) {
+                sctx.font = `${Math.min(13, ps / 9)}px sans-serif`;
+                sctx.fillStyle = 'rgba(230,237,247,.55)';
+                sctx.fillText('F' + q.index, px + ps / 2, py + ps / 2 + Math.min(28, ps / 3) * 0.95);
+            }
+        }
+        sctx.globalAlpha = 1;
+    }
+
+    // one continuous spiral line
+    sctx.strokeStyle = '#fff'; sctx.lineWidth = 3; sctx.lineCap = 'round'; sctx.lineJoin = 'round';
+    sctx.shadowColor = 'rgba(255,255,255,.35)'; sctx.shadowBlur = 6;
+    sctx.beginPath();
+    let started = false;
+    for (let i = 0; i < n; i++) {
+        const q = squares[i], a = Math.max(0, Math.min(1, progress - i)), r = q.s * s;
+        if (a <= 0 || r > 1e6) { started = false; continue; }
+        const end = q.a0 + (q.a1 - q.a0) * a;
+        if (!started) { sctx.moveTo(X(q.cx) + r * Math.cos(q.a0), Y(q.cy) + r * Math.sin(q.a0)); started = true; }
+        sctx.arc(X(q.cx), Y(q.cy), r, q.a0, end, true);
+    }
+    sctx.stroke();
+    sctx.shadowBlur = 0;
+}
+
+/* ---------- stats, chart, slider ---------- */
+const chart = new Chart(document.getElementById('growthChart').getContext('2d'), {
+    type: 'line',
+    data: { labels: [], datasets: [{ label: 'Fₙ', data: [], borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,.15)',
+        borderWidth: 3, pointRadius: 4, pointHoverRadius: 7, pointBackgroundColor: '#3b82f6', fill: true, tension: 0.35 }] },
+    options: {
+        responsive: true, maintainAspectRatio: false,
+        animation: { duration: 600, easing: 'easeInOutCubic' },
+        scales: {
+            x: { ticks: { color: '#9aa0a8' }, grid: { color: 'rgba(255,255,255,.06)' } },
+            y: { ticks: { color: '#9aa0a8', callback: v => v >= 1e6 ? v.toExponential(2) : v.toLocaleString() }, grid: { color: 'rgba(255,255,255,.06)' } }
+        },
+        plugins: { legend: { display: false },
+            tooltip: { callbacks: { label: c => 'Value: ' + c.raw.toLocaleString() } } }
+    }
+});
+
+function updateStats() {
+    const v = fib[t], prev = fib[t - 1];
+    document.getElementById('statTerm').textContent = `F${t} = ${v.toLocaleString()}`;
+    document.getElementById('statSum').textContent = (fib[t + 2] - 1).toLocaleString();
+    document.getElementById('statRatio').textContent = (v / prev).toFixed(4);
+    document.getElementById('termCount').textContent = t;
+    const list = fib.slice(1, t + 1);
+    document.getElementById('seqText').textContent = list.length > 14
+        ? list.slice(0, 6).join(', ') + ' … ' + list.slice(-4).join(', ')
+        : list.join(', ');
+    slider.style.setProperty('--p', ((t - 2) / (MAX - 2)) * 100 + '%');
+    chart.data.labels = list.map((_, i) => 'F' + (i + 1));
+    chart.data.datasets[0].data = list;
+    chart.update();
+}
+
+function setTerms(n, fromUser = true) {
+    t = Math.max(2, Math.min(MAX, n));
+    slider.value = t;
+    progT = t;
+    selectedIdx = -1;
+    setCamTarget(fitFor(t));       // zooms OUT as terms grow, IN as they shrink
+    updateStats();
+    kick();
+}
+slider.addEventListener('input', () => { setTerms(parseInt(slider.value, 10)); });
+
+/* mode toggle */
+const toggle = document.getElementById('toggle');
+toggle.querySelectorAll('button').forEach(b => b.onclick = () => {
+    const m = b.dataset.mode;
+    toggle.classList.toggle('chart', m === 'chart');
+    toggle.querySelectorAll('button').forEach(x => x.classList.toggle('active', x === b));
+    stage.className = 'stage mode-' + m;
+    if (m === 'chart') { chart.resize(); chart.update(); }
+});
+
+/* ---------- interaction ---------- */
+function pos(e) { const r = canvas.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; }
+function toUnit(mx, my) { const s = Math.exp(cam.ls); return { x: cam.cx + (mx - W / 2) / s, y: cam.cy + (my - H / 2) / s }; }
+function hit(mx, my) {
+    const u = toUnit(mx, my);
+    for (let i = Math.ceil(progress) - 1; i >= 0; i--) {
+        const q = squares[i];
+        if (progress - i > 0 && u.x >= q.x && u.x <= q.x + q.s && u.y >= q.y && u.y <= q.y + q.s) return i;
+    }
+    return -1;
+}
+function zoomAt(mx, my, f) {
+    const u = toUnit(mx, my);
+    cam.ls = Math.max(Math.log(1e-8), Math.min(Math.log(1e4), cam.ls + Math.log(f)));
+    const s = Math.exp(cam.ls);
+    cam.cx = u.x - (mx - W / 2) / s; cam.cy = u.y - (my - H / 2) / s;
+    Object.assign(camT, cam); draw();
+}
+function describe(q) {
+    const r = fib[q.index - 1] > 0 ? (fib[q.index] / fib[q.index - 1]).toFixed(5) : '–';
+    return `<b>F${q.index} = ${fib[q.index].toLocaleString()}</b><br>F${q.index - 1} = ${fib[q.index - 1].toLocaleString()} · ratio ${r}`;
+}
+
+const pts = new Map();
+let drag = null, moved = false, pinch = 0;
+canvas.addEventListener('pointerdown', e => {
+    canvas.setPointerCapture(e.pointerId); pts.set(e.pointerId, pos(e));
+    if (pts.size === 1) { const p = pos(e); drag = { x: p.x, y: p.y, cx: cam.cx, cy: cam.cy }; moved = false; Object.assign(camT, cam); }
+    else if (pts.size === 2) { const [a, b] = [...pts.values()]; pinch = Math.hypot(a.x - b.x, a.y - b.y); moved = true; }
+});
+canvas.addEventListener('pointermove', e => {
+    const p = pos(e); if (pts.has(e.pointerId)) pts.set(e.pointerId, p);
+    if (pts.size === 2) {
+        const [a, b] = [...pts.values()], d = Math.hypot(a.x - b.x, a.y - b.y);
+        if (pinch > 0) zoomAt((a.x + b.x) / 2, (a.y + b.y) / 2, d / pinch);
+        pinch = d; return;
+    }
+    if (drag && pts.size === 1) {
+        const dx = p.x - drag.x, dy = p.y - drag.y;
+        if (!moved && Math.hypot(dx, dy) > 4) { moved = true; canvas.classList.add('dragging'); }
+        if (moved) { const s = Math.exp(cam.ls); cam.cx = drag.cx - dx / s; cam.cy = drag.cy - dy / s; Object.assign(camT, cam); draw(); }
+        tooltip.classList.remove('show'); return;
+    }
+    const idx = hit(p.x, p.y);
+    if (idx !== hoverIdx) { hoverIdx = idx; draw(); }
+    canvas.classList.toggle('hovering', idx >= 0);
+    if (idx >= 0) {
+        tooltip.innerHTML = describe(squares[idx]);
+        tooltip.style.left = Math.max(6, Math.min(p.x + 14, W - tooltip.offsetWidth - 6)) + 'px';
+        tooltip.style.top = Math.min(p.y + 16, H - tooltip.offsetHeight - 6) + 'px';
+        tooltip.classList.add('show');
+    } else tooltip.classList.remove('show');
+});
+function up(e) {
+    const click = pts.size === 1 && !moved, p = pos(e);
+    pts.delete(e.pointerId); canvas.classList.remove('dragging');
+    if (pts.size < 2) pinch = 0;
+    if (click && e.type === 'pointerup') {
+        const idx = hit(p.x, p.y);
+        if (idx >= 0) {
+            const q = squares[idx]; selectedIdx = idx;
+            setCamTarget({ cx: q.x + q.s / 2, cy: q.y + q.s / 2, ls: Math.log(Math.min(1e4, 0.7 * Math.min(W, H) / q.s)) });
+        }
+    }
+    if (!pts.size) drag = null;
+}
+canvas.addEventListener('pointerup', up);
+canvas.addEventListener('pointercancel', up);
+canvas.addEventListener('pointerleave', () => { hoverIdx = -1; tooltip.classList.remove('show'); draw(); });
+canvas.addEventListener('dblclick', fit);
+canvas.addEventListener('wheel', e => { e.preventDefault(); const p = pos(e); zoomAt(p.x, p.y, Math.exp(-e.deltaY * 0.0015)); }, { passive: false });
+
+function fit() { selectedIdx = -1; setCamTarget(fitFor(t)); }
+function zoomBtn(f) { const ls = Math.max(Math.log(1e-8), Math.min(Math.log(1e4), camT.ls + Math.log(f))); camT.ls = ls; camT.cx = cam.cx; camT.cy = cam.cy; kick(); }
+document.getElementById('fitBtn').onclick = fit;
+document.getElementById('zoomIn').onclick = () => zoomBtn(1.8);
+document.getElementById('zoomOut').onclick = () => zoomBtn(1 / 1.8);
+
+/* ---------- start ---------- */
+progress = 0;
+resize();
+setTerms(2);
+// opening flourish: grow to 8 terms so the spiral zooming out is visible right away
+setTimeout(() => setTerms(8), 500);
+</script>
+</body>
+</html>

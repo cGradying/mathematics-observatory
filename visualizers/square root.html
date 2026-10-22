@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Square Root Equation Grapher</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: #12141a;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 650px;
+            background-color: #1a1d24;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+            border: 1px solid #2a2e39;
+        }
+
+        .canvas-container {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            background-color: #15181e;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .equation-badge {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            background-color: #1a1d24;
+            border: 1px solid #2a2e39;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            line-height: 1.4;
+        }
+
+        .equation-badge span {
+            color: #60a5fa;
+            font-weight: 600;
+        }
+
+        .equation-badge .parent-eq {
+            font-size: 11px;
+            color: #9ca3af;
+        }
+
+        .metrics-panel {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            text-align: center;
+            padding: 16px;
+            background-color: #1a1d24;
+            border-top: 1px solid #2a2e39;
+            border-bottom: 1px solid #2a2e39;
+        }
+
+        .metric-title {
+            font-size: 11px;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .metric-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .controls-panel {
+            padding: 20px;
+            background-color: #1a1d24;
+        }
+
+        .control-group {
+            margin-bottom: 16px;
+        }
+
+        .control-label-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .control-label {
+            font-size: 13px;
+            color: #d1d5db;
+            font-weight: 500;
+        }
+
+        .control-val {
+            font-size: 14px;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .dual-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 5px;
+            background: #2a2e39;
+            border-radius: 3px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #3b82f6;
+            cursor: pointer;
+            box-shadow: 0 0 4px rgba(59, 130, 246, 0.6);
+        }
+
+        .preset-select-group {
+            margin-bottom: 16px;
+        }
+
+        .preset-select {
+            width: 100%;
+            background-color: #212530;
+            border: 1px solid #2e3340;
+            color: #ffffff;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            outline: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Graph Area -->
+        <div class="canvas-container">
+            <div class="equation-badge" id="equationBadge">
+                <span id="mainEqStr">f(x) = √(x)</span><br>
+                <span class="parent-eq" id="parentEqStr">Parent: y = √(x)</span>
+            </div>
+            <canvas id="graphCanvas"></canvas>
+        </div>
+
+        <!-- Metrics Header -->
+        <div class="metrics-panel">
+            <div>
+                <div class="metric-title">Vertex (h, k)</div>
+                <div class="metric-value" id="metricVertex">(0.0, 0.0)</div>
+            </div>
+            <div>
+                <div class="metric-title">Domain</div>
+                <div class="metric-value" id="metricDomain">[0.0, +∞)</div>
+            </div>
+            <div>
+                <div class="metric-title">Range</div>
+                <div class="metric-value" id="metricRange">[0.0, +∞)</div>
+            </div>
+        </div>
+
+        <!-- Controls Area -->
+        <div class="controls-panel">
+            <div class="preset-select-group">
+                <div class="control-label" style="margin-bottom: 6px;">Transformation Preset</div>
+                <select id="presetSelect" class="preset-select" onchange="applyPreset()">
+                    <option value="custom">Custom (Modify Sliders)</option>
+                    <option value="standard">Standard f(x) = √(x)</option>
+                    <option value="shifted">Shifted Right & Up</option>
+                    <option value="reflected">Reflected & Scaled</option>
+                </select>
+            </div>
+
+            <div class="dual-controls">
+                <div class="control-group">
+                    <div class="control-label-row">
+                        <span class="control-label">Vertical Scale / Reflect (a)</span>
+                        <span class="control-val" id="valA">1.0</span>
+                    </div>
+                    <input type="range" id="rangeA" min="-3" max="3" step="0.5" value="1">
+                </div>
+                <div class="control-group">
+                    <div class="control-label-row">
+                        <span class="control-label">Horizontal Scale / Reflect (b)</span>
+                        <span class="control-val" id="valB">1.0</span>
+                    </div>
+                    <input type="range" id="rangeB" min="-3" max="3" step="0.5" value="1">
+                </div>
+            </div>
+
+            <div class="dual-controls">
+                <div class="control-group">
+                    <div class="control-label-row">
+                        <span class="control-label">Horizontal Shift (h)</span>
+                        <span class="control-val" id="valH">0.0</span>
+                    </div>
+                    <input type="range" id="rangeH" min="-5" max="5" step="0.5" value="0">
+                </div>
+                <div class="control-group">
+                    <div class="control-label-row">
+                        <span class="control-label">Vertical Shift (k)</span>
+                        <span class="control-val" id="valK">0.0</span>
+                    </div>
+                    <input type="range" id="rangeK" min="-5" max="5" step="0.5" value="0">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('graphCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const rangeA = document.getElementById('rangeA');
+        const rangeB = document.getElementById('rangeB');
+        const rangeH = document.getElementById('rangeH');
+        const rangeK = document.getElementById('rangeK');
+
+        const valA = document.getElementById('valA');
+        const valB = document.getElementById('valB');
+        const valH = document.getElementById('valH');
+        const valK = document.getElementById('valK');
+
+        const mainEqStr = document.getElementById('mainEqStr');
+        const parentEqStr = document.getElementById('parentEqStr');
+        const metricVertex = document.getElementById('metricVertex');
+        const metricDomain = document.getElementById('metricDomain');
+        const metricRange = document.getElementById('metricRange');
+        const presetSelect = document.getElementById('presetSelect');
+
+        let scaleX = 10;
+        let scaleY = 10;
+
+        function resizeCanvas() {
+            canvas.width = canvas.parentElement.clientWidth * window.devicePixelRatio;
+            canvas.height = canvas.parentElement.clientHeight * window.devicePixelRatio;
+            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+            draw();
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+
+        function toPixelX(x) {
+            const width = canvas.width / window.devicePixelRatio;
+            return width / 2 + (x / scaleX) * (width / 2);
+        }
+
+        function toPixelY(y) {
+            const height = canvas.height / window.devicePixelRatio;
+            return height / 2 - (y / scaleY) * (height / 2);
+        }
+
+        function draw() {
+            const width = canvas.width / window.devicePixelRatio;
+            const height = canvas.height / window.devicePixelRatio;
+
+            ctx.clearRect(0, 0, width, height);
+
+            const a = parseFloat(rangeA.value);
+            const b = parseFloat(rangeB.value);
+            const h = parseFloat(rangeH.value);
+            const k = parseFloat(rangeK.value);
+
+            // 1. Draw Grid Lines & Numbers
+            ctx.strokeStyle = '#222630';
+            ctx.lineWidth = 1;
+            ctx.fillStyle = '#6b7280';
+            ctx.font = '11px sans-serif';
+
+            for (let x = -8; x <= 8; x += 2) {
+                if (x === 0) continue;
+                let px = toPixelX(x);
+                ctx.beginPath();
+                ctx.moveTo(px, 0);
+                ctx.lineTo(px, height);
+                ctx.stroke();
+
+                ctx.textAlign = 'center';
+                ctx.fillText(x, px, height / 2 + 15);
+            }
+
+            for (let y = -4; y <= 4; y += 2) {
+                if (y === 0) continue;
+                let py = toPixelY(y);
+                ctx.beginPath();
+                ctx.moveTo(0, py);
+                ctx.lineTo(width, py);
+                ctx.stroke();
+
+                ctx.textAlign = 'right';
+                ctx.fillText(y, width / 2 - 8, py + 4);
+            }
+
+            // 2. Draw Main Axes
+            ctx.strokeStyle = '#6b7280';
+            ctx.lineWidth = 1.5;
+
+            ctx.beginPath();
+            ctx.moveTo(0, height / 2);
+            ctx.lineTo(width, height / 2);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(width / 2, 0);
+            ctx.lineTo(width / 2, height);
+            ctx.stroke();
+
+            // 3. Draw Square Root Curve: f(x) = a * sqrt(b * (x - h)) + k
+            ctx.strokeStyle = '#3b82f6';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+
+            let first = true;
+            // Determine valid range depending on b and h
+            for (let x = -scaleX - 2; x <= scaleX + 2; x += 0.02) {
+                let inner = b * (x - h);
+                if (inner >= 0) {
+                    let y = a * Math.sqrt(inner) + k;
+                    let px = toPixelX(x);
+                    let py = toPixelY(y);
+                    if (first) {
+                        ctx.moveTo(px, py);
+                        first = false;
+                    } else {
+                        ctx.lineTo(px, py);
+                    }
+                }
+            }
+            ctx.stroke();
+
+            // 4. Draw Endpoint / Vertex (h, k)
+            let vPx = toPixelX(h);
+            let vPy = toPixelY(k);
+            ctx.fillStyle = '#3b82f6';
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(vPx, vPy, 6, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            // 5. Update UI Labels & Metrics
+            valA.textContent = a.toFixed(1);
+            valB.textContent = b.toFixed(1);
+            valH.textContent = h.toFixed(1);
+            valK.textContent = k.toFixed(1);
+
+            metricVertex.textContent = `(${h.toFixed(1)}, ${k.toFixed(1)})`;
+
+            // Domain & Range calculations
+            let domainStr = "";
+            let rangeStr = "";
+
+            if (b > 0) {
+                domainStr = `[${h.toFixed(1)}, +∞)`;
+            } else if (b < 0) {
+                domainStr = `(-∞, ${h.toFixed(1)}]`;
+            } else {
+                domainStr = `R (Constant)`;
+            }
+
+            if (a > 0) {
+                rangeStr = `[${k.toFixed(1)}, +∞)`;
+            } else if (a < 0) {
+                rangeStr = `(-∞, ${k.toFixed(1)}]`;
+            } else {
+                rangeStr = `[${k.toFixed(1)}]`;
+            }
+
+            metricDomain.textContent = domainStr;
+            metricRange.textContent = rangeStr;
+
+            // Equation string assembly
+            let aText = a === 1 ? '' : a === -1 ? '-' : `${a}`;
+            let bText = b === 1 ? '' : b === -1 ? '-' : `${b}`;
+            let hText = h === 0 ? 'x' : h > 0 ? `x - ${h}` : `x + ${Math.abs(h)}`;
+            let kText = k === 0 ? '' : k > 0 ? ` + ${k}` : ` - ${Math.abs(k)}`;
+
+            mainEqStr.textContent = `f(x) = ${aText}√(${bText !== '' ? bText + '(' + hText + ')' : hText})${kText}`;
+        }
+
+        function applyPreset() {
+            const val = presetSelect.value;
+            if (val === 'standard') {
+                rangeA.value = 1; rangeB.value = 1; rangeH.value = 0; rangeK.value = 0;
+            } else if (val === 'shifted') {
+                rangeA.value = 1; rangeB.value = 1; rangeH.value = 2; rangeK.value = 1;
+            } else if (val === 'reflected') {
+                rangeA.value = -1.5; rangeB.value = -1; rangeH.value = -1; rangeK.value = 2;
+            }
+            draw();
+        }
+
+        rangeA.addEventListener('input', () => { presetSelect.value = 'custom'; draw(); });
+        rangeB.addEventListener('input', () => { presetSelect.value = 'custom'; draw(); });
+        rangeH.addEventListener('input', () => { presetSelect.value = 'custom'; draw(); });
+        rangeK.addEventListener('input', () => { presetSelect.value = 'custom'; draw(); });
+
+        resizeCanvas();
+    </script>
+</body>
+</html>

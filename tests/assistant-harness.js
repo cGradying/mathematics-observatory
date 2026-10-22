@@ -52,6 +52,8 @@ function createElement(tagName) {
         classList: { toggle() {}, contains() { return false; } },
         append(...children) { this.children.push(...children); },
         appendChild(child) { this.children.push(child); return child; },
+        replaceChildren(...children) { this.children = children.filter(Boolean); },
+        get firstElementChild() { return this.children[0] || null; },
         addEventListener(name, callback) { this.listeners[name] = callback; },
         setAttribute(name, value) { this.attributes[name] = value; },
         querySelector(selector) {
@@ -75,7 +77,8 @@ function createAssistantHarness(modelResponse, options = {}) {
     const storageValues = new Map();
     const localStorage = options.localStorage || {
         getItem(key) { return storageValues.get(key) ?? null; },
-        setItem(key, value) { storageValues.set(key, value); }
+        setItem(key, value) { storageValues.set(key, value); },
+        removeItem(key) { storageValues.delete(key); }
     };
     const document = {
         baseURI: 'http://archive.test/index.html',
@@ -134,6 +137,7 @@ function createAssistantHarness(modelResponse, options = {}) {
     const form = panel.querySelector('.assistant-form');
     const input = panel.querySelector('.assistant-input');
     const messages = panel.querySelector('.assistant-messages');
+    const clearButton = panel.querySelector('.assistant-clear');
     const greeting = createElement('div');
     greeting.className = 'assistant-message bot';
     greeting.textContent = 'Hi! Ask me about a formula, concept, or problem you are exploring.';
@@ -147,6 +151,8 @@ function createAssistantHarness(modelResponse, options = {}) {
         form,
         input,
         messages,
+        clearButton,
+        async clear() { await clearButton.listeners.click(); },
         async submit(question) {
             input.value = question;
             await form.listeners.submit({ preventDefault() {} });

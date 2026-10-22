@@ -1,0 +1,17 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "./.impeccable-cache/bin/0.1.5/impeccable detect assets/css assets/js index.html learn.html explore.html history.html proofs.html; result=$?; if [ \"$result\" -eq 2 ]; then exit 0; else exit \"$result\"; fi",
+            "commandWindows": "\"%CD%\\.impeccable-cache\\bin\\0.1.5\\impeccable.exe\" detect assets/css assets/js index.html learn.html explore.html history.html proofs.html & if errorlevel 3 (exit /b %errorlevel%) else (exit /b 0)",
+            "timeout": 120,
+            "statusMessage": "Reviewing UI changes"
+          }
+        ]
+      }
+    ]
+  }
+}

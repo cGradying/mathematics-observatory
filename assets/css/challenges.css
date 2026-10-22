@@ -3,6 +3,8 @@
    and entrance live in assets/css/styles.css (.observatory-page);
    this sheet sets the studio accent and card surfaces only. */
 .challenges-page { --op-accent: #B25A24; --op-paper: #FFF8F1; --op-card: #FFFDF9; }
+.challenges-page.observatory-page { padding-top: 0; }
+.challenges-page .challenge-hero { padding-top: 152px; padding-bottom: 57px; }
 .observatory-page { padding-top: 88px; }
 .observatory-page main { min-height: 70vh; }
 .op-shell { width: min(1180px, calc(100% - 48px)); margin-inline: auto; }

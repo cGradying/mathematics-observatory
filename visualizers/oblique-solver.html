@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oblique Triangle Solver & Visualizer</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --border: #e2e8f0;
+            --accent: #e11d48;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            padding: 2rem;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
+            border: 1px solid var(--border);
+        }
+
+        h2 {
+            margin-bottom: 1.25rem;
+            font-size: 1.5rem;
+            color: #0f172a;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 0.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            font-size: 0.9rem;
+        }
+
+        select, input {
+            width: 100%;
+            padding: 0.6rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 1rem;
+            background: #fff;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .input-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        button {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 1rem;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background: var(--primary-hover);
+        }
+
+        .canvas-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #fafafa;
+            border: 1px dashed var(--border);
+            border-radius: 8px;
+            min-height: 320px;
+            margin-bottom: 1rem;
+        }
+
+        canvas {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .results-panel, .steps-panel {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: var(--bg);
+            border-radius: 8px;
+            font-size: 0.95rem;
+        }
+
+        .error {
+            color: var(--accent);
+            background: #fff1f2;
+            padding: 0.75rem;
+            border-radius: 6px;
+            border: 1px solid #ffe4e6;
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .math-step {
+            margin-bottom: 0.75rem;
+            padding-left: 0.5rem;
+            border-left: 3px solid var(--primary);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Left Panel: Input & Math Engine Configurations -->
+    <div class="card">
+        <h2>Configuration & Inputs</h2>
+        <div class="form-group">
+            <label for="caseSelect">Select Known Combination:</label>
+            <select id="caseSelect">
+                <option value="SSS">SSS (Side, Side, Side)</option>
+                <option value="SAS">SAS (Side, Angle, Side)</option>
+                <option value="ASA">ASA (Angle, Side, Angle)</option>
+                <option value="AAS">AAS (Angle, Angle, Side)</option>
+                <option value="SSA">SSA (Side, Side, Angle) - Ambiguous Case</option>
+            </select>
+        </div>
+
+        <div id="dynamicInputs" class="input-grid">
+            <!-- Dynamic fields injected via JavaScript -->
+        </div>
+
+        <button id="solveBtn">Solve Triangle</button>
+        <div id="errorBox" class="error"></div>
+        
+        <div class="steps-panel">
+            <h3>Mathematical Steps:</h3>
+            <div id="stepsOutput" style="margin-top: 0.5rem; font-family: monospace; white-space: pre-line;">
+                Select a case, enter parameters, and click Solve.
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Panel: Dynamic Render View & Solved Values -->
+    <div class="card" style="display: flex; flex-direction: column;">
+        <h2>Visualizer & Properties</h2>
+        <div class="canvas-container">
+            <canvas id="triangleCanvas" width="400" height="320"></canvas>
+        </div>
+        
+        <div class="results-panel">
+            <h3>Calculated Dimensions:</h3>
+            <div id="resultsOutput" class="input-grid" style="margin-top: 0.5rem;">
+                <!-- Solved structural vectors shown here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const inputConfig = {
+        SSS: ['Side a', 'Side b', 'Side c'],
+        SAS: ['Side a', 'Angle C (°)', 'Side b'],
+        ASA: ['Angle A (°)', 'Side c', 'Angle B (°)'],
+        AAS: ['Angle A (°)', 'Angle B (°)', 'Side a'],
+        SSA: ['Side a', 'Side b', 'Angle A (°)']
+    };
+
+    const caseSelect = document.getElementById('caseSelect');
+    const dynamicInputs = document.getElementById('dynamicInputs');
+    const solveBtn = document.getElementById('solveBtn');
+    const errorBox = document.getElementById('errorBox');
+    const resultsOutput = document.getElementById('resultsOutput');
+    const stepsOutput = document.getElementById('stepsOutput');
+    const canvas = document.getElementById('triangleCanvas');
+    const ctx = canvas.getContext('2d');
+
+    function updateInputFields() {
+        const selectedCase = caseSelect.value;
+        dynamicInputs.innerHTML = '';
+        errorBox.style.display = 'none';
+        
+        inputConfig[selectedCase].forEach((labelName, index) => {
+            const container = document.createElement('div');
+            container.className = 'form-group';
+            
+            const label = document.createElement('label');
+            label.textContent = labelName;
+            
+            const input = document.createElement('input');
+            input.type = 'number';
+            input.step = 'any';
+            input.id = `param_${index}`;
+            input.placeholder = `e.g. ${[5, 60, 7, 45, 6][(index + selectedCase.charCodeAt(0)) % 5]}`;
+            
+            container.appendChild(label);
+            container.appendChild(input);
+            dynamicInputs.appendChild(container);
+        });
+    }
+
+    caseSelect.addEventListener('change', updateInputFields);
+    window.addEventListener('DOMContentLoaded', updateInputFields);
+
+    const rad = deg => (deg * Math.PI) / 180;
+    const deg = rad => (rad * 180) / Math.PI;
+
+    solveBtn.addEventListener('click', () => {
+        errorBox.style.display = 'none';
+        errorBox.textContent = '';
+        
+        const currentCase = caseSelect.value;
+        const v0 = parseFloat(document.getElementById('param_0').value);
+        const v1 = parseFloat(document.getElementById('param_1').value);
+        const v2 = parseFloat(document.getElementById('param_2').value);
+
+        if (isNaN(v0) || isNaN(v1) || isNaN(v2) || v0 <= 0 || v1 <= 0 || v2 <= 0) {
+            showError("Processing Error: All measurement parameters must be positive numeric vectors.");
+            return;
+        }
+
+        let a, b, c, A, B, C;
+        let logs = [];
+
+        try {
+            switch (currentCase) {
+                case 'SSS':
+                    a = v0; b = v1; c = v2;
+                    if (a + b <= c || a + c <= b || b + c <= a) {
+                        throw new Error("Triangle Inequality Violation: The sum of any two sides must be strictly greater than the third side.");
+                    }
+                    logs.push("Applying Law of Cosines to evaluate internal angles:");
+                    A = deg(Math.acos((b*b + c*c - a*a) / (2*b*c)));
+                    B = deg(Math.acos((a*a + c*c - b*b) / (2*a*c)));
+                    C = 180 - A - B;
+                    logs.push(`∠A = acos((b²+c²-a²)/2bc) = ${A.toFixed(2)}°`);
+                    logs.push(`∠B = acos((a²+c²-b²)/2ac) = ${B.toFixed(2)}°`);
+                    logs.push(`∠C = 180° - A - B = ${C.toFixed(2)}°`);
+                    break;
+
+                case 'SAS':
+                    a = v0; C = v1; b = v2;
+                    if (C >= 180) throw new Error("Geometric Boundary: Angle configuration must be lower than 180°.");
+                    logs.push("Computing unknown opposing side baseline via Law of Cosines:");
+                    c = Math.sqrt(a*a + b*b - 2*a*b*Math.cos(rad(C)));
+                    logs.push(`Side c = √(a² + b² - 2ab·cos(C)) = ${c.toFixed(2)}`);
+                    
+                    A = deg(Math.acos((b*b + c*c - a*a) / (2*b*c)));
+                    B = 180 - A - C;
+                    logs.push(`∠A = acos((b²+c²-a²)/2bc) = ${A.toFixed(2)}°`);
+                    logs.push(`∠B = 180° - A - C = ${B.toFixed(2)}°`);
+                    break;
+
+                case 'ASA':
+                    A = v0; c = v1; B = v2;
+                    if (A + B >= 180) throw new Error("Angle Constraint Error: Sum of input interior angles cannot equal or exceed 180°.");
+                    C = 180 - A - B;
+                    logs.push(`Evaluating final interior angle via planar constraints: ∠C = 180° - A - B = ${C.toFixed(2)}°`);
+                    logs.push("Executing Law of Sines cross-multiplication for missing vectors:");
+                    a = (c * Math.sin(rad(A))) / Math.sin(rad(C));
+                    b = (c * Math.sin(rad(B))) / Math.sin(rad(C));
+                    logs.push(`Side a = (c · sin(A)) / sin(C) = ${a.toFixed(2)}`);
+                    logs.push(`Side b = (c · sin(B)) / sin(C) = ${b.toFixed(2)}`);
+                    break;
+
+                case 'AAS':
+                    A = v0; B = v1; a = v2;
+                    if (A + B >= 180) throw new Error("Angle Constraint Error: Sum of input interior angles cannot equal or exceed 180°.");
+                    C = 180 - A - B;
+                    logs.push(`Evaluating final interior angle via planar constraints: ∠C = 180° - A - B = ${C.toFixed(2)}°`);
+                    logs.push("Executing Law of Sines interpolation matrices:");
+                    b = (a * Math.sin(rad(B))) / Math.sin(rad(A));
+                    c = (a * Math.sin(rad(C))) / Math.sin(rad(A));
+                    logs.push(`Side b = (a · sin(B)) / sin(A) = ${b.toFixed(2)}`);
+                    logs.push(`Side c = (a · sin(C)) / sin(A) = ${c.toFixed(2)}`);
+                    break;
+
+                case 'SSA':
+                    a = v0; b = v1; A = v2;
+                    if (A >= 180) throw new Error("Geometric Boundary: Angle configuration must be lower than 180°.");
+                    let sinB = (b * Math.sin(rad(A))) / a;
+                    logs.push(`Analyzing SSA Ambiguous Criteria: sin(B) = (b · sin(A)) / a = ${sinB.toFixed(4)}`);
+                    if (sinB > 1) {
+                        throw new Error("Mathematical Impossibility: Given configurations do not yield a structurally sound triangle profile (sin(B) > 1).");
+                    } else if (Math.abs(sinB - 1) < 1e-7) {
+                        logs.push("Deterministic Singularity: Right-angle subset discovered.");
+                        B = 90;
+                        C = 180 - A - B;
+                        c = (a * Math.sin(rad(C))) / Math.sin(rad(A));
+                    } else {
+                        B = deg(Math.asin(sinB));
+                        let B2 = 180 - B;
+                        if (B2 + A < 180) {
+                            logs.push(`⚠️ Ambiguity Matrix Detected: Alternate valid configuration exists (B₂ = ${B2.toFixed(2)}°). Visualizing Primary acute loop standard path.`);
+                        }
+                        C = 180 - A - B;
+                        c = (a * Math.sin(rad(C))) / Math.sin(rad(A));
+                        logs.push(`∠B = asin(sin(B)) = ${B.toFixed(2)}°`);
+                        logs.push(`∠C = 180° - A - B = ${C.toFixed(2)}°`);
+                        logs.push(`Side c = (a · sin(C)) / sin(A) = ${c.toFixed(2)}`);
+                    }
+                    break;
+            }
+            renderResults(a, b, c, A, B, C);
+            renderSteps(logs);
+            drawTriangle(a, b, c, A, B, C);
+        } catch (err) {
+            showError(err.message);
+        }
+    });
+
+    function showError(msg) {
+        errorBox.textContent = msg;
+        errorBox.style.display = 'block';
+    }
+
+    function renderResults(a, b, c, A, B, C) {
+        resultsOutput.innerHTML = `
+            <div><label>Side a</label><input readonly value="${a.toFixed(3)}"></div>
+            <div><label>Angle A</label><input readonly value="${A.toFixed(2)}°"></div>
+            <div><label>Side b</label><input readonly value="${b.toFixed(3)}"></div>
+            <div><label>Angle B</label><input readonly value="${B.toFixed(2)}°"></div>
+            <div><label>Side c</label><input readonly value="${c.toFixed(3)}"></div>
+            <div><label>Angle C</label><input readonly value="${C.toFixed(2)}°"></div>
+        `;
+    }
+
+    function renderSteps(logs) {
+        stepsOutput.innerHTML = logs.map(step => `<div class="math-step">${step}</div>`).join('');
+    }
+
+    function drawTriangle(a, b, c, A, B, C) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const xA = 0;
+        const yA = 0;
+        const xB = c;
+        const yB = 0;
+        const xC = b * Math.cos(rad(A));
+        const yC = b * Math.sin(rad(A));
+        
+        const minX = Math.min(xA, xB, xC);
+        const maxX = Math.max(xA, xB, xC);
+        const minY = Math.min(yA, yB, yC);
+        const maxY = Math.max(yA, yB, yC);
+        const triWidth = maxX - minX;
+        const triHeight = maxY - minY;
+        
+        const padding = 40;
+        const scaleX = (canvas.width - padding * 2) / triWidth;
+        const scaleY = (canvas.height - padding * 2) / triHeight;
+        const scale = Math.min(scaleX, scaleY);
+        
+        const offsetX = padding - minX * scale + (canvas.width - padding * 2 - triWidth * scale) / 2;
+        const offsetY = canvas.height - padding + minY * scale - (canvas.height - padding * 2 - triHeight * scale) / 2;
+        
+        const mapX = x => offsetX + x * scale;
+        const mapY = y => offsetY - y * scale;
+        
+        const pA = { x: mapX(xA), y: mapY(yA) };
+        const pB = { x: mapX(xB), y: mapY(yB) };
+        const pC = { x: mapX(xC), y: mapY(yC) };
+        
+        ctx.beginPath();
+        ctx.moveTo(pA.x, pA.y);
+        ctx.lineTo(pB.x, pB.y);
+        ctx.lineTo(pC.x, pC.y);
+        ctx.closePath();
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = '#2563eb';
+        ctx.fillStyle = 'rgba(37, 99, 235, 0.05)';
+        ctx.fill();
+        ctx.stroke();
+        
+        const nodes = [
+            { pos: pA, label: `A (${A.toFixed(1)}°)` },
+            { pos: pB, label: `B (${B.toFixed(1)}°)` },
+            { pos: pC, label: `C (${C.toFixed(1)}°)` }
+        ];
+        
+        ctx.fillStyle = '#0f172a';
+        ctx.font = 'bold 12px sans-serif';
+        ctx.textBaseline = 'middle';
+        ctx.textAlign = 'center';
+        
+        ctx.fillText(nodes[0].label, pA.x - 25, pA.y + 15);
+        ctx.fillText(nodes[1].label, pB.x + 25, pB.y + 15);
+        ctx.fillText(nodes[2].label, pC.x, pC.y - 15);
+        
+        const drawMidLabel = (pt1, pt2, text) => {
+            const mx = (pt1.x + pt2.x) / 2;
+            const my = (pt1.y + pt2.y) / 2;
+            ctx.fillStyle = '#e11d48';
+            ctx.fillText(text, mx, my - 8);
+        };
+        
+        drawMidLabel(pA, pB, `c = ${c.toFixed(1)}`);
+        drawMidLabel(pB, pC, `a = ${a.toFixed(1)}`);
+        drawMidLabel(pC, pA, `b = ${b.toFixed(1)}`);
+    }
+</script>
+</body>
+</html>

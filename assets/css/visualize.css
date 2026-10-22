@@ -1,4 +1,7 @@
-/* Visualize studio theme — pastel visual field guide.
+/* ----- BEGIN NAV‑BACKGROUND OVERRIDES ----- */
+.visualize-page.observatory-page { padding-top: 0 !important; }
+.visualize-page .viz-hero { padding-top: 152px !important; }
+/* ----- END NAV‑BACKGROUND OVERRIDES ----- }
    Shared observatory tokens, pill nav, press-down buttons, plum footer,
    and entrance live in assets/css/styles.css (.observatory-page);
    this sheet sets the studio accent and card surfaces only.
@@ -105,6 +108,159 @@
   .op-footer { padding: 22px 18px; }
 }
 @media (prefers-reduced-motion: reduce) { .observatory-page *, .observatory-page *::before, .observatory-page *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; } }
+
+/* ==== VISUALIZE INTERACTION STYLES ==== */
+.viz-filters button {
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+.viz-filters button:hover,
+.viz-filters button:focus-visible {
+  box-shadow: 4px 4px 0 rgba(40, 36, 53, 0.9);
+  transform: translate(-1px, -1px);
+}
+.viz-filters button:focus-visible {
+  outline: 3px solid #57436E;
+  outline-offset: 2px;
+}
+
+.viz-study {
+  transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+}
+.viz-study:hover {
+  background: rgba(209, 197, 241, 0.35);
+  box-shadow: 4px 4px 0 rgba(40, 36, 53, 0.08);
+  transform: translateX(-2px);
+}
+.viz-study[hidden] {
+  display: none;
+}
+.study-number {
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+.viz-study:hover .study-number {
+  color: #57436E;
+  transform: scale(1.15);
+}
+.study-spark {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.viz-study:hover .study-spark {
+  opacity: 0.9;
+}
+.study-spark svg,
+.study-spark i {
+  transition: transform 0.25s ease;
+}
+.viz-study:hover .study-spark svg {
+  transform: scale(1.08);
+}
+.study-spark i {
+  display: inline-block;
+  width: 6px;
+  height: 12px;
+  margin: 0 1px;
+  border-radius: 1px;
+  background: var(--op-accent);
+}
+.study-action {
+  transition: background-color 0.2s ease, transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.study-action:hover,
+.study-action:focus-visible {
+  background: var(--op-lime);
+  border-color: var(--op-ink);
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0 rgba(40, 36, 53, 0.9);
+}
+.study-action:focus-visible {
+  outline: 3px solid var(--op-coral);
+  outline-offset: 2px;
+}
+.study-action span {
+  transition: transform 0.2s ease;
+}
+.study-action:hover span {
+  transform: translateX(3px);
+}
+
+.viz-workbench {
+  transition: box-shadow 0.25s ease, transform 0.25s ease;
+}
+.viz-workbench:hover {
+  box-shadow: 6px 6px 0 rgba(40, 36, 53, 0.9);
+}
+.viz-equation {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.viz-equation:focus-within {
+  border-color: #57436E;
+  box-shadow: 4px 4px 0 rgba(40, 36, 53, 0.9);
+}
+.viz-result strong {
+  transition: color 0.2s ease;
+}
+
+.viz-topic-controls input[type="range"],
+.viz-topic-controls select,
+.viz-topic-controls input[type="number"] {
+  transition: box-shadow 0.2s ease;
+}
+.viz-topic-controls input[type="range"]:hover,
+.viz-topic-controls select:hover,
+.viz-topic-controls input[type="number"]:hover {
+  box-shadow: 3px 3px 0 rgba(40, 36, 53, 0.2);
+}
+
+.op-text-button {
+  transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+.op-text-button:hover,
+.op-text-button:focus-visible {
+  background: var(--op-lime);
+  border-color: var(--op-ink);
+  box-shadow: 4px 4px 0 rgba(40, 36, 53, 0.9);
+  transform: translate(-1px, -1px);
+}
+.op-text-button:focus-visible {
+  outline: 3px solid var(--op-coral);
+  outline-offset: 2px;
+}
+.op-text-button span {
+  transition: transform 0.2s ease;
+}
+.op-text-button:hover span {
+  transform: rotate(-30deg) translateX(3px);
+}
+
+.viz-hero {
+  transition: box-shadow 0.25s ease;
+}
+.viz-hero-mark {
+  transition: transform 0.3s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .viz-filters button,
+  .viz-study,
+  .study-number,
+  .study-spark,
+  .study-spark svg,
+  .study-action,
+  .study-action span,
+  .viz-workbench,
+  .viz-equation,
+  .viz-result strong,
+  .viz-topic-controls input[type="range"],
+  .viz-topic-controls select,
+  .viz-topic-controls input[type="number"],
+  .op-text-button,
+  .op-text-button span,
+  .viz-hero,
+  .viz-hero-mark {
+    transition: none !important;
+    animation: none !important;
+  }
+}
 
 .viz-study-picker { margin: 18px 0 20px; display:flex; align-items:center; gap:12px; color:var(--op-muted); font-size:.8rem; }
 .viz-study-picker select, .viz-topic-controls input, .viz-topic-controls select { min-height:44px; padding:8px 10px; border:2px solid var(--op-ink); border-radius:10px; color:var(--op-ink); background:white; font: .8rem 'Archivo',sans-serif; }

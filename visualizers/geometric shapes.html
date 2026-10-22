@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Geometry Visualizer</title>
+    <!-- Three.js and OrbitControls via CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <style>
+        :root {
+            --bg-color: #12141c;
+            --panel-bg: #1a1d29;
+            --border-color: #2a2f42;
+            --text-color: #e2e8f0;
+            --accent-color: #3b82f6;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background-color: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+
+        /* 3D Viewport styling */
+        #canvas-container {
+            width: 100%;
+            height: 450px;
+            position: relative;
+            background-color: #0d0f14;
+        }
+
+        /* Stats Panel */
+        .stats-panel {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            border-top: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+            background-color: rgba(26, 29, 41, 0.5);
+            text-align: center;
+            padding: 15px 0;
+        }
+
+        .stat-box h4 {
+            font-size: 12px;
+            text-transform: uppercase;
+            color: #64748b;
+            margin-bottom: 4px;
+            letter-spacing: 0.05em;
+        }
+
+        .stat-box p {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        /* Controls Panel */
+        .controls-panel {
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .control-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        label {
+            font-size: 13px;
+            font-weight: 500;
+            color: #94a3b8;
+        }
+
+        select, input[type="range"] {
+            width: 100%;
+            background-color: #0d0f14;
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 10px;
+            border-radius: 6px;
+            outline: none;
+        }
+
+        select:focus {
+            border-color: var(--accent-color);
+        }
+
+        /* Color configurations row layout */
+        .color-pickers {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .color-picker-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #0d0f14;
+            padding: 6px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            flex: 1;
+        }
+
+        input[type="color"] {
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 4px;
+            cursor: pointer;
+            background: none;
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .slider-val {
+            font-size: 14px;
+            font-weight: 600;
+            min-width: 30px;
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- 3D Canvas Viewport -->
+        <div id="canvas-container"></div>
+
+        <!-- Live Metrics Readout -->
+        <div class="stats-panel">
+            <div class="stat-box">
+                <h4>Active Shape</h4>
+                <p id="label-shape">Cube</p>
+            </div>
+            <div class="stat-box">
+                <h4>Surface Area</h4>
+                <p id="label-area">6.00 u²</p>
+            </div>
+            <div class="stat-box">
+                <h4>Volume</h4>
+                <p id="label-volume">1.00 u³</p>
+            </div>
+        </div>
+
+        <!-- System Controls -->
+        <div class="controls-panel">
+            <div class="control-row">
+                <div class="control-group">
+                    <label for="shape-select">Select 3D Shape</label>
+                    <select id="shape-select">
+                        <option value="cube">Cube</option>
+                        <option value="rectangle">Rectangular Prism</option>
+                        <option value="cylinder">Cylinder</option>
+                        <option value="cone">Cone</option>
+                        <option value="sphere">Sphere</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label for="style-select">Shading Style</label>
+                    <select id="style-select">
+                        <option value="filled">Filled (with Outlines)</option>
+                        <option value="transparent">Transparent</option>
+                        <option value="wireframe">Wireframe Only</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="control-row">
+                <div class="control-group">
+                    <label>Color Customization</label>
+                    <div class="color-pickers">
+                        <div class="color-picker-wrapper">
+                            <input type="color" id="shape-color" value="#3b82f6">
+                            <label for="shape-color">Shape</label>
+                        </div>
+                        <div class="color-picker-wrapper">
+                            <input type="color" id="outline-color" value="#050b14">
+                            <label for="outline-color">Outline</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="control-group" id="dim1-group">
+                    <label id="dim1-label" for="dim1-slider">Size / Radius</label>
+                    <div class="slider-container">
+                        <input type="range" id="dim1-slider" min="0.2" max="3" step="0.1" value="1">
+                        <span class="slider-val" id="dim1-val">1.0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="control-row">
+                <div class="control-group" id="dim2-group" style="display:none;">
+                    <label id="dim2-label" for="dim2-slider">Height / Width</label>
+                    <div class="slider-container">
+                        <input type="range" id="dim2-slider" min="0.2" max="3" step="0.1" value="1">
+                        <span class="slider-val" id="dim2-val">1.0</span>
+                    </div>
+                </div>
+                <div class="control-group" id="dim3-group" style="display:none;">
+                    <label id="dim3-label" for="dim3-slider">Depth</label>
+                    <div class="slider-container">
+                        <input type="range" id="dim3-slider" min="0.2" max="3" step="0.1" value="1">
+                        <span class="slider-val" id="dim3-val">1.0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Three.js Setup Elements ---
+        const container = document.getElementById('canvas-container');
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color('#0d0f14');
+
+        // Camera setup configuration
+        const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 100);
+        camera.position.set(4, 4, 6);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        container.appendChild(renderer.domElement);
+
+        // Core Interaction Control (Restricts mesh movement, only moves camera viewport)
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+
+        // Ambient and Directional Scene Lighting
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        scene.add(ambientLight);
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.7);
+        dirLight.position.set(5, 10, 7);
+        scene.add(dirLight);
+
+        // Grid Floor Layout
+        const grid = new THREE.GridHelper(20, 20, 0x2a2f42, 0x1a1d29);
+        grid.position.y = -1.5;
+        scene.add(grid);
+
+        // Global Shape Tracking References
+        let activeMesh = null;
+        let activeLineSegments = null;
+
+        // --- DOM Elements Configuration ---
+        const shapeSelect = document.getElementById('shape-select');
+        const styleSelect = document.getElementById('style-select');
+        const shapeColorInput = document.getElementById('shape-color');
+        const outlineColorInput = document.getElementById('outline-color');
+        
+        const dim1Slider = document.getElementById('dim1-slider');
+        const dim2Slider = document.getElementById('dim2-slider');
+        const dim3Slider = document.getElementById('dim3-slider');
+
+        const dim1Label = document.getElementById('dim1-label');
+        const dim2Label = document.getElementById('dim2-label');
+        const dim3Label = document.getElementById('dim3-label');
+        const dim2Group = document.getElementById('dim2-group');
+        const dim3Group = document.getElementById('dim3-group');
+
+        // --- Math Metric Computations ---
+        function updateCalculations(shape, d1, d2, d3) {
+            let area = 0, volume = 0;
+            switch(shape) {
+                case 'cube':
+                    area = 6 * (d1 * d1);
+                    volume = d1 * d1 * d1;
+                    break;
+                case 'rectangle':
+                    area = 2 * (d1 * d2 + d2 * d3 + d1 * d3);
+                    volume = d1 * d2 * d3;
+                    break;
+                case 'cylinder':
+                    area = (2 * Math.PI * d1 * d2) + (2 * Math.PI * d1 * d1);
+                    volume = Math.PI * (d1 * d1) * d2;
+                    break;
+                case 'cone':
+                    const slant = Math.sqrt((d1 * d1) + (d2 * d2));
+                    area = (Math.PI * d1 * slant) + (Math.PI * d1 * d1);
+                    volume = (1/3) * Math.PI * (d1 * d1) * d2;
+                    break;
+                case 'sphere':
+                    area = 4 * Math.PI * (d1 * d1);
+                    volume = (4/3) * Math.PI * (d1 * d1 * d1);
+                    break;
+            }
+            document.getElementById('label-area').innerText = `${area.toFixed(2)} u²`;
+            document.getElementById('label-volume').innerText = `${volume.toFixed(2)} u³`;
+        }
+
+        // --- Render Generator Mesh ---
+        function generateGeometry() {
+            // Clean up legacy objects from scene graph loop
+            if (activeMesh) scene.remove(activeMesh);
+            if (activeLineSegments) scene.remove(activeLineSegments);
+            
+            const shape = shapeSelect.value;
+            const style = styleSelect.value;
+            const d1 = parseFloat(dim1Slider.value);
+            const d2 = parseFloat(dim2Slider.value);
+            const d3 = parseFloat(dim3Slider.value);
+            
+            document.getElementById('dim1-val').innerText = d1.toFixed(1);
+            document.getElementById('dim2-val').innerText = d2.toFixed(1);
+            document.getElementById('dim3-val').innerText = d3.toFixed(1);
+            
+            let geo;
+            // Setup dynamic label assignments and geometries
+            if (shape === 'cube') {
+                geo = new THREE.BoxGeometry(d1, d1, d1);
+                dim1Label.innerText = "Edge Length";
+                dim2Group.style.display = 'none';
+                dim3Group.style.display = 'none';
+                document.getElementById('label-shape').innerText = "Cube";
+            } else if (shape === 'rectangle') {
+                geo = new THREE.BoxGeometry(d1, d2, d3);
+                dim1Label.innerText = "Width (X)";
+                dim2Label.innerText = "Height (Y)";
+                dim3Label.innerText = "Depth (Z)";
+                dim2Group.style.display = 'block';
+                dim3Group.style.display = 'block';
+                document.getElementById('label-shape').innerText = "Rectangular Prism";
+            } else if (shape === 'cylinder') {
+                geo = new THREE.CylinderGeometry(d1, d1, d2, 32);
+                dim1Label.innerText = "Radius";
+                dim2Label.innerText = "Height";
+                dim2Group.style.display = 'block';
+                dim3Group.style.display = 'none';
+                document.getElementById('label-shape').innerText = "Cylinder";
+            } else if (shape === 'cone') {
+                geo = new THREE.ConeGeometry(d1, d2, 32);
+                dim1Label.innerText = "Base Radius";
+                dim2Label.innerText = "Height";
+                dim2Group.style.display = 'block';
+                dim3Group.style.display = 'none';
+                document.getElementById('label-shape').innerText = "Cone";
+            } else if (shape === 'sphere') {
+                geo = new THREE.SphereGeometry(d1, 32, 16);
+                dim1Label.innerText = "Radius";
+                dim2Group.style.display = 'none';
+                dim3Group.style.display = 'none';
+                document.getElementById('label-shape').innerText = "Sphere";
+            }
+
+            // Define custom material configurations
+            const matConfig = {
+                color: new THREE.Color(shapeColorInput.value),
+                roughness: 0.4,
+                metalness: 0.1,
+                side: THREE.DoubleSide
+            };
+            if (style === 'wireframe') {
+                matConfig.wireframe = true;
+            } else if (style === 'transparent') {
+                matConfig.transparent = true;
+                matConfig.opacity = 0.5;
+            }
+            
+            const material = new THREE.MeshStandardMaterial(matConfig);
+            activeMesh = new THREE.Mesh(geo, material);
+            scene.add(activeMesh);
+
+            // Append Dark structural outlines if using Filled or Transparent rendering properties
+            if (style === 'filled' || style === 'transparent') {
+                const edges = new THREE.EdgesGeometry(geo);
+                const lineMat = new THREE.LineBasicMaterial({
+                    color: new THREE.Color(outlineColorInput.value),
+                    linewidth: 2
+                });
+                activeLineSegments = new THREE.LineSegments(edges, lineMat);
+                scene.add(activeLineSegments);
+            }
+            
+            updateCalculations(shape, d1, d2, d3);
+        }
+
+        // --- Event Binding ---
+        [shapeSelect, styleSelect, shapeColorInput, outlineColorInput, dim1Slider, dim2Slider, dim3Slider].forEach(element => {
+            element.addEventListener('input', generateGeometry);
+            element.addEventListener('change', generateGeometry);
+        });
+
+        // Window resize correction
+        window.addEventListener('resize', () => {
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+        });
+
+        // Initialize scene setup configuration
+        generateGeometry();
+
+        // --- Animation / Render Engine Loop ---
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update(); // Update orbital movements smoothly
+            renderer.render(scene, camera);
+        }
+        animate();
+    </script>
+</body>
+</html>

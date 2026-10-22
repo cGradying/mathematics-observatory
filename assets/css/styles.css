@@ -126,8 +126,18 @@ a {
 }
 
 :focus-visible {
-    outline: 3px solid var(--color-coral);
-    outline-offset: 4px;
+    outline: 2px solid var(--color-purple);
+    outline-offset: 2px;
+}
+
+/* Form controls use a subtle border/shadow focus state instead of the
+   offset outline ring, which reads as a harsh box on selects and inputs. */
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+    outline: none;
+    border-color: var(--color-purple);
+    box-shadow: 0 0 0 3px rgba(121, 40, 184, 0.18);
 }
 
 /* ============================================
@@ -1928,17 +1938,34 @@ a.logo .logo-symbol {
     text-transform: uppercase;
 }
 .observatory-page .op-button {
+    min-height: 52px;
+    padding: 0.6rem 0.8rem 0.6rem 1.2rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 1rem;
     border: 2px solid var(--op-ink);
-    border-radius: 12px;
-    box-shadow: 3px 3px 0 0 var(--op-ink);
+    border-radius: 14px;
+    box-shadow: 5px 5px 0 0 var(--op-ink);
+    background: var(--op-lime);
+    color: var(--op-ink);
     font-family: var(--font-primary);
+    font-size: 0.85rem;
+    font-weight: 800;
+    line-height: 1.2;
+    text-decoration: none;
+    cursor: pointer;
     transition:
         transform var(--transition-fast),
         box-shadow var(--transition-fast),
         background-color var(--transition-fast);
 }
-.observatory-page .op-button:hover { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 0 var(--op-ink); }
+.observatory-page .op-button:hover { transform: translate(-2px, -2px); box-shadow: 7px 7px 0 0 var(--op-ink); }
 .observatory-page .op-button:active { transform: translate(2px, 2px); box-shadow: 0 0 0 0 var(--op-ink); }
+.observatory-page .op-button span { width: 32px; height: 32px; display: grid; place-items: center; flex: none; border: 2px solid var(--op-ink); border-radius: 50%; background: #fff; font-size: 0.95rem; line-height: 1; transition: transform var(--transition-fast); }
+.observatory-page .op-button:hover span { transform: translateY(2px); }
+.observatory-page .op-button:focus-visible { outline: 3px solid var(--op-violet); outline-offset: 3px; }
+/* Anchor jump targets (hero buttons, footer return links) land below the fixed pill nav. */
+.observatory-page section[id] { scroll-margin-top: 96px; }
 .observatory-page .op-footer { background: var(--op-plum); }
 .observatory-page .op-footer a:first-child { font-family: var(--font-display); font-weight: 400; }
 
@@ -1954,6 +1981,7 @@ a.logo .logo-symbol {
 @media (prefers-reduced-motion: reduce) {
     .observatory-page main > section:first-child { animation: none; }
     .observatory-page .op-button,
+    .observatory-page .op-button span,
     .observatory-page .nav-link { transition: none; }
 }
 

@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Linear Equation Grapher</title>
+    <style>
+        :root {
+            --bg-main: #12141c;
+            --bg-card: #1e202a;
+            --bg-input: #2a2c3a;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --blue: #2563eb;
+            --green: #22c55e;
+            --orange: #f59e0b;
+            --border: #2e303f;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .widget-container {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            width: 100%;
+            max-width: 600px;
+            padding: 24px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+
+        .legend-header {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            font-size: 0.85rem;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .legend-item { display: flex; align-items: center; gap: 6px; }
+
+        .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+        .dot.blue { background-color: var(--blue); }
+        .dot.green { background-color: var(--green); }
+        .dot.orange { background-color: var(--orange); }
+
+        .graph-frame {
+            width: 100%;
+            aspect-ratio: 1.1 / 1;
+            background-color: #151722;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            margin-bottom: 24px;
+        }
+
+        svg { width: 100%; height: 100%; display: block; }
+
+        .grid-line { stroke: #222533; stroke-width: 1; }
+        .main-axis { stroke: #475569; stroke-width: 1.5; }
+
+        .axis-label {
+            font-size: 10px;
+            fill: #64748b;
+            font-family: monospace;
+            user-select: none;
+        }
+
+        .function-line {
+            stroke: var(--blue);
+            stroke-width: 3.5;
+            stroke-linecap: round;
+            fill: none;
+        }
+
+        .node-green { fill: var(--green); stroke: #151722; stroke-width: 1.5; }
+        .node-orange { fill: var(--orange); stroke: #151722; stroke-width: 1.5; }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            text-align: center;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+        }
+
+        .metric-title { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 6px; }
+        .metric-value { font-size: 1.15rem; font-weight: 700; font-family: monospace; }
+
+        .section-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+        }
+
+        .presets-row {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            background-color: var(--bg-input);
+            padding: 4px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+        }
+
+        .preset-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            padding: 8px 4px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .preset-btn.active {
+            background-color: #33364a;
+            color: var(--blue);
+            font-weight: 600;
+        }
+
+        .sliders-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        .slider-wrapper { display: flex; flex-direction: column; gap: 8px; }
+
+        .slider-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .slider-header .value-lbl { font-family: monospace; font-weight: bold; }
+
+        input[type="range"] {
+            width: 100%;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 6px;
+            background: #2e3142;
+            border-radius: 4px;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--blue);
+            cursor: pointer;
+            box-shadow: 0 0 8px rgba(37, 99, 235, 0.5);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--blue);
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 0 8px rgba(37, 99, 235, 0.5);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="widget-container">
+        <div class="legend-header">
+            <div class="legend-item">
+                <span class="dot blue"></span>
+                <span>Linear Equation: <span id="lblEquation" style="color: var(--text-main)"></span></span>
+            </div>
+            <div class="legend-item">
+                <span class="dot green"></span>
+                <span style="color: var(--text-muted)">y-intercept <span id="lblYIntCoord" style="color: var(--text-main)"></span></span>
+            </div>
+            <div class="legend-item">
+                <span class="dot orange"></span>
+                <span style="color: var(--text-muted)">x-intercept <span id="lblXIntCoord" style="color: var(--text-main)"></span></span>
+            </div>
+        </div>
+
+        <div class="graph-frame">
+            <svg id="coordinatePlane" viewBox="0 0 440 400">
+                <g id="gridGroup"></g>
+                <g id="axisGroup"></g>
+                <path id="functionLine" class="function-line" d=""></path>
+                <circle id="yInterceptDot" class="node-green" r="6"></circle>
+                <circle id="xInterceptDot" class="node-orange" r="6"></circle>
+            </svg>
+        </div>
+
+        <div class="metrics-grid">
+            <div>
+                <div class="metric-title">Slope (m)</div>
+                <div class="metric-value" id="dashM">5.00</div>
+            </div>
+            <div>
+                <div class="metric-title">y-Intercept (b)</div>
+                <div class="metric-value" id="dashB">-1.70</div>
+            </div>
+            <div>
+                <div class="metric-title">x-Intercept</div>
+                <div class="metric-value" id="dashX">0.34</div>
+            </div>
+        </div>
+
+        <div class="section-title">Function Presets</div>
+        <div class="presets-row">
+            <button class="preset-btn" onclick="applyPreset(this, 1.0, 0.0)">Identity (x)</button>
+            <button class="preset-btn" onclick="applyPreset(this, 5.0, 0.0)">Steep Slope</button>
+            <button class="preset-btn" onclick="applyPreset(this, -2.0, 4.0)">Negative</button>
+            <button class="preset-btn" onclick="applyPreset(this, 0.0, 3.0)">Horizontal</button>
+            <button class="preset-btn active" id="customBtn" onclick="setCustomActive()">Custom</button>
+        </div>
+
+        <div class="sliders-container">
+            <div class="slider-wrapper">
+                <div class="slider-header">
+                    <span style="color: var(--text-muted)">Slope (m)</span>
+                    <span class="value-lbl" id="slopeVal">5.0</span>
+                </div>
+                <input type="range" id="slopeInput" min="-10" max="10" step="0.1" value="5.0">
+            </div>
+
+            <div class="slider-wrapper">
+                <div class="slider-header">
+                    <span style="color: var(--text-muted)">y-Intercept (b)</span>
+                    <span class="value-lbl" id="interceptVal">-1.7</span>
+                </div>
+                <input type="range" id="interceptInput" min="-10" max="10" step="0.1" value="-1.7">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SVG_NS = "http://www.w3.org/2000/svg";
+
+        const gridGroup = document.getElementById('gridGroup');
+        const axisGroup = document.getElementById('axisGroup');
+        const functionLine = document.getElementById('functionLine');
+        const yInterceptDot = document.getElementById('yInterceptDot');
+        const xInterceptDot = document.getElementById('xInterceptDot');
+        const slopeInput = document.getElementById('slopeInput');
+        const interceptInput = document.getElementById('interceptInput');
+        const lblEquation = document.getElementById('lblEquation');
+        const lblYIntCoord = document.getElementById('lblYIntCoord');
+        const lblXIntCoord = document.getElementById('lblXIntCoord');
+        const dashM = document.getElementById('dashM');
+        const dashB = document.getElementById('dashB');
+        const dashX = document.getElementById('dashX');
+        const slopeVal = document.getElementById('slopeVal');
+        const interceptVal = document.getElementById('interceptVal');
+        const customBtn = document.getElementById('customBtn');
+
+        const VIEW_W = 440;
+        const VIEW_H = 400;
+        const CENTER_X = VIEW_W / 2;
+        const CENTER_Y = VIEW_H / 2;
+        const PX_PER_UNIT = 18; // pixels per 1 unit on the graph
+
+        function makeSvg(tag, attrs) {
+            const el = document.createElementNS(SVG_NS, tag);
+            for (const key in attrs) el.setAttribute(key, attrs[key]);
+            return el;
+        }
+
+        function initGraph() {
+            for (let i = -12; i <= 12; i += 2) {
+                const pixelX = CENTER_X + i * PX_PER_UNIT;
+                const pixelY = CENTER_Y - i * PX_PER_UNIT;
+
+                if (pixelX >= 0 && pixelX <= VIEW_W) {
+                    gridGroup.appendChild(makeSvg("line", {
+                        x1: pixelX, y1: 0, x2: pixelX, y2: VIEW_H, class: "grid-line"
+                    }));
+                    if (i !== 0) {
+                        const t = makeSvg("text", { x: pixelX - 6, y: CENTER_Y + 16, class: "axis-label" });
+                        t.textContent = i;
+                        axisGroup.appendChild(t);
+                    }
+                }
+
+                if (pixelY >= 0 && pixelY <= VIEW_H) {
+                    gridGroup.appendChild(makeSvg("line", {
+                        x1: 0, y1: pixelY, x2: VIEW_W, y2: pixelY, class: "grid-line"
+                    }));
+                    if (i !== 0) {
+                        const t = makeSvg("text", { x: CENTER_X - 18, y: pixelY + 4, class: "axis-label" });
+                        t.textContent = i;
+                        axisGroup.appendChild(t);
+                    }
+                }
+            }
+
+            const zero = makeSvg("text", { x: CENTER_X - 12, y: CENTER_Y + 14, class: "axis-label" });
+            zero.textContent = "0";
+            axisGroup.appendChild(zero);
+
+            axisGroup.appendChild(makeSvg("line", {
+                x1: 0, y1: CENTER_Y, x2: VIEW_W, y2: CENTER_Y, class: "main-axis"
+            }));
+            axisGroup.appendChild(makeSvg("line", {
+                x1: CENTER_X, y1: 0, x2: CENTER_X, y2: VIEW_H, class: "main-axis"
+            }));
+        }
+
+        // Avoid showing "-0.0"
+        function fmt(n, digits) {
+            const s = n.toFixed(digits);
+            return Number(s) === 0 ? (0).toFixed(digits) : s;
+        }
+
+        function buildEquation(m, b) {
+            if (m === 0) return `y = ${fmt(b, 1)}`;
+            const slopePart = `${m < 0 ? "-" : ""}${fmt(Math.abs(m), 1)}x`;
+            if (b === 0) return `y = ${slopePart}`;
+            const sign = b > 0 ? "+" : "-";
+            return `y = ${slopePart} ${sign} ${fmt(Math.abs(b), 1)}`;
+        }
+
+        function drawSystem() {
+            const m = parseFloat(slopeInput.value);
+            const b = parseFloat(interceptInput.value);
+
+            slopeVal.textContent = fmt(m, 1);
+            interceptVal.textContent = fmt(b, 1);
+
+            dashM.textContent = fmt(m, 2);
+            dashB.textContent = fmt(b, 2);
+
+            const xInt = m !== 0 ? -b / m : null;
+            dashX.textContent = xInt !== null ? fmt(xInt, 2) : (b === 0 ? "All x" : "None");
+
+            lblEquation.textContent = buildEquation(m, b);
+            lblYIntCoord.textContent = `(0.0, ${fmt(b, 1)})`;
+            lblXIntCoord.textContent = xInt !== null ? `(${fmt(xInt, 1)}, 0.0)` : "None";
+
+            // Draw the line across the full visible width
+            const x1 = -15, x2 = 15;
+            const px1 = CENTER_X + x1 * PX_PER_UNIT;
+            const py1 = CENTER_Y - (m * x1 + b) * PX_PER_UNIT;
+            const px2 = CENTER_X + x2 * PX_PER_UNIT;
+            const py2 = CENTER_Y - (m * x2 + b) * PX_PER_UNIT;
+            functionLine.setAttribute("d", `M ${px1} ${py1} L ${px2} ${py2}`);
+
+            // y-intercept dot
+            yInterceptDot.setAttribute("cx", CENTER_X);
+            yInterceptDot.setAttribute("cy", CENTER_Y - b * PX_PER_UNIT);
+
+            // x-intercept dot
+            if (xInt !== null && isFinite(xInt)) {
+                xInterceptDot.style.display = "block";
+                xInterceptDot.setAttribute("cx", CENTER_X + xInt * PX_PER_UNIT);
+                xInterceptDot.setAttribute("cy", CENTER_Y);
+            } else {
+                xInterceptDot.style.display = "none";
+            }
+        }
+
+        function applyPreset(btn, m, b) {
+            document.querySelectorAll('.preset-btn').forEach(el => el.classList.remove('active'));
+            btn.classList.add('active');
+            slopeInput.value = m;
+            interceptInput.value = b;
+            drawSystem();
+        }
+
+        function setCustomActive() {
+            document.querySelectorAll('.preset-btn').forEach(el => el.classList.remove('active'));
+            customBtn.classList.add('active');
+        }
+
+        slopeInput.addEventListener('input', () => { setCustomActive(); drawSystem(); });
+        interceptInput.addEventListener('input', () => { setCustomActive(); drawSystem(); });
+
+        initGraph();
+        drawSystem();
+    </script>
+</body>
+</html>

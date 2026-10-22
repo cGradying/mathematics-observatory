@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triangle Solver Dashboard</title>
+    <style>
+        :root {
+            --bg-main: #121620;
+            --bg-card: #1a1f2c;
+            --bg-input: #252d3d;
+            --text-main: #f0f4f8;
+            --text-muted: #8fa0b5;
+            --accent-cyan: #00f2fe;
+            --accent-pink: #ff007f;
+            --accent-yellow: #ffd000;
+            --border-color: #2e384d;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .dashboard-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            width: 100%;
+            max-width: 900px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .header {
+            margin-bottom: 25px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+
+        .mode-selector {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 16px;
+            color: var(--text-muted);
+        }
+
+        .mode-selector select {
+            background: none;
+            border: none;
+            color: var(--accent-cyan);
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            outline: none;
+            border-bottom: 1px dashed var(--accent-cyan);
+            padding-bottom: 2px;
+        }
+
+        .mode-selector select option {
+            background-color: var(--bg-card);
+            color: var(--text-main);
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            align-items: start;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .left-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .formula-display {
+            font-size: 32px;
+            font-family: 'Courier New', Courier, monospace;
+            padding: 15px 0;
+            min-height: 70px;
+            display: flex;
+            align-items: center;
+        }
+
+        .formula-display span {
+            color: var(--text-main);
+        }
+
+        .formula-display .var {
+            color: var(--accent-cyan);
+            font-weight: bold;
+        }
+
+        .formula-display .frac {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            vertical-align: middle;
+            padding: 0 4px;
+            font-size: 24px;
+        }
+
+        .formula-display .num {
+            border-bottom: 2px solid var(--text-main);
+            padding: 0 4px;
+        }
+
+        .formula-display .den {
+            padding: 0 4px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .input-row {
+            display: grid;
+            grid-template-columns: 30px 100px 1fr;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .symbol {
+            font-size: 20px;
+            font-style: italic;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .label {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .input-field {
+            background-color: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-main);
+            padding: 12px 16px;
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .input-field:focus {
+            border-color: var(--accent-cyan);
+        }
+
+        .right-panel {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+        }
+
+        canvas {
+            background-color: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            width: 100%;
+            max-width: 400px;
+            height: auto;
+            aspect-ratio: 4 / 3;
+        }
+
+        .result-box {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(0, 242, 254, 0.05);
+            border-left: 4px solid var(--accent-cyan);
+            border-radius: 4px;
+            width: 100%;
+            display: none;
+        }
+
+        .result-box.active {
+            display: block;
+        }
+
+        .error-box {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255, 0, 127, 0.05);
+            border-left: 4px solid var(--accent-pink);
+            border-radius: 4px;
+            width: 100%;
+            color: var(--accent-pink);
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard-card">
+        <div class="header">
+            <h1>Triangle</h1>
+            <div class="mode-selector">
+                <span>Solve for</span>
+                <select id="solveMode" onchange="updateMode()">
+                    <option value="area">area</option>
+                    <option value="base">base</option>
+                    <option value="height">height</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="left-panel">
+                <div class="formula-display" id="formula">
+                    <!-- Dynamic Formula Injection -->
+                </div>
+
+                <div class="input-group" id="inputFields">
+                    <!-- Dynamic Input Injection -->
+                </div>
+
+                <div class="result-box" id="resultBox">
+                    <span id="resultText"></span>
+                </div>
+                <div class="error-box" id="errorBox">
+                    Invalid input values. Please enter valid positive numbers.
+                </div>
+            </div>
+
+            <div class="right-panel">
+                <canvas id="triangleCanvas" width="400" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const modeConfigs = {
+            area: {
+                formula: `<span class="var">A</span> = <div class="frac"><div class="num">h<sub>b</sub> b</div><div class="den">2</div></div>`,
+                inputs: [
+                    { symbol: 'b', label: 'Base', id: 'val_b', placeholder: 'Enter value' },
+                    { symbol: 'h<sub>b</sub>', label: 'Height', id: 'val_h', placeholder: 'Enter value' }
+                ],
+                calculate: (v) => (v[0] * v[1]) / 2,
+                resultLabel: 'Calculated Area (A)'
+            },
+            base: {
+                formula: `<span class="var">b</span> = 2 <div class="frac"><div class="num">A</div><div class="den">h<sub>b</sub></div></div>`,
+                inputs: [
+                    { symbol: 'h<sub>b</sub>', label: 'Height', id: 'val_h', placeholder: 'Enter value' },
+                    { symbol: 'A', label: 'Area', id: 'val_A', placeholder: 'Enter value' }
+                ],
+                calculate: (v) => (2 * v[1]) / v[0],
+                resultLabel: 'Calculated Base (b)'
+            },
+            height: {
+                formula: `<span class="var">h<sub>b</sub></span> = 2 <div class="frac"><div class="num">A</div><div class="den">b</div></div>`,
+                inputs: [
+                    { symbol: 'b', label: 'Base', id: 'val_b', placeholder: 'Enter value' },
+                    { symbol: 'A', label: 'Area', id: 'val_A', placeholder: 'Enter value' }
+                ],
+                calculate: (v) => (2 * v[1]) / v[0],
+                resultLabel: 'Calculated Height (h<sub>b</sub>)'
+            }
+        };
+
+        function updateMode() {
+            const mode = document.getElementById('solveMode').value;
+            const config = modeConfigs[mode];
+            
+            document.getElementById('formula').innerHTML = config.formula;
+            
+            let inputsHtml = '';
+            config.inputs.forEach(input => {
+                inputsHtml += `
+                    <div class="input-row">
+                        <span class="symbol">${input.symbol}</span>
+                        <span class="label">${input.label}</span>
+                        <input type="number" id="${input.id}" class="input-field" placeholder="${input.placeholder}" oninput="processCalculation()">
+                    </div>
+                `;
+            });
+            document.getElementById('inputFields').innerHTML = inputsHtml;
+            
+            document.getElementById('resultBox').classList.remove('active');
+            document.getElementById('errorBox').style.display = 'none';
+            drawTriangle(120, 100);
+        }
+
+        function processCalculation() {
+            const mode = document.getElementById('solveMode').value;
+            const config = modeConfigs[mode];
+            const inputElements = config.inputs.map(input => document.getElementById(input.id));
+            const values = inputElements.map(el => parseFloat(el.value));
+
+            if (values.some(isNaN) || values.some(v => v <= 0)) {
+                document.getElementById('resultBox').classList.remove('active');
+                document.getElementById('errorBox').style.display = 'none';
+                return;
+            }
+            
+            const result = config.calculate(values);
+            if (result <= 0 || isNaN(result) || !isFinite(result)) {
+                document.getElementById('errorBox').style.display = 'block';
+                document.getElementById('resultBox').classList.remove('active');
+                return;
+            }
+            
+            document.getElementById('errorBox').style.display = 'none';
+            const resBox = document.getElementById('resultBox');
+            document.getElementById('resultText').innerHTML = `<strong>${config.resultLabel}:</strong> ${result.toFixed(2)}`;
+            resBox.classList.add('active');
+
+            let base = 120, height = 100;
+            if (mode === 'area') { [base, height] = values; }
+            else if (mode === 'base') { [height] = values; base = result; }
+            else if (mode === 'height') { [base] = values; height = result; }
+            drawTriangle(base, height);
+        }
+
+        function drawTriangle(baseVal, heightVal) {
+            const canvas = document.getElementById('triangleCanvas');
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const maxDim = Math.max(baseVal, heightVal);
+            const scale = Math.min(260 / maxDim, 1.5);
+            const b = baseVal * scale;
+            const h = heightVal * scale;
+
+            const startX = (canvas.width - b) / 2;
+            const startY = canvas.height - 60;
+            const topX = startX + (b * 0.4);
+            const topY = startY - h;
+
+            // 1. Draw outer triangle paths
+            ctx.strokeStyle = '#8fa0b5';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(startX, startY);
+            ctx.lineTo(startX + b, startY);
+            ctx.lineTo(topX, topY);
+            ctx.closePath();
+            ctx.stroke();
+
+            // 2. Draw altitude dashed height line (h_b)
+            ctx.strokeStyle = '#ff007f';
+            ctx.lineWidth = 1.5;
+            ctx.setLineDash([4, 4]);
+            ctx.beginPath();
+            ctx.moveTo(topX, topY);
+            ctx.lineTo(topX, startY);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // 3. Right angle helper box at the base projection
+            ctx.strokeStyle = '#ff007f';
+            ctx.lineWidth = 1;
+            const rSize = 10;
+            ctx.beginPath();
+            ctx.moveTo(topX, startY - rSize);
+            ctx.lineTo(topX + rSize, startY - rSize);
+            ctx.lineTo(topX + rSize, startY);
+            ctx.stroke();
+
+            // 4. Structural label markings
+            ctx.fillStyle = '#f0f4f8';
+            ctx.font = '14px Segoe UI';
+            ctx.fillText('b', startX + (b / 2) - 4, startY + 25);
+
+            ctx.fillStyle = '#ff007f';
+            ctx.fillText('h<sub>b</sub>', topX - 25, topY + (h / 2) + 5);
+
+            // Angle Gamma helper arc symbol
+            ctx.strokeStyle = '#00f2fe';
+            ctx.beginPath();
+            ctx.arc(startX, startY, 20, 0, -Math.atan2(h, topX - startX));
+            ctx.stroke();
+            ctx.fillStyle = '#00f2fe';
+            ctx.fillText('γ', startX + 25, startY - 8);
+
+            // Other side labels
+            ctx.fillStyle = '#8fa0b5';
+            ctx.fillText('a', startX + (topX - startX) / 2 - 15, topY + h / 2);
+            ctx.fillText('c', topX + (startX + b - topX) / 2 + 10, topY + h / 2);
+        }
+
+        // Initialize display configuration on load
+        updateMode();
+    </script>
+</body>
+</html>

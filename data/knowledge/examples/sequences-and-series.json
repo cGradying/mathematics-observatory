@@ -603,6 +603,7 @@
       "question": "Two financial situations are described. Situation A: $100 is deposited into an account and $100 is added at the end of each year for 5 years. Situation B: $100 is deposited initially and the account earns 5% simple interest each year. Which situation uses a geometric sequence/series and why?",
       "given": "Situation A: periodic deposits of $100; Situation B: simple interest at 5%",
       "expectedMethod": "Analyze whether the situation involves fixed additive change (arithmetic) or fixed multiplicative change (geometric).",
+      "formula": "Arithmetic: fixed amount added each period; Geometric: balance multiplied by a fixed ratio each period",
       "workedSolution": "Situation A involves periodic payments with compound interest (implied), so it uses a geometric series. Each $100 deposit compounds at a fixed multiplicative rate. Situation B involves simple interest, which is arithmetic: the interest amount is fixed at 5% of the original principal each year, so the balance increases by a constant amount ($5 per year). Therefore, Situation A uses a geometric model and Situation B uses an arithmetic model.",
       "finalAnswer": "Situation A uses a geometric sequence/series because the interest is compounded (multiplicative). Situation B uses an arithmetic sequence because simple interest adds a fixed amount each period.",
       "commonMistake": "Assuming all interest situations are geometric, or not recognizing that simple interest produces constant absolute change while compound interest produces constant relative change.",

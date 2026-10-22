@@ -2,6 +2,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const test = require('node:test');
+const { pathToFileURL } = require('node:url');
 const vm = require('node:vm');
 const { buildManifest } = require('../scripts/build-knowledge-index');
 
@@ -18,9 +19,9 @@ test('local HTML assets and page links resolve to files in the project', () => {
         const references = source.matchAll(/\b(?:href|src)\s*=\s*["']([^"']+)["']/gi);
 
         for (const [, reference] of references) {
-            if (!reference || reference.startsWith('#') || /^[a-z][a-z\d+.-]*:/i.test(reference)) continue;
+            if (!reference || reference.startsWith('#') || reference.startsWith('//') || /^[a-z][a-z\d+.-]*:/i.test(reference)) continue;
 
-            const localPath = decodeURIComponent(reference.split(/[?#]/, 1)[0]);
+            const localPath = decodeURIComponent(reference.split(/[?#]/, 1)[0]).replace(/^\/+/, '');
             if (!localPath) continue;
 
             const target = path.resolve(root, localPath);
@@ -52,6 +53,37 @@ test('local CSS url() references resolve relative to their stylesheet', () => {
     }
 
     assert.deepEqual(missingReferences, [], missingReferences.join('\n'));
+});
+
+test('Vite includes every root HTML page in its multi-page build', async () => {
+    const { default: config } = await import(pathToFileURL(path.join(root, 'vite.config.mjs')));
+    const input = config.build.rolldownOptions.input;
+    const configuredPages = Object.keys(input).map(name => `${name}.html`).sort();
+
+    assert.deepEqual(configuredPages, [...htmlFiles].sort());
+    assert.ok(!Object.hasOwn(input, 'api'), 'server functions are not client page entries');
+});
+
+test('assistant provider is shared across every page and matches the host environment', () => {
+    const configPath = path.join(root, 'assets', 'js', 'assistant-config.js');
+    const configSource = fs.readFileSync(configPath, 'utf8');
+
+    for (const page of htmlFiles) {
+        const html = fs.readFileSync(path.join(root, page), 'utf8');
+        assert.match(html, /assets\/js\/assistant-config\.js/, `${page} loads the shared provider config`);
+    }
+
+    for (const [hostname, provider, model] of [
+        ['127.0.0.1', 'ollama', 'qwen3:4b'],
+        ['localhost', 'ollama', 'qwen3:4b'],
+        ['math.example.com', 'gemini', 'gemini-3.5-flash-lite'],
+    ]) {
+        const window = { location: { hostname } };
+        vm.runInNewContext(configSource, { window }, { filename: 'assistant-config.js' });
+        assert.equal(window.MATHEMATICS_AI_PROVIDER, provider, `${hostname} selects its appropriate provider`);
+        assert.equal(window.MATHEMATICS_AI_MODEL, model, `${hostname} selects the matching model`);
+        assert.equal(window.MATHEMATICS_AI_ENDPOINT, '/api/assistant');
+    }
 });
 
 test('generated knowledge manifest matches topic and example files', () => {

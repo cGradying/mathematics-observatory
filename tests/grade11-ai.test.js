@@ -891,6 +891,31 @@ test('assistant restores chat history and context after page navigation', async 
     assert.match(secondReply.textContent, /hypotenuse is 5/);
 });
 
+test('clear chat removes displayed and saved history and resets future context', async () => {
+    const storageValues = new Map();
+    const localStorage = {
+        getItem(key) { return storageValues.get(key) ?? null; },
+        setItem(key, value) { storageValues.set(key, value); },
+        removeItem(key) { storageValues.delete(key); }
+    };
+    const harness = createAssistantHarness({
+        topic: 'Functions', given: '', find: '', method: '', working: [], check: '', answer: 'A function assigns each input exactly one output.'
+    }, { localStorage });
+
+    await harness.submit('What is a function?');
+    assert.ok(harness.messages.children.length > 1, 'the chat should contain the submitted exchange');
+    assert.ok(storageValues.size > 0, 'the exchange should be saved before clearing');
+
+    await harness.clear();
+    assert.equal(harness.messages.children.length, 1, 'only the welcome message remains visible');
+    assert.match(harness.messages.children[0].textContent, /Hi! Ask me/);
+    assert.equal(storageValues.size, 0, 'saved transcript is removed');
+
+    await harness.submit('What is a function?');
+    assert.equal(harness.requests.length, 2);
+    assert.equal(harness.requests[1].options.messages.filter(message => message.role === 'user').length, 1, 'old conversation context is not sent again');
+});
+
 test('assistant enforces the verified function value in its final answer', async () => {
     const harness = createAssistantHarness({
         topic: 'Functions', given: 'f(x) = 3x - 2; x = 5', find: 'f(5)',

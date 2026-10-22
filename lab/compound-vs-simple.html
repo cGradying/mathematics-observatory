@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple vs. Compound Interest Comparison</title>
+    <!-- Chart.js from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f7fa;
+            color: #333;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        h1 {
+            margin-top: 0;
+            font-size: 24px;
+            text-align: center;
+            color: #2c3e50;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        input {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+        .results-panel {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 25px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 5px solid #3498db;
+        }
+        .result-box {
+            text-align: center;
+        }
+        .result-title {
+            font-size: 13px;
+            text-transform: uppercase;
+            color: #7f8c8d;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .result-value {
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .simple-val { color: #e67e22; }
+        .compound-val { color: #2ecc71; }
+        .diff-val { color: #34495e; }
+        .chart-container {
+            position: relative;
+            margin: auto;
+            height: 400px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Simple vs. Compound Interest Calculator</h1>
+
+    <div class="grid">
+        <div class="input-group">
+            <label for="principal">Starting Amount ($)</label>
+            <input type="number" id="principal" value="10000" min="0" max="1300000" step="500">
+        </div>
+        <div class="input-group">
+            <label for="rate">Annual Interest Rate (%)</label>
+            <input type="number" id="rate" value="8" min="0" max="30" step="0.5">
+        </div>
+        <div class="input-group">
+            <label for="years">Time Horizon (Years)</label>
+            <input type="number" id="years" value="15" min="1" max="50" step="1">
+        </div>
+    </div>
+
+    <div class="results-panel">
+        <div class="result-box">
+            <div class="result-title">Simple Interest Total</div>
+            <div class="result-value simple-val" id="simpleTotal">$0.00</div>
+        </div>
+        <div class="result-box">
+            <div class="result-title">Compound Interest Total</div>
+            <div class="result-value compound-val" id="compoundTotal">$0.00</div>
+        </div>
+        <div class="result-box">
+            <div class="result-title">The Compound Advantage</div>
+            <div class="result-value diff-val" id="interestDiff">$0.00</div>
+        </div>
+    </div>
+
+    <div class="chart-container">
+        <canvas id="comparisonChart"></canvas>
+    </div>
+</div>
+
+<script>
+    const principalInput = document.getElementById('principal');
+    const rateInput = document.getElementById('rate');
+    const yearsInput = document.getElementById('years');
+
+    const simpleTotalText = document.getElementById('simpleTotal');
+    const compoundTotalText = document.getElementById('compoundTotal');
+    const interestDiffText = document.getElementById('interestDiff');
+    const ctx = document.getElementById('comparisonChart').getContext('2d');
+
+    let comparisonChart;
+
+    function formatCurrency(value) {
+        return '$' + parseFloat(value).toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+    }
+
+    function calculateInterest() {
+        // Clamp values to allowed limits
+        const P = Math.min(Math.max(parseFloat(principalInput.value) || 0, 0), 1300000);
+        const r = Math.min(Math.max(parseFloat(rateInput.value) || 0, 0), 30) / 100;
+        const t = Math.min(Math.max(parseInt(yearsInput.value) || 0, 0), 50);
+
+        const labels = [];
+        const simpleData = [];
+        const compoundData = [];
+
+        for (let i = 0; i <= t; i++) {
+            labels.push(`Year ${i}`);
+
+            // Simple Interest: A = P * (1 + r*t)
+            const simpleAmt = P * (1 + (r * i));
+            simpleData.push(Math.round(simpleAmt * 100) / 100);
+
+            // Compound Interest: A = P * (1 + r)^t
+            const compoundAmt = P * Math.pow((1 + r), i);
+            compoundData.push(Math.round(compoundAmt * 100) / 100);
+        }
+
+        const finalSimple = simpleData[simpleData.length - 1] || 0;
+        const finalCompound = compoundData[compoundData.length - 1] || 0;
+        const difference = finalCompound - finalSimple;
+
+        simpleTotalText.innerText = formatCurrency(finalSimple);
+        compoundTotalText.innerText = formatCurrency(finalCompound);
+        interestDiffText.innerText = formatCurrency(difference);
+
+        if (comparisonChart) {
+            comparisonChart.data.labels = labels;
+            comparisonChart.data.datasets[0].data = simpleData;
+            comparisonChart.data.datasets[1].data = compoundData;
+            comparisonChart.update();
+        } else {
+            comparisonChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Simple Interest Growth',
+                            data: simpleData,
+                            borderColor: '#e67e22',
+                            backgroundColor: 'transparent',
+                            borderWidth: 3,
+                            pointRadius: 2,
+                            tension: 0.1
+                        },
+                        {
+                            label: 'Compound Interest Growth',
+                            data: compoundData,
+                            borderColor: '#2ecc71',
+                            backgroundColor: 'rgba(46, 204, 113, 0.05)',
+                            borderWidth: 3,
+                            fill: true,
+                            pointRadius: 2,
+                            tension: 0.1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + value.toLocaleString();
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${formatCurrency(context.raw)}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    // Recalculate whenever an input changes
+    [principalInput, rateInput, yearsInput].forEach(input => {
+        input.addEventListener('input', calculateInterest);
+    });
+
+    // Initial render
+    calculateInterest();
+</script>
+
+</body>
+</html>

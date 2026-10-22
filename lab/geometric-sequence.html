@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Geometric Sequence Visualizer</title>
+<style>
+  :root { --bg:#1f2023; --card:#26272b; --panel:#2f3035; --line:#3a3b41; --text:#e8eaed; --muted:#9aa0a6; --blue:#3b6fe8; }
+  * { box-sizing:border-box; }
+  body { margin:0; padding:20px; background:#17181a; color:var(--text); font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif; }
+  .card { max-width:820px; margin:0 auto; background:var(--card); border-radius:24px; overflow:hidden; border:1px solid var(--line); }
+  .stage { height:360px; background:var(--bg); }
+  canvas { width:100%; height:100%; display:block; }
+  .stats { display:flex; justify-content:space-around; text-align:center; padding:18px 10px; border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
+  .stats small { display:block; color:var(--muted); font-size:13px; margin-bottom:6px; }
+  .stats b { font-size:18px; }
+  .controls { padding:22px 26px 26px; }
+  .row { display:flex; gap:24px; flex-wrap:wrap; margin-bottom:22px; }
+  .row > div { flex:1; min-width:220px; }
+  label { display:block; color:var(--muted); font-size:15px; margin-bottom:10px; }
+  select { width:100%; padding:14px; border-radius:10px; border:0; background:var(--panel); color:var(--text); font-size:16px; font-weight:600; }
+  .toggle { display:flex; background:var(--panel); border-radius:12px; padding:4px; }
+  .toggle button { flex:1; padding:11px; border:0; border-radius:9px; background:transparent; color:var(--muted); font-size:15px; font-weight:600; cursor:pointer; }
+  .toggle button.on { background:var(--blue); color:#fff; }
+  .sliders { display:flex; gap:24px; flex-wrap:wrap; }
+  .sliders > div { flex:1; min-width:180px; }
+  .sl { display:flex; align-items:center; gap:12px; }
+  input[type=range] { flex:1; accent-color:var(--blue); }
+  .val { min-width:44px; text-align:right; font-weight:600; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="stage"><canvas id="cv"></canvas></div>
+  <div class="stats">
+    <div><small>Current Formula</small><b id="formula"></b></div>
+    <div><small>Last Term (a_n)</small><b id="last"></b></div>
+    <div><small>Sum (S_n)</small><b id="sum"></b></div>
+  </div>
+  <div class="controls">
+    <div class="row">
+      <div>
+        <label for="preset">Sequence Preset</label>
+        <select id="preset">
+          <option value="custom">Custom parameters</option>
+          <option value="double">Doubling (1, r = 2)</option>
+          <option value="half">Halving (8, r = 0.5)</option>
+          <option value="alt">Alternating (2, r = -1.5)</option>
+          <option value="ball">Bouncing ball (10, r = 0.6)</option>
+        </select>
+      </div>
+      <div>
+        <label>Visualization View</label>
+        <div class="toggle">
+          <button id="vBars" class="on">Cartesian bars</button>
+          <button id="vSpiral">Radial spiral</button>
+        </div>
+      </div>
+    </div>
+    <div class="sliders">
+      <div><label>Initial term (a)</label><div class="sl"><input type="range" id="a" min="-10" max="10" step="0.5" value="5"><span class="val" id="aV"></span></div></div>
+      <div><label>Common ratio (r)</label><div class="sl"><input type="range" id="r" min="-2" max="2" step="0.05" value="0.75"><span class="val" id="rV"></span></div></div>
+      <div><label>Number of terms (n)</label><div class="sl"><input type="range" id="n" min="1" max="20" step="1" value="12"><span class="val" id="nV"></span></div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const cv = $('cv'), ctx = cv.getContext('2d');
+const A = $('a'), R = $('r'), N = $('n');
+let view = 'bars';
+
+const presets = { double:[1,2,8], half:[8,0.5,10], alt:[2,-1.5,10], ball:[10,0.6,12] };
+
+function fmt(v, d = 3) {
+  if (!isFinite(v)) return v > 0 ? '∞' : '-∞';
+  if (Math.abs(v) >= 1e6 || (Math.abs(v) < 1e-4 && v !== 0)) return v.toExponential(3);
+  return parseFloat(v.toFixed(d)).toLocaleString();
+}
+function short(v) { return parseFloat(v.toFixed(2)).toString(); }
+
+function getData() {
+  const a = +A.value, r = +R.value, n = +N.value;
+  const terms = [];
+  let sum = 0;
+  for (let i = 1; i <= n; i++) { const t = a * Math.pow(r, i - 1); terms.push(t); sum += t; }
+  return { a, r, n, terms, sum };
+}
+
+function resize() {
+  const dpr = window.devicePixelRatio || 1;
+  const w = cv.clientWidth, h = cv.clientHeight;
+  cv.width = w * dpr; cv.height = h * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  draw();
+}
+
+function drawGrid(w, h) {
+  ctx.strokeStyle = '#34353b'; ctx.lineWidth = 1;
+  for (let x = 0; x < w; x += 72) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke(); }
+  for (let y = 0; y < h; y += 72) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke(); }
+}
+
+function drawBars(d, w, h) {
+  const padT = 40, padB = 50, padX = 30;
+  const maxV = Math.max(...d.terms, 0), minV = Math.min(...d.terms, 0);
+  const range = (maxV - minV) || 1;
+  const plotH = h - padT - padB;
+  const y0 = padT + (maxV / range) * plotH;           // zero baseline
+  const slot = (w - padX * 2) / d.n;
+  const bw = Math.min(34, slot * 0.65);
+  const yOf = v => y0 - (v / range) * plotH;
+
+  ctx.strokeStyle = '#4a4b52'; ctx.beginPath(); ctx.moveTo(padX, y0); ctx.lineTo(w - padX, y0); ctx.stroke();
+
+  const pts = [];
+  d.terms.forEach((t, i) => {
+    const cx = padX + slot * i + slot / 2;
+    const y = yOf(t);
+    pts.push([cx, y]);
+    const top = Math.min(y, y0), bh = Math.max(Math.abs(y0 - y), 2);
+    const neg = t < 0;
+    ctx.fillStyle = neg ? 'rgba(235,64,52,0.28)' : 'rgba(59,111,232,0.25)';
+    ctx.strokeStyle = neg ? '#eb4034' : '#3b6fe8'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.roundRect(cx - bw / 2, top, bw, bh, 4); ctx.fill(); ctx.stroke();
+
+    ctx.fillStyle = neg ? '#ff5a4d' : '#fff'; ctx.font = 'bold 11px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText(short(t), cx, t >= 0 ? y - 8 : y + 16);
+    if (d.n <= 14 || i % 2 === 0) {
+      ctx.fillStyle = '#9aa0a6'; ctx.font = '11px sans-serif';
+      ctx.fillText('n=' + (i + 1), cx, h - 18);
+    }
+  });
+
+  ctx.setLineDash([5, 4]); ctx.strokeStyle = '#3b6fe8'; ctx.lineWidth = 1.5;
+  ctx.beginPath(); pts.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)); ctx.stroke();
+  ctx.setLineDash([]);
+}
+
+function drawSpiral(d, w, h) {
+  const cx = w / 2, cy = h / 2, maxR = Math.min(w, h) / 2 - 30;
+  const maxAbs = Math.max(...d.terms.map(Math.abs), 1e-9);
+  ctx.strokeStyle = '#3a3b41';
+  [0.33, 0.66, 1].forEach(k => { ctx.beginPath(); ctx.arc(cx, cy, maxR * k, 0, Math.PI * 2); ctx.stroke(); });
+
+  const step = 0.95;
+  const pts = d.terms.map((t, i) => {
+    const rad = (Math.abs(t) / maxAbs) * maxR;
+    const ang = i * step + (t < 0 ? Math.PI : 0);
+    return [cx + rad * Math.cos(ang), cy + rad * Math.sin(ang), t];
+  });
+
+  ctx.strokeStyle = '#3b6fe8'; ctx.lineWidth = 2;
+  ctx.beginPath(); pts.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)); ctx.stroke();
+
+  pts.forEach(([x, y, t], i) => {
+    ctx.fillStyle = '#3b6fe8'; ctx.beginPath(); ctx.arc(x, y, 5, 0, Math.PI * 2); ctx.fill();
+    if (d.n <= 12 || i < 6) {
+      ctx.fillStyle = '#fff'; ctx.font = 'bold 11px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText(`a_${i + 1} (${short(t)})`, x, y - 10);
+    }
+  });
+}
+
+function draw() {
+  const d = getData();
+  $('aV').textContent = d.a.toFixed(1);
+  $('rV').textContent = d.r.toFixed(2);
+  $('nV').textContent = d.n;
+  $('formula').innerHTML = `a<sub>n</sub> = ${d.a} × (${d.r})<sup>n−1</sup>`;
+  $('last').textContent = fmt(d.terms[d.n - 1]);
+  $('sum').textContent = fmt(d.sum);
+
+  const w = cv.clientWidth, h = cv.clientHeight;
+  ctx.clearRect(0, 0, w, h);
+  drawGrid(w, h);
+  view === 'bars' ? drawBars(d, w, h) : drawSpiral(d, w, h);
+}
+
+[A, R, N].forEach(el => el.addEventListener('input', () => { $('preset').value = 'custom'; draw(); }));
+$('preset').addEventListener('change', e => {
+  const p = presets[e.target.value];
+  if (p) { A.value = p[0]; R.value = p[1]; N.value = p[2]; }
+  draw();
+});
+function setView(v) {
+  view = v;
+  $('vBars').classList.toggle('on', v === 'bars');
+  $('vSpiral').classList.toggle('on', v === 'spiral');
+  draw();
+}
+$('vBars').onclick = () => setView('bars');
+$('vSpiral').onclick = () => setView('spiral');
+window.addEventListener('resize', resize);
+resize();
+</script>
+</body>
+</html>

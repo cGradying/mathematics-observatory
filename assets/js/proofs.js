@@ -15,9 +15,14 @@ document.addEventListener('DOMContentLoaded', function() {
 // Hero Canvas Animation
 // =========================================
 
+let heroAnimationFrameId = 0;
+const proofAnimationButtons = new WeakSet();
+
 function initHeroAnimation() {
     const canvas = document.getElementById('heroCanvas');
     if (!canvas) return;
+
+    if (heroAnimationFrameId) cancelAnimationFrame(heroAnimationFrameId);
 
     const ctx = canvas.getContext('2d');
     canvas.width = canvas.offsetWidth * 2;
@@ -114,12 +119,16 @@ function initHeroAnimation() {
     }
 
     function animate() {
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            drawPythagoreanTheorem();
+            return;
+        }
         animationProgress += 0.02 * animationDirection;
         if (animationProgress > Math.PI * 2) {
             animationProgress = 0;
         }
         drawPythagoreanTheorem();
-        requestAnimationFrame(animate);
+        heroAnimationFrameId = requestAnimationFrame(animate);
     }
 
     animate();
@@ -278,6 +287,124 @@ function initStepToggles(container) {
 function initVisualProofs() {
     initPythagoreanProof();
     initSumOfSquaresProof();
+    initGaussSeriesProof();
+    initDifferenceOfSquaresProof();
+}
+
+function initGaussSeriesProof() {
+    const canvas = document.getElementById('gauss-canvas');
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    const sizeCanvas = () => {
+        const width = canvas.offsetWidth;
+        const height = canvas.offsetHeight;
+        if (canvas.width !== width * 2 || canvas.height !== height * 2) {
+            canvas.width = width * 2;
+            canvas.height = height * 2;
+            ctx.setTransform(2, 0, 0, 2, 0, 0);
+        }
+        return { width, height };
+    };
+    const draw = progress => {
+        const { width, height } = sizeCanvas();
+        ctx.clearRect(0, 0, width, height);
+
+        const rows = 8;
+        const dot = Math.min(18, (width - 96) / (rows * 2));
+        const left = (width - rows * dot * 2) / 2;
+        const top = Math.max(24, (height - rows * dot) / 2);
+        const count = Math.ceil(rows * progress);
+        ctx.fillStyle = '#14707c';
+        for (let row = 0; row < count; row++) {
+            for (let col = 0; col <= row; col++) {
+                ctx.beginPath();
+                ctx.arc(left + col * dot, top + row * dot, Math.max(2, dot * 0.28), 0, Math.PI * 2);
+                ctx.arc(left + (rows + col) * dot, top + (rows - row - 1) * dot, Math.max(2, dot * 0.28), 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+        ctx.fillStyle = '#0f4f57';
+        ctx.font = '600 15px "IBM Plex Mono", monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('1 + 2 + … + n = n(n + 1) / 2', width / 2, height - 16);
+    };
+
+    draw(1);
+    const button = document.querySelector('[data-canvas="gauss-canvas"]');
+    if (!button || proofAnimationButtons.has(button)) return;
+    proofAnimationButtons.add(button);
+    button.addEventListener('click', () => {
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            draw(1);
+            return;
+        }
+        const started = performance.now();
+        const animate = now => {
+            const progress = Math.min(1, (now - started) / 900);
+            draw(progress);
+            if (progress < 1) requestAnimationFrame(animate);
+        };
+        requestAnimationFrame(animate);
+    });
+}
+
+function initDifferenceOfSquaresProof() {
+    const canvas = document.getElementById('difference-squares-canvas');
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    const sizeCanvas = () => {
+        const width = canvas.offsetWidth;
+        const height = canvas.offsetHeight;
+        if (canvas.width !== width * 2 || canvas.height !== height * 2) {
+            canvas.width = width * 2;
+            canvas.height = height * 2;
+            ctx.setTransform(2, 0, 0, 2, 0, 0);
+        }
+        return { width, height };
+    };
+    const draw = progress => {
+        const { width, height } = sizeCanvas();
+        ctx.clearRect(0, 0, width, height);
+
+        const size = Math.min(190, height - 72, width - 80);
+        const left = (width - size) / 2;
+        const top = (height - size) / 2 - 8;
+        const cut = size * 0.36;
+        ctx.fillStyle = 'rgba(20, 112, 124, 0.24)';
+        ctx.fillRect(left, top, size, size);
+        ctx.fillStyle = '#b48254';
+        ctx.globalAlpha = 0.85;
+        ctx.fillRect(left + size - cut, top + size - cut, cut, cut);
+        ctx.globalAlpha = 1;
+        ctx.strokeStyle = '#0f4f57';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(left, top, size, size);
+        ctx.strokeRect(left + size - cut, top + size - cut, cut, cut);
+        ctx.fillStyle = '#0f2a2f';
+        ctx.font = '600 15px "IBM Plex Mono", monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(progress < 0.5 ? 'a² − b²' : '(a + b)(a − b)', width / 2, height - 16);
+    };
+
+    draw(0);
+    const button = document.querySelector('[data-canvas="difference-squares-canvas"]');
+    if (!button || proofAnimationButtons.has(button)) return;
+    proofAnimationButtons.add(button);
+    button.addEventListener('click', () => {
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            draw(1);
+            return;
+        }
+        const started = performance.now();
+        const animate = now => {
+            const progress = Math.min(1, (now - started) / 850);
+            draw(progress);
+            if (progress < 1) requestAnimationFrame(animate);
+        };
+        requestAnimationFrame(animate);
+    });
 }
 
 function initPythagoreanProof() {
@@ -303,16 +430,16 @@ function initPythagoreanProof() {
         const startY = h / 2 - size / 2;
 
         // Draw left square (a² + b²)
-        ctx.fillStyle = 'rgba(168, 85, 247, 0.3)';
+        ctx.fillStyle = 'rgba(20, 112, 124, 0.22)';
         ctx.fillRect(startX, startY, size, size);
-        ctx.strokeStyle = 'rgba(168, 85, 247, 0.8)';
+        ctx.strokeStyle = '#14707c';
         ctx.lineWidth = 2;
         ctx.strokeRect(startX, startY, size, size);
 
         // Draw subdivision
         const a = size * 0.6;
         const b = size * 0.4;
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+        ctx.strokeStyle = 'rgba(18, 43, 48, 0.45)';
         ctx.lineWidth = 1;
         ctx.beginPath();
         ctx.moveTo(startX + a, startY);
@@ -322,7 +449,7 @@ function initPythagoreanProof() {
         ctx.stroke();
 
         // Labels
-        ctx.fillStyle = 'white';
+        ctx.fillStyle = '#0f2a2f';
         ctx.font = 'bold 16px Arial';
         ctx.textAlign = 'center';
         ctx.fillText('a²', startX + a / 2, startY + a / 2);
@@ -333,12 +460,12 @@ function initPythagoreanProof() {
 
         // Draw right square (c²)
         const rightX = w / 2 + 40;
-        ctx.fillStyle = 'rgba(16, 185, 129, 0.3)';
+        ctx.fillStyle = 'rgba(180, 130, 84, 0.28)';
         ctx.fillRect(rightX, startY, size, size);
-        ctx.strokeStyle = 'rgba(16, 185, 129, 0.8)';
+        ctx.strokeStyle = '#b48254';
         ctx.lineWidth = 2;
         ctx.strokeRect(rightX, startY, size, size);
-        ctx.fillStyle = 'white';
+        ctx.fillStyle = '#0f2a2f';
         ctx.fillText('c²', rightX + size / 2, startY + size / 2);
     }
 
@@ -361,18 +488,18 @@ function initPythagoreanProof() {
         ctx.save();
         ctx.translate(startX + offsetX, startY);
         ctx.rotate(rotation);
-        ctx.fillStyle = `rgba(168, 85, 247, ${0.3 - progress * 0.1})`;
+        ctx.fillStyle = `rgba(20, 112, 124, ${0.25 - progress * 0.08})`;
         ctx.fillRect(-size / 2, -size / 2, size, size);
-        ctx.strokeStyle = 'rgba(168, 85, 247, 0.8)';
+        ctx.strokeStyle = '#14707c';
         ctx.lineWidth = 2;
         ctx.strokeRect(-size / 2, -size / 2, size, size);
         ctx.restore();
 
         // Target square
         const rightX = w / 2 + 40;
-        ctx.fillStyle = `rgba(16, 185, 129, ${0.2 + progress * 0.2})`;
+        ctx.fillStyle = `rgba(180, 130, 84, ${0.2 + progress * 0.15})`;
         ctx.fillRect(rightX, startY, size, size);
-        ctx.strokeStyle = 'rgba(16, 185, 129, 0.8)';
+        ctx.strokeStyle = '#b48254';
         ctx.lineWidth = 2;
         ctx.strokeRect(rightX, startY, size, size);
 
@@ -387,7 +514,8 @@ function initPythagoreanProof() {
 
     drawStatic();
 
-    if (animateBtn) {
+    if (animateBtn && !proofAnimationButtons.has(animateBtn)) {
+        proofAnimationButtons.add(animateBtn);
         animateBtn.addEventListener('click', function() {
             if (!isAnimating) {
                 animationFrame = 0;
@@ -424,13 +552,13 @@ function initSumOfSquaresProof() {
         // Draw squares 1² + 2² + 3² + 4² + 5²
         for (let i = 1; i <= n; i++) {
             const size = i * (maxSize / n);
-            ctx.fillStyle = `hsla(${240 + i * 20}, 70%, 60%, 0.4)`;
+            ctx.fillStyle = `hsla(${178 + i * 7}, 42%, 44%, 0.45)`;
             ctx.fillRect(xOffset, yBase - size, size, size);
-            ctx.strokeStyle = `hsla(${240 + i * 20}, 70%, 50%, 0.9)`;
+            ctx.strokeStyle = `hsla(${178 + i * 7}, 60%, 28%, 0.95)`;
             ctx.lineWidth = 2;
             ctx.strokeRect(xOffset, yBase - size, size, size);
 
-            ctx.fillStyle = 'white';
+            ctx.fillStyle = '#0f2a2f';
             ctx.font = 'bold 14px Arial';
             ctx.textAlign = 'center';
             ctx.fillText(`${i}²`, xOffset + size / 2, yBase - size / 2);
@@ -439,7 +567,7 @@ function initSumOfSquaresProof() {
         }
 
         // Draw formula
-        ctx.fillStyle = 'white';
+        ctx.fillStyle = '#0f2a2f';
         ctx.font = 'bold 16px Georgia, serif';
         ctx.textAlign = 'center';
         ctx.fillText('1² + 2² + 3² + 4² + 5² = n(n+1)(2n+1)/6', w / 2, h - 30);
@@ -465,14 +593,14 @@ function initSumOfSquaresProof() {
             const itemProgress = Math.max(0, Math.min(1, (progress - delay) / 0.2));
             const yPos = yBase - size + (1 - itemProgress) * 100;
 
-            ctx.fillStyle = `hsla(${240 + i * 20}, 70%, 60%, ${0.4 * itemProgress})`;
+            ctx.fillStyle = `hsla(${178 + i * 7}, 42%, 44%, ${0.45 * itemProgress})`;
             ctx.fillRect(xOffset, yPos, size, size);
-            ctx.strokeStyle = `hsla(${240 + i * 20}, 70%, 50%, ${0.9 * itemProgress})`;
+            ctx.strokeStyle = `hsla(${178 + i * 7}, 60%, 28%, ${0.95 * itemProgress})`;
             ctx.lineWidth = 2;
             ctx.strokeRect(xOffset, yPos, size, size);
 
             if (itemProgress > 0.5) {
-                ctx.fillStyle = 'white';
+                ctx.fillStyle = '#0f2a2f';
                 ctx.font = 'bold 14px Arial';
                 ctx.textAlign = 'center';
                 ctx.fillText(`${i}²`, xOffset + size / 2, yPos + size / 2);
@@ -492,7 +620,8 @@ function initSumOfSquaresProof() {
 
     drawStatic();
 
-    if (animateBtn) {
+    if (animateBtn && !proofAnimationButtons.has(animateBtn)) {
+        proofAnimationButtons.add(animateBtn);
         animateBtn.addEventListener('click', function() {
             if (!isAnimating) {
                 animationFrame = 0;
@@ -519,11 +648,11 @@ function initChallengeReveals() {
             if (isRevealed) {
                 answer.hidden = true;
                 button.setAttribute('aria-expanded', 'false');
-                this.textContent = 'Reveal Answer';
+                this.textContent = 'Show Reasoning';
             } else {
                 answer.hidden = false;
                 button.setAttribute('aria-expanded', 'true');
-                this.textContent = 'Hide Answer';
+                this.textContent = 'Hide Reasoning';
             }
         });
     });

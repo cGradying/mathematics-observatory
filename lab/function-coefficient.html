@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Polynomial Explorer</title>
+<style>
+    :root {
+        --page: #202124;
+        --card: #25272b;
+        --plot: #020617;
+        --border: #34373d;
+        --text: #e8eaed;
+        --muted: #9aa0a6;
+        --accent: #4a7bff;
+        --danger: #ea4335;
+    }
+    * { box-sizing: border-box; }
+    body {
+        margin: 0;
+        padding: 24px 16px;
+        background: var(--page);
+        color: var(--text);
+        font-family: "Google Sans", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        display: flex;
+        justify-content: center;
+    }
+    .card {
+        width: 100%;
+        max-width: 760px;
+        background: var(--card);
+        border-radius: 28px;
+        overflow: hidden;
+        box-shadow: 0 8px 30px rgba(0,0,0,.35);
+    }
+
+    /* ---------- Graph ---------- */
+    .graph {
+        position: relative;
+        background: var(--plot);
+        height: 400px;
+    }
+    #plot { width: 100%; height: 100%; display: block; }
+
+    .preset {
+        position: absolute;
+        top: 14px; left: 14px;
+        display: flex; align-items: center; gap: 6px;
+        padding: 8px 12px;
+        background: rgba(20, 27, 45, .85);
+        border: 1px solid #2c3550;
+        border-radius: 10px;
+        font-size: 14px;
+        color: var(--muted);
+    }
+    .preset select {
+        appearance: none;
+        -webkit-appearance: none;
+        background: transparent;
+        border: none;
+        outline: none;
+        color: var(--text);
+        font: inherit;
+        font-weight: 600;
+        font-size: 16px;
+        padding-right: 18px;
+        cursor: pointer;
+        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23e8eaed' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+        background-repeat: no-repeat;
+        background-position: right center;
+    }
+    .preset select option { background: #25272b; color: var(--text); }
+
+    .equation {
+        position: absolute;
+        left: 14px; bottom: 14px;
+        padding: 9px 14px;
+        background: rgba(20, 27, 45, .85);
+        border: 1px solid #2c3550;
+        border-radius: 10px;
+        font-size: 17px;
+        font-weight: 700;
+    }
+
+    /* ---------- Stats ---------- */
+    .stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        text-align: center;
+        padding: 18px 12px;
+        border-bottom: 1px solid var(--border);
+    }
+    .stat .label { font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+    .stat .value { font-size: 16px; font-weight: 700; }
+
+    /* ---------- Controls ---------- */
+    .controls { padding: 22px 22px 28px; }
+    .section-title { font-size: 16px; color: #bdc1c6; margin: 0 0 12px; }
+
+    .segmented {
+        display: flex;
+        background: #1b1c1f;
+        border-radius: 999px;
+        padding: 4px;
+        margin-bottom: 26px;
+        gap: 2px;
+    }
+    .segmented button {
+        flex: 1;
+        border: none;
+        background: transparent;
+        color: var(--muted);
+        font: inherit;
+        font-size: 15px;
+        font-weight: 600;
+        padding: 11px 6px;
+        border-radius: 999px;
+        cursor: pointer;
+        transition: background .15s, color .15s;
+        white-space: nowrap;
+    }
+    .segmented button:hover { color: var(--text); }
+    .segmented button.active { background: var(--accent); color: #0b1220; }
+
+    .sliders {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 22px 32px;
+    }
+    .slider-block .name { font-size: 14px; color: #bdc1c6; margin-bottom: 8px; }
+    .slider-row { display: flex; align-items: center; gap: 16px; }
+    .slider-row .num {
+        min-width: 44px;
+        text-align: right;
+        font-weight: 700;
+        font-size: 16px;
+    }
+
+    input[type="range"] {
+        -webkit-appearance: none;
+        appearance: none;
+        flex: 1;
+        height: 4px;
+        border-radius: 999px;
+        outline: none;
+        cursor: pointer;
+        background: #3a3d44;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 20px; height: 20px;
+        border-radius: 50%;
+        background: var(--accent);
+        border: none;
+        box-shadow: 0 0 0 4px rgba(74,123,255,.18);
+    }
+    input[type="range"]::-moz-range-thumb {
+        width: 20px; height: 20px;
+        border-radius: 50%;
+        background: var(--accent);
+        border: none;
+    }
+
+    @media (max-width: 560px) {
+        .graph { height: 320px; }
+        .sliders { grid-template-columns: 1fr; }
+        .segmented button { font-size: 12px; padding: 10px 2px; }
+    }
+</style>
+</head>
+<body>
+
+<div class="card">
+    <div class="graph">
+        <canvas id="plot"></canvas>
+
+        <div class="preset">
+            Preset:
+            <select id="preset">
+                <option value="custom">Custom</option>
+                <option value="line">Line: y = x</option>
+                <option value="parabola">Parabola: x²</option>
+                <option value="cubic">Cubic: x³ - 3x</option>
+                <option value="wave">Quartic: 0.2x⁴ - 2x² + 1</option>
+                <option value="flat">Flat: y = 2</option>
+            </select>
+        </div>
+
+        <div class="equation" id="equation">f(x) = 0</div>
+    </div>
+
+    <div class="stats">
+        <div class="stat"><div class="label">Degree Order</div><div class="value" id="statDegree">1</div></div>
+        <div class="stat"><div class="label">Y-Intercept</div><div class="value" id="statY">(0, 0)</div></div>
+        <div class="stat"><div class="label">Est. X-Roots</div><div class="value" id="statRoots">0</div></div>
+    </div>
+
+    <div class="controls">
+        <h3 class="section-title">Polynomial Degree Order</h3>
+        <div class="segmented" id="degreeButtons">
+            <button data-deg="1">Linear (1st)</button>
+            <button data-deg="2">Quadratic (2nd)</button>
+            <button data-deg="3">Cubic (3rd)</button>
+            <button data-deg="4">Quartic (4th)</button>
+        </div>
+
+        <h3 class="section-title">Adjust Function Coefficients</h3>
+        <div class="sliders" id="sliders"></div>
+    </div>
+</div>
+
+<script>
+(function () {
+    // ---------- State ----------
+    const VIEW = { xMin: -5, xMax: 5, yMin: -5, yMax: 5 };
+    let degree = 1;
+    let coef = [0.3, -1.4, 0, 0, 0]; // coef[i] is the coefficient of x^i
+
+    const PRESETS = {
+        line:     { degree: 1, coef: [0, 1, 0, 0, 0] },
+        parabola: { degree: 2, coef: [0, 0, 1, 0, 0] },
+        cubic:    { degree: 3, coef: [0, -3, 0, 1, 0] },
+        wave:     { degree: 4, coef: [1, 0, -2, 0, 0.2] },
+        flat:     { degree: 1, coef: [2, 0, 0, 0, 0] }
+    };
+
+    const NAMES = ['Constant', 'Slope', 'Quadratic term', 'Cubic term', 'Quartic term'];
+    const SUB = ['₀', '₁', '₂', '₃', '₄'];
+    const SUP = { 2: '²', 3: '³', 4: '⁴' };
+
+    // ---------- Elements ----------
+    const canvas = document.getElementById('plot');
+    const ctx = canvas.getContext('2d');
+    const presetSelect = document.getElementById('preset');
+    const equationEl = document.getElementById('equation');
+    const statDegree = document.getElementById('statDegree');
+    const statY = document.getElementById('statY');
+    const statRoots = document.getElementById('statRoots');
+    const slidersEl = document.getElementById('sliders');
+    const degreeButtons = document.querySelectorAll('#degreeButtons button');
+
+    // ---------- Math ----------
+    function evaluate(x) {
+        let y = 0;
+        for (let i = degree; i >= 0; i--) y = y * x + coef[i]; // Horner's method
+        return y;
+    }
+
+    function estimateRoots() {
+        const steps = 4000;
+        const dx = (VIEW.xMax - VIEW.xMin) / steps;
+        let count = 0;
+        let prevY = evaluate(VIEW.xMin);
+        let prevPrevY = prevY;
+        for (let i = 1; i <= steps; i++) {
+            const x = VIEW.xMin + i * dx;
+            const y = evaluate(x);
+            if (prevY === 0) {
+                // exact zero already counted via the sign logic below
+            } else if (prevY * y < 0) {
+                count++;
+            } else if (Math.abs(prevY) < 1e-3 &&
+                       Math.abs(prevY) <= Math.abs(prevPrevY) &&
+                       Math.abs(prevY) <= Math.abs(y) &&
+                       prevY * prevPrevY >= 0 && prevY * y >= 0) {
+                count++; // touches the axis without crossing (e.g. x²)
+            }
+            prevPrevY = prevY;
+            prevY = y;
+        }
+        // The flat line y = 0 has infinitely many roots; show 0 for display
+        if (coef.slice(0, degree + 1).every(c => c === 0)) return 0;
+        return count;
+    }
+
+    // ---------- Formatting ----------
+    function fmt(n) {
+        const r = Math.round(Math.abs(n) * 10) / 10;
+        return (r % 1 === 0) ? String(r) : r.toFixed(1);
+    }
+
+    function buildEquation() {
+        const terms = [];
+        for (let i = degree; i >= 0; i--) {
+            const c = Math.round(coef[i] * 10) / 10;
+            if (c === 0) continue;
+            const sign = c < 0 ? '-' : '+';
+            const abs = Math.abs(c);
+            let body;
+            if (i === 0) body = fmt(abs);
+            else {
+                const num = abs === 1 ? '' : fmt(abs);
+                body = num + 'x' + (SUP[i] || '');
+            }
+            terms.push({ sign, body });
+        }
+        if (!terms.length) return 'f(x) = 0';
+        let out = (terms[0].sign === '-' ? '-' : '') + terms[0].body;
+        for (let i = 1; i < terms.length; i++) out += ' ' + terms[i].sign + ' ' + terms[i].body;
+        return 'f(x) = ' + out;
+    }
+
+    // ---------- Drawing ----------
+    function resizeCanvas() {
+        const dpr = window.devicePixelRatio || 1;
+        const rect = canvas.getBoundingClientRect();
+        canvas.width = Math.round(rect.width * dpr);
+        canvas.height = Math.round(rect.height * dpr);
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        draw();
+    }
+
+    function draw() {
+        const w = canvas.clientWidth;
+        const h = canvas.clientHeight;
+        const toX = x => (x - VIEW.xMin) / (VIEW.xMax - VIEW.xMin) * w;
+        const toY = y => h - (y - VIEW.yMin) / (VIEW.yMax - VIEW.yMin) * h;
+
+        ctx.clearRect(0, 0, w, h);
+
+        // Grid
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = 'rgba(255,255,255,0.07)';
+        ctx.beginPath();
+        for (let x = VIEW.xMin; x <= VIEW.xMax; x++) {
+            const px = Math.round(toX(x)) + 0.5;
+            ctx.moveTo(px, 0); ctx.lineTo(px, h);
+        }
+        for (let y = VIEW.yMin; y <= VIEW.yMax; y++) {
+            const py = Math.round(toY(y)) + 0.5;
+            ctx.moveTo(0, py); ctx.lineTo(w, py);
+        }
+        ctx.stroke();
+
+        // Axes
+        const ox = Math.round(toX(0)) + 0.5;
+        const oy = Math.round(toY(0)) + 0.5;
+        ctx.strokeStyle = 'rgba(200,205,215,0.55)';
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.moveTo(ox, 0); ctx.lineTo(ox, h);
+        ctx.moveTo(0, oy); ctx.lineTo(w, oy);
+        ctx.stroke();
+
+        // Tick labels
+        ctx.fillStyle = 'rgba(180,186,198,0.75)';
+        ctx.font = '12px "Segoe UI", Roboto, Arial, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'top';
+        for (let x = VIEW.xMin; x <= VIEW.xMax; x++) {
+            if (x === 0) continue;
+            ctx.fillText(String(x), toX(x), oy + 8);
+        }
+        ctx.textAlign = 'right';
+        ctx.textBaseline = 'middle';
+        for (let y = VIEW.yMin; y <= VIEW.yMax; y++) {
+            if (y === 0) continue;
+            ctx.fillText(String(y), ox - 8, toY(y));
+        }
+        ctx.textAlign = 'right';
+        ctx.textBaseline = 'top';
+        ctx.fillText('0', ox - 8, oy + 8);
+
+        // Curve (clipped to the plot area)
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(0, 0, w, h);
+        ctx.clip();
+        ctx.strokeStyle = '#3b6cf6';
+        ctx.lineWidth = 3;
+        ctx.lineJoin = 'round';
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        const samples = Math.max(300, Math.floor(w));
+        for (let i = 0; i <= samples; i++) {
+            const x = VIEW.xMin + (i / samples) * (VIEW.xMax - VIEW.xMin);
+            const px = toX(x);
+            const py = toY(evaluate(x));
+            if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+        }
+        ctx.stroke();
+        ctx.restore();
+
+        // Y-intercept marker
+        const yi = evaluate(0);
+        if (yi >= VIEW.yMin && yi <= VIEW.yMax) {
+            ctx.beginPath();
+            ctx.arc(toX(0), toY(yi), 6, 0, Math.PI * 2);
+            ctx.fillStyle = '#ea4335';
+            ctx.fill();
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = '#ffffff';
+            ctx.stroke();
+        }
+    }
+
+    // ---------- UI ----------
+    function buildSliders() {
+        slidersEl.innerHTML = '';
+        for (let i = degree; i >= 0; i--) {
+            const block = document.createElement('div');
+            block.className = 'slider-block';
+
+            const name = document.createElement('div');
+            name.className = 'name';
+            name.textContent = NAMES[i] + ' (a' + SUB[i] + ')';
+
+            const row = document.createElement('div');
+            row.className = 'slider-row';
+
+            const input = document.createElement('input');
+            input.type = 'range';
+            input.min = -5;
+            input.max = 5;
+            input.step = 0.1;
+            input.value = coef[i];
+
+            const num = document.createElement('span');
+            num.className = 'num';
+
+            const paint = () => {
+                const v = parseFloat(input.value);
+                num.textContent = (Math.round(v * 10) / 10).toFixed(1);
+                const pct = (v - input.min) / (input.max - input.min) * 100;
+                input.style.background =
+                    'linear-gradient(to right, #3a3d44 ' + pct + '%, #3a3d44 ' + pct + '%)';
+            };
+
+            input.addEventListener('input', () => {
+                coef[i] = parseFloat(input.value);
+                presetSelect.value = 'custom';
+                paint();
+                update();
+            });
+
+            paint();
+            row.appendChild(input);
+            row.appendChild(num);
+            block.appendChild(name);
+            block.appendChild(row);
+            slidersEl.appendChild(block);
+        }
+    }
+
+    function update() {
+        equationEl.textContent = buildEquation();
+        statDegree.textContent = degree;
+        const yi = Math.round(evaluate(0) * 10) / 10;
+        statY.textContent = '(0, ' + fmt(yi).replace(/^/, yi < 0 ? '-' : '') + ')';
+        statRoots.textContent = estimateRoots();
+        degreeButtons.forEach(b => b.classList.toggle('active', Number(b.dataset.deg) === degree));
+        draw();
+    }
+
+    degreeButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            degree = Number(btn.dataset.deg);
+            if (coef[degree] === 0) coef[degree] = 1; // keep the leading term meaningful
+            presetSelect.value = 'custom';
+            buildSliders();
+            update();
+        });
+    });
+
+    presetSelect.addEventListener('change', () => {
+        const p = PRESETS[presetSelect.value];
+        if (!p) return;
+        degree = p.degree;
+        coef = p.coef.slice();
+        buildSliders();
+        update();
+    });
+
+    window.addEventListener('resize', resizeCanvas);
+
+    // ---------- Init ----------
+    buildSliders();
+    update();
+    resizeCanvas();
+})();
+</script>
+</body>
+</html>

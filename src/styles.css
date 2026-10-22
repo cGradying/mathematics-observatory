@@ -1,0 +1,26 @@
+/* Controls a custom tint without replacing the palette chosen for each chapter. */
+@property --scene-tint {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #101820;
+}
+
+.scene-backdrop {
+  background:
+    radial-gradient(ellipse at 69% 48%, color-mix(in srgb, var(--scene-tint), transparent 46%), transparent 50%),
+    linear-gradient(145deg, #080d13 4%, var(--scene-tint) 61%, #0b1117);
+  transition: filter .7s ease;
+}
+
+.history-world.webgl-unavailable .scene-canvas { display: none; }
+.history-world[data-scene-quality='low'] .scene-canvas { filter: saturate(.9); }
+.history-world[data-scene-quality='fallback'] .scene-backdrop { --scene-tint: #14232b; }
+
+@media (max-width: 620px) {
+  .scene-canvas { opacity: .82; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .scene-backdrop { transition: none; }
+}

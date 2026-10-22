@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quadratic Equation Grapher</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: #12141a;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 680px;
+            background-color: #1a1d24;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+            border: 1px solid #2a2e39;
+            padding: 20px;
+        }
+
+        .header-section {
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .equation-display {
+            display: inline-flex;
+            align-items: center;
+            background-color: #242832;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            color: #d1d5db;
+            margin-bottom: 8px;
+            border: 1px solid #333842;
+        }
+
+        .equation-display span {
+            color: #60a5fa;
+            margin-left: 6px;
+            font-weight: 600;
+        }
+
+        .formula-ref {
+            font-size: 13px;
+            color: #9ca3af;
+        }
+
+        .canvas-container {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            background-color: #15181e;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #2a2e39;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .metrics-panel {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            text-align: center;
+            padding: 16px 0;
+            border-bottom: 1px solid #2a2e39;
+            margin-bottom: 20px;
+        }
+
+        .metric-title {
+            font-size: 11px;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .metric-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        .control-box {
+            background-color: #212530;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #2e3340;
+        }
+
+        .control-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .control-label {
+            font-size: 13px;
+            color: #d1d5db;
+            font-weight: 500;
+        }
+
+        .number-input {
+            width: 55px;
+            background-color: #15181e;
+            border: 1px solid #3b4252;
+            border-radius: 6px;
+            color: #ffffff;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 600;
+            padding: 4px;
+            outline: none;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 5px;
+            background: #374151;
+            border-radius: 3px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #3b82f6;
+            cursor: pointer;
+            box-shadow: 0 0 4px rgba(59, 130, 246, 0.6);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Header & Equation -->
+        <div class="header-section">
+            <div class="equation-display">
+                Equation: <span id="equationText">x² - 2x - 3 = 0</span>
+            </div>
+            <div class="formula-ref">
+                Formula Reference: x = (-b ± √(b² - 4ac)) / 2a
+            </div>
+        </div>
+
+        <!-- Graph Area -->
+        <div class="canvas-container">
+            <canvas id="graphCanvas"></canvas>
+        </div>
+
+        <!-- Metrics Header -->
+        <div class="metrics-panel">
+            <div>
+                <div class="metric-title">Discriminant (Δ)</div>
+                <div class="metric-value" id="metricDisc">16.00</div>
+            </div>
+            <div>
+                <div class="metric-title">Nature of Roots</div>
+                <div class="metric-value" id="metricNature" style="font-size: 12px; color: #22c55e;">Two distinct real roots</div>
+            </div>
+            <div>
+                <div class="metric-title">Calculated Roots</div>
+                <div class="metric-value" id="metricRoots" style="font-size: 13px;">x₁ = 3.00, x₂ = -1.00</div>
+            </div>
+            <div>
+                <div class="metric-title">Vertex Point</div>
+                <div class="metric-value" id="metricVertex" style="font-size: 13px;">(1.00, -4.00)</div>
+            </div>
+        </div>
+
+        <!-- Controls Area -->
+        <div class="controls-grid">
+            <div class="control-box">
+                <div class="control-header">
+                    <span class="control-label">Coefficient a</span>
+                    <input type="number" id="inputA" class="number-input" value="1" step="0.5" min="-5" max="5">
+                </div>
+                <input type="range" id="rangeA" min="-5" max="5" step="0.5" value="1">
+            </div>
+
+            <div class="control-box">
+                <div class="control-header">
+                    <span class="control-label">Coefficient b</span>
+                    <input type="number" id="inputB" class="number-input" value="-2" step="0.5" min="-10" max="10">
+                </div>
+                <input type="range" id="rangeB" min="-10" max="10" step="0.5" value="-2">
+            </div>
+
+            <div class="control-box">
+                <div class="control-header">
+                    <span class="control-label">Coefficient c</span>
+                    <input type="number" id="inputC" class="number-input" value="-3" step="0.5" min="-10" max="10">
+                </div>
+                <input type="range" id="rangeC" min="-10" max="10" step="0.5" value="-3">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('graphCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const rangeA = document.getElementById('rangeA');
+        const rangeB = document.getElementById('rangeB');
+        const rangeC = document.getElementById('rangeC');
+        const inputA = document.getElementById('inputA');
+        const inputB = document.getElementById('inputB');
+        const inputC = document.getElementById('inputC');
+
+        const equationText = document.getElementById('equationText');
+        const metricDisc = document.getElementById('metricDisc');
+        const metricNature = document.getElementById('metricNature');
+        const metricRoots = document.getElementById('metricRoots');
+        const metricVertex = document.getElementById('metricVertex');
+
+        let scaleX = 10;
+        let scaleY = 10;
+
+        function resizeCanvas() {
+            canvas.width = canvas.parentElement.clientWidth * window.devicePixelRatio;
+            canvas.height = canvas.parentElement.clientHeight * window.devicePixelRatio;
+            ctx.setTransform(window.devicePixelRatio, 0, 0, window.devicePixelRatio, 0, 0);
+            draw();
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+
+        function toPixelX(x) {
+            const width = canvas.width / window.devicePixelRatio;
+            return width / 2 + (x / scaleX) * (width / 2);
+        }
+
+        function toPixelY(y) {
+            const height = canvas.height / window.devicePixelRatio;
+            return height / 2 - (y / scaleY) * (height / 2);
+        }
+
+        function drawSmartLabel(text, pointX, pointY, color, obstacles, points) {
+            ctx.font = '600 11px system-ui';
+            const width = ctx.measureText(text).width + 12;
+            const height = 22;
+            const candidates = [
+                [10, -18, 'left'], [-10, -18, 'right'], [10, 20, 'left'], [-10, 20, 'right'],
+                [0, -31, 'center'], [0, 33, 'center'], [24, -38, 'left'], [-24, -38, 'right'],
+                [24, 42, 'left'], [-24, 42, 'right'], [0, -50, 'center'], [0, 54, 'center']
+            ];
+            let best = null;
+            candidates.forEach(([dx, dy, align], order) => {
+                const x = pointX + dx, y = pointY + dy;
+                const left = align === 'right' ? x - width : align === 'center' ? x - width / 2 : x;
+                const box = { left: left - 2, right: left + width + 2, top: y - height / 2, bottom: y + height / 2 };
+                if (box.left < 2 || box.right > canvas.clientWidth - 2 || box.top < 2 || box.bottom > canvas.clientHeight - 2) return;
+                const overlaps = other => box.left < other.right && box.right > other.left && box.top < other.bottom && box.bottom > other.top;
+                const tickHits = obstacles.ticks.filter(overlaps).length;
+                const labelHits = obstacles.labels.filter(overlaps).length;
+                const pointHits = points.filter(p => Math.hypot((box.left + box.right) / 2 - p.x, (box.top + box.bottom) / 2 - p.y) < Math.hypot(width / 2 + 8, height / 2 + 8)).length;
+                const score = tickHits * 1000000 + labelHits * 100000 + pointHits * 100 + order;
+                if (!best || score < best.score) best = { x, y, align, box, score };
+            });
+            if (!best) return;
+            ctx.fillStyle = 'rgba(148, 163, 184, 0.42)';
+            ctx.fillRect(best.box.left, best.box.top, best.box.right - best.box.left, best.box.bottom - best.box.top);
+            ctx.strokeStyle = 'rgba(71, 85, 105, 0.72)';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(best.box.left, best.box.top, best.box.right - best.box.left, best.box.bottom - best.box.top);
+            ctx.fillStyle = color;
+            ctx.textAlign = best.align;
+            ctx.textBaseline = 'middle';
+            ctx.fillText(text, best.x, best.y);
+            obstacles.labels.push(best.box);
+        }
+
+        function syncInputs(source) {
+            if (source === 'range') {
+                inputA.value = rangeA.value;
+                inputB.value = rangeB.value;
+                inputC.value = rangeC.value;
+            } else {
+                rangeA.value = inputA.value;
+                rangeB.value = inputB.value;
+                rangeC.value = inputC.value;
+            }
+            draw();
+        }
+
+        rangeA.addEventListener('input', () => syncInputs('range'));
+        rangeB.addEventListener('input', () => syncInputs('range'));
+        rangeC.addEventListener('input', () => syncInputs('range'));
+
+        inputA.addEventListener('input', () => syncInputs('input'));
+        inputB.addEventListener('input', () => syncInputs('input'));
+        inputC.addEventListener('input', () => syncInputs('input'));
+
+        function draw() {
+            const width = canvas.width / window.devicePixelRatio;
+            const height = canvas.height / window.devicePixelRatio;
+
+            ctx.clearRect(0, 0, width, height);
+
+            let a = parseFloat(inputA.value);
+            let b = parseFloat(inputB.value);
+            let c = parseFloat(inputC.value);
+
+            // 1. Draw Grid Lines & Numbers
+            ctx.strokeStyle = '#222630';
+            ctx.lineWidth = 1;
+            ctx.fillStyle = '#6b7280';
+            ctx.font = '11px sans-serif';
+            const labelObstacles = { ticks: [], labels: [] };
+
+            for (let x = -8; x <= 8; x += 2) {
+                if (x === 0) continue;
+                let px = toPixelX(x);
+                ctx.beginPath();
+                ctx.moveTo(px, 0);
+                ctx.lineTo(px, height);
+                ctx.stroke();
+
+                ctx.textAlign = 'center';
+                ctx.fillText(x, px, height / 2 + 15);
+                const tickWidth = ctx.measureText(String(x)).width;
+                labelObstacles.ticks.push({ left: px - tickWidth / 2 - 2, right: px + tickWidth / 2 + 2, top: height / 2 + 3, bottom: height / 2 + 19 });
+            }
+
+            for (let y = -8; y <= 8; y += 2) {
+                if (y === 0) continue;
+                let py = toPixelY(y);
+                ctx.beginPath();
+                ctx.moveTo(0, py);
+                ctx.lineTo(width, py);
+                ctx.stroke();
+
+                ctx.textAlign = 'right';
+                ctx.fillText(y, width / 2 - 8, py + 4);
+                const tickWidth = ctx.measureText(String(y)).width;
+                labelObstacles.ticks.push({ left: width / 2 - 10 - tickWidth, right: width / 2 - 6, top: py - 5, bottom: py + 7 });
+            }
+
+            // 2. Draw Main Axes
+            ctx.strokeStyle = '#6b7280';
+            ctx.lineWidth = 1.5;
+
+            ctx.beginPath();
+            ctx.moveTo(0, height / 2);
+            ctx.lineTo(width, height / 2);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(width / 2, 0);
+            ctx.lineTo(width / 2, height);
+            ctx.stroke();
+
+            // 3. Draw Parabola Curve
+            ctx.strokeStyle = '#3b82f6';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+
+            let step = 0.05;
+            let first = true;
+            for (let x = -scaleX - 2; x <= scaleX + 2; x += step) {
+                let y = a * x * x + b * x + c;
+                let px = toPixelX(x);
+                let py = toPixelY(y);
+                if (first) {
+                    ctx.moveTo(px, py);
+                    first = false;
+                } else {
+                    ctx.lineTo(px, py);
+                }
+            }
+            ctx.stroke();
+
+            // 4. Calculations for metrics
+            let discriminant = b * b - 4 * a * c;
+            let vx = -b / (2 * a);
+            let vy = a * vx * vx + b * vx + c;
+
+            // Axis of symmetry (dashed vertical line)
+            ctx.strokeStyle = '#eab308';
+            ctx.setLineDash([4, 4]);
+            ctx.beginPath();
+            ctx.moveTo(toPixelX(vx), 0);
+            ctx.lineTo(toPixelX(vx), height);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Roots calculation & plotting
+            let rootText = "None";
+            let natureText = "No real roots";
+            let natureColor = "#ef4444";
+
+            if (a !== 0) {
+                if (discriminant > 0) {
+                    let x1 = (-b + Math.sqrt(discriminant)) / (2 * a);
+                    let x2 = (-b - Math.sqrt(discriminant)) / (2 * a);
+                    rootText = `x₁ = ${x1.toFixed(2)}, x₂ = ${x2.toFixed(2)}`;
+                    natureText = "Two distinct real roots";
+                    natureColor = "#22c55e";
+
+                    // Draw root points
+                    const rootPoints = [x1, x2].map(rx => ({ x:toPixelX(rx), y:toPixelY(0) }));
+                    rootPoints.forEach(({ x, y }) => {
+                        ctx.fillStyle = '#22c55e';
+                        ctx.beginPath();
+                        ctx.arc(x, y, 5, 0, Math.PI * 2);
+                        ctx.fill();
+                    });
+                } else if (discriminant === 0) {
+                    let x1 = -b / (2 * a);
+                    rootText = `x = ${x1.toFixed(2)}`;
+                    natureText = "One repeated real root";
+                    natureColor = '#eab308';
+
+                    ctx.fillStyle = '#22c55e';
+                    ctx.beginPath();
+                    ctx.arc(toPixelX(x1), toPixelY(0), 5, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            // Draw Y-Intercept point (0, c)
+            let yIntPx = toPixelX(0);
+            let yIntPy = toPixelY(c);
+            ctx.fillStyle = '#eab308';
+            ctx.beginPath();
+            ctx.arc(yIntPx, yIntPy, 5, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Draw Vertex point
+            let vPx = toPixelX(vx);
+            let vPy = toPixelY(vy);
+            ctx.fillStyle = '#ef4444';
+            ctx.beginPath();
+            ctx.arc(vPx, vPy, 6, 0, Math.PI * 2);
+            ctx.fill();
+
+            const annotatedPoints = [{ x:yIntPx, y:yIntPy }, { x:vPx, y:vPy }];
+            if (a !== 0 && discriminant >= 0) {
+                const rootValues = discriminant === 0 ? [-b / (2 * a)] : [(-b + Math.sqrt(discriminant)) / (2 * a), (-b - Math.sqrt(discriminant)) / (2 * a)];
+                rootValues.forEach(rx => annotatedPoints.push({ x:toPixelX(rx), y:toPixelY(0) }));
+            }
+            if (a !== 0 && discriminant > 0) {
+                [(-b + Math.sqrt(discriminant)) / (2 * a), (-b - Math.sqrt(discriminant)) / (2 * a)].forEach(rx => drawSmartLabel(rx.toFixed(2), toPixelX(rx), toPixelY(0), '#22c55e', labelObstacles, annotatedPoints));
+            } else if (a !== 0 && discriminant === 0) {
+                const rx = -b / (2 * a);
+                drawSmartLabel(rx.toFixed(2), toPixelX(rx), toPixelY(0), '#22c55e', labelObstacles, annotatedPoints);
+            }
+            drawSmartLabel(`(0, ${c.toFixed(1)})`, yIntPx, yIntPy, '#eab308', labelObstacles, annotatedPoints);
+            drawSmartLabel(`V(${vx.toFixed(2)}, ${vy.toFixed(2)})`, vPx, vPy, '#ef4444', labelObstacles, annotatedPoints);
+
+            // 5. Update Text / Metrics UI
+            metricDisc.textContent = discriminant.toFixed(2);
+            metricNature.textContent = natureText;
+            metricNature.style.color = natureColor;
+            metricRoots.textContent = rootText;
+            metricVertex.textContent = `(${vx.toFixed(2)}, ${vy.toFixed(2)})`;
+
+            // Format equation display text nicely
+            let eqStr = "";
+            if (a === 1) eqStr += "x²";
+            else if (a === -1) eqStr += "-x²";
+            else eqStr += `${a}x²`;
+
+            if (b > 0) eqStr += ` + ${b === 1 ? '' : b}x`;
+            else if (b < 0) eqStr += ` - ${Math.abs(b) === 1 ? '' : Math.abs(b)}x`;
+
+            if (c > 0) eqStr += ` + ${c}`;
+            else if (c < 0) eqStr += ` - ${Math.abs(c)}`;
+
+            eqStr += " = 0";
+            equationText.textContent = eqStr;
+        }
+
+        resizeCanvas();
+    </script>
+</body>
+</html>

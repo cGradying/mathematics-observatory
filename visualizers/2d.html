@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pythagorean Theorem Geometric Model</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .grid-bg {
+            background-image: linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+                              linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen p-4 md:p-8 flex justify-center items-center">
+
+    <div class="w-full max-w-xl bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden">
+        
+        <!-- Header -->
+        <div class="px-6 pt-5 pb-3 border-b border-slate-800/60">
+            <span class="text-xs font-semibold tracking-wider text-slate-400 uppercase">Visual Proof</span>
+            <h1 class="text-lg font-bold text-slate-100">Pythagorean Theorem Geometric Model</h1>
+        </div>
+
+        <!-- Visual Canvas Area -->
+        <div class="relative w-full h-72 bg-slate-950 grid-bg flex items-center justify-center overflow-hidden border-b border-slate-800/60">
+            <svg id="geoCanvas" class="w-full h-full" viewBox="0 0 400 280">
+                <!-- Squares and Triangle will be rendered dynamically via JavaScript -->
+            </svg>
+        </div>
+
+        <!-- Area Statistics Cards -->
+        <div class="grid grid-cols-3 gap-2 p-4 bg-slate-900/50 border-b border-slate-800/60 text-center">
+            <div class="bg-slate-950/40 p-3 rounded-xl border border-slate-800/40">
+                <div class="text-[11px] text-slate-400 font-medium">Base Area (a²)</div>
+                <div id="areaA" class="text-base font-bold text-rose-400 mt-0.5">36.92</div>
+            </div>
+            <div class="bg-slate-950/40 p-3 rounded-xl border border-slate-800/40">
+                <div class="text-[11px] text-slate-400 font-medium">Height Area (b²)</div>
+                <div id="areaB" class="text-base font-bold text-emerald-400 mt-0.5">33.64</div>
+            </div>
+            <div class="bg-slate-950/40 p-3 rounded-xl border border-slate-800/40">
+                <div class="text-[11px] text-slate-400 font-medium">Hypotenuse Area (c²)</div>
+                <div id="areaC" class="text-base font-bold text-cyan-400 mt-0.5">70.56</div>
+            </div>
+        </div>
+
+        <!-- Step-by-Step Solution Box -->
+        <div class="p-5">
+            <div class="bg-slate-950/80 border border-slate-800/80 rounded-xl p-4">
+                <h2 class="text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Step-by-step solution:</h2>
+                <ol id="stepsList" class="space-y-1.5 text-xs text-slate-300 font-mono">
+                    <!-- Populated by JS -->
+                </ol>
+            </div>
+        </div>
+
+        <!-- Controls Section -->
+        <div class="p-5 pt-0 space-y-4">
+            <!-- Dropdowns -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1.5">Target Variable to Solve</label>
+                    <select id="targetVar" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500">
+                        <option value="a">Base Side (A)</option>
+                        <option value="b">Height Side (B)</option>
+                        <option value="c">Hypotenuse (C)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1.5">Geometric Area Squares</label>
+                    <select class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500">
+                        <option>Visible Proof Geometry</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Sliders -->
+            <div class="space-y-3 pt-2">
+                <!-- Slider 1 -->
+                <div>
+                    <div class="flex justify-between text-xs mb-1">
+                        <span id="label1" class="text-slate-300 font-medium">Side a (Base) • Solved</span>
+                        <span id="val1" class="font-bold text-rose-400">6.1</span>
+                    </div>
+                    <input type="range" id="slider1" min="2" max="12" step="0.1" value="6.1" class="w-full accent-blue-500 cursor-pointer">
+                </div>
+
+                <!-- Slider 2 -->
+                <div>
+                    <div class="flex justify-between text-xs mb-1">
+                        <span id="label2" class="text-slate-300 font-medium">Side b (Height)</span>
+                        <span id="val2" class="font-bold text-emerald-400">5.8</span>
+                    </div>
+                    <input type="range" id="slider2" min="2" max="12" step="0.1" value="5.8" class="w-full accent-blue-500 cursor-pointer">
+                </div>
+
+                <!-- Slider 3 -->
+                <div>
+                    <div class="flex justify-between text-xs mb-1">
+                        <span id="label3" class="text-slate-300 font-medium">Side c (Hypotenuse)</span>
+                        <span id="val3" class="font-bold text-cyan-400">8.4</span>
+                    </div>
+                    <input type="range" id="slider3" min="3" max="15" step="0.1" value="8.4" class="w-full accent-blue-500 cursor-pointer">
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const targetVarSelect = document.getElementById('targetVar');
+        const slider1 = document.getElementById('slider1');
+        const slider2 = document.getElementById('slider2');
+        const slider3 = document.getElementById('slider3');
+        const val1 = document.getElementById('val1');
+        const val2 = document.getElementById('val2');
+        const val3 = document.getElementById('val3');
+        const label1 = document.getElementById('label1');
+        const label2 = document.getElementById('label2');
+        const label3 = document.getElementById('label3');
+        
+        const areaAEl = document.getElementById('areaA');
+        const areaBEl = document.getElementById('areaB');
+        const areaCEl = document.getElementById('areaC');
+        const stepsList = document.getElementById('stepsList');
+        const geoCanvas = document.getElementById('geoCanvas');
+
+        function updateApp() {
+            let target = targetVarSelect.value;
+            
+            // Manage slider interactivity based on target variable
+            if (target === 'a') {
+                slider1.disabled = true;
+                slider1.classList.add('opacity-50', 'cursor-not-allowed');
+                slider2.disabled = false;
+                slider2.classList.remove('opacity-50', 'cursor-not-allowed');
+                slider3.disabled = false;
+                slider3.classList.remove('opacity-50', 'cursor-not-allowed');
+
+                label1.textContent = "Side a (Base) • Solved";
+                label2.textContent = "Side b (Height)";
+                label3.textContent = "Side c (Hypotenuse)";
+
+                let b = parseFloat(slider2.value);
+                let c = parseFloat(slider3.value);
+
+                if (c <= b) {
+                    c = b + 0.5;
+                    slider3.value = c;
+                }
+
+                let aSq = (c * c) - (b * b);
+                let a = Math.sqrt(aSq);
+
+                val1.textContent = a.toFixed(1);
+                val2.textContent = b.toFixed(1);
+                val3.textContent = c.toFixed(1);
+
+                areaAEl.textContent = aSq.toFixed(2);
+                areaBEl.textContent = (b * b).toFixed(2);
+                areaCEl.textContent = (c * c).toFixed(2);
+
+                stepsList.innerHTML = `
+                    <li>1. Formula: a = sqrt(c² - b²)</li>
+                    <li>2. Substitute: a = sqrt(${c.toFixed(2)}² - ${b.toFixed(2)}²)</li>
+                    <li>3. Square values: a = sqrt(${(c*c).toFixed(2)} - ${(b*b).toFixed(2)})</li>
+                    <li>4. Subtract components: a = sqrt(${aSq.toFixed(2)})</li>
+                    <li class="text-blue-400 font-semibold">5. Final result: a ≈ ${a.toFixed(2)}</li>
+                `;
+
+                drawGeometry(a, b, c, target);
+
+            } else if (target === 'b') {
+                slider2.disabled = true;
+                slider2.classList.add('opacity-50', 'cursor-not-allowed');
+                slider1.disabled = false;
+                slider1.classList.remove('opacity-50', 'cursor-not-allowed');
+                slider3.disabled = false;
+                slider3.classList.remove('opacity-50', 'cursor-not-allowed');
+
+                label1.textContent = "Side a (Base)";
+                label2.textContent = "Side b (Height) • Solved";
+                label3.textContent = "Side c (Hypotenuse)";
+
+                let a = parseFloat(slider1.value);
+                let c = parseFloat(slider3.value);
+
+                if (c <= a) {
+                    c = a + 0.5;
+                    slider3.value = c;
+                }
+
+                let bSq = (c * c) - (a * a);
+                let b = Math.sqrt(bSq);
+
+                val1.textContent = a.toFixed(1);
+                val2.textContent = b.toFixed(1);
+                val3.textContent = c.toFixed(1);
+
+                areaAEl.textContent = (a * a).toFixed(2);
+                areaBEl.textContent = bSq.toFixed(2);
+                areaCEl.textContent = (c * c).toFixed(2);
+
+                stepsList.innerHTML = `
+                    <li>1. Formula: b = sqrt(c² - a²)</li>
+                    <li>2. Substitute: b = sqrt(${c.toFixed(2)}² - ${a.toFixed(2)}²)</li>
+                    <li>3. Square values: b = sqrt(${(c*c).toFixed(2)} - ${(a*a).toFixed(2)})</li>
+                    <li>4. Subtract components: b = sqrt(${bSq.toFixed(2)})</li>
+                    <li class="text-blue-400 font-semibold">5. Final result: b ≈ ${b.toFixed(2)}</li>
+                `;
+
+                drawGeometry(a, b, c, target);
+
+            } else {
+                slider3.disabled = true;
+                slider3.classList.add('opacity-50', 'cursor-not-allowed');
+                slider1.disabled = false;
+                slider1.classList.remove('opacity-50', 'cursor-not-allowed');
+                slider2.disabled = false;
+                slider2.classList.remove('opacity-50', 'cursor-not-allowed');
+
+                label1.textContent = "Side a (Base)";
+                label2.textContent = "Side b (Height)";
+                label3.textContent = "Side c (Hypotenuse) • Solved";
+
+                let a = parseFloat(slider1.value);
+                let b = parseFloat(slider2.value);
+
+                let cSq = (a * a) + (b * b);
+                let c = Math.sqrt(cSq);
+
+                val1.textContent = a.toFixed(1);
+                val2.textContent = b.toFixed(1);
+                val3.textContent = c.toFixed(1);
+
+                areaAEl.textContent = (a * a).toFixed(2);
+                areaBEl.textContent = (b * b).toFixed(2);
+                areaCEl.textContent = cSq.toFixed(2);
+
+                stepsList.innerHTML = `
+                    <li>1. Formula: c = sqrt(a² + b²)</li>
+                    <li>2. Substitute: c = sqrt(${a.toFixed(2)}² + ${b.toFixed(2)}²)</li>
+                    <li>3. Square values: c = sqrt(${(a*a).toFixed(2)} + ${(b*b).toFixed(2)})</li>
+                    <li>4. Add components: c = sqrt(${cSq.toFixed(2)})</li>
+                    <li class="text-blue-400 font-semibold">5. Final result: c ≈ ${c.toFixed(2)}</li>
+                `;
+
+                drawGeometry(a, b, c, target);
+            }
+        }
+
+        function drawGeometry(a, b, c) {
+            // Scale values for SVG viewport (400x280)
+            const scale = 14;
+            const pxA = a * scale;
+            const pxB = b * scale;
+
+            // Right angle triangle vertex coordinates centered nicely
+            const x0 = 180;
+            const y0 = 150;
+            
+            const xA = x0 + pxA;
+            const yA = y0;
+
+            const xB = x0;
+            const yB = y0 - pxB;
+
+            // Hypotenuse vector angle
+            const angle = Math.atan2(yB - y0, xB - x0); // Note: standard right triangle pointing up-right
+            // Let's position triangle vertices:
+            // Right angle vertex at (200, 160)
+            const rx = 190, ry = 150;
+            const p1 = {x: rx, y: ry};             // Right angle vertex
+            const p2 = {x: rx + pxA, y: ry};       // Base vertex
+            const p3 = {x: rx, y: ry - pxB};       // Height vertex
+
+            // Square on base (a) hangs downwards
+            // Square on height (b) extends leftwards
+            // Square on hypotenuse (c) extends outwards top-right
+            
+            geoCanvas.innerHTML = `
+                <!-- Square b (Height) -->
+                <rect x="${p3.x - pxB}" y="${p3.y}" width="${pxB}" height="${pxB}" fill="rgba(16, 185, 129, 0.1)" stroke="#10b981" stroke-dasharray="3 3" stroke-width="1.5" />
+                
+                <!-- Square a (Base) -->
+                <rect x="${p1.x}" y="${p1.y}" width="${pxA}" height="${pxA}" fill="rgba(244, 63, 94, 0.1)" stroke="#f43f5e" stroke-dasharray="3 3" stroke-width="1.5" />
+                
+                <!-- Square c (Hypotenuse) rotated construct -->
+                <!-- Simplified graphical representation of hyp square -->
+                <polygon points="${p2.x},${p2.y} ${p3.x},${p3.y} ${p3.x + (p2.y - p3.y)},${p3.y - (p2.x - p3.x)} ${p2.x + (p2.y - p3.y)},${p2.y - (p2.x - p3.x)}" fill="rgba(6, 182, 212, 0.1)" stroke="#06b6d4" stroke-dasharray="3 3" stroke-width="1.5" />
+
+                <!-- Triangle -->
+                <polygon points="${p1.x},${p1.y} ${p2.x},${p2.y} ${p3.x},${p3.y}" fill="rgba(59, 130, 246, 0.15)" stroke="#3b82f6" stroke-width="2.5" />
+
+                <!-- Right angle indicator -->
+                <rect x="${p1.x}" y="${p1.y - 10}" width="10" height="10" fill="none" stroke="#94a3b8" stroke-width="1" />
+
+                <!-- Vertices dots -->
+                <circle cx="${p1.x}" cy="${p1.y}" r="3.5" fill="#fff" />
+                <circle cx="${p2.x}" cy="${p2.y}" r="3.5" fill="#fff" />
+                <circle cx="${p3.x}" cy="${p3.y}" r="3.5" fill="#fff" />
+
+                <!-- Labels -->
+                <rect x="${p1.x + pxA/2 - 22}" y="${p1.y + pxA/2 - 10}" width="44" height="20" rx="4" fill="#0f172a" stroke="#f43f5e" stroke-width="1" />
+                <text x="${p1.x + pxA/2}" y="${p1.y + pxA/2 + 4}" fill="#f43f5e" font-size="10" font-weight="bold" text-anchor="middle">a = ${a.toFixed(1)}</text>
+
+                <rect x="${p3.x - pxB/2 - 22}" y="${p3.y + pxB/2 - 10}" width="44" height="20" rx="4" fill="#0f172a" stroke="#10b981" stroke-width="1" />
+                <text x="${p3.x - pxB/2}" y="${p3.y + pxB/2 + 4}" fill="#10b981" font-size="10" font-weight="bold" text-anchor="middle">b = ${b.toFixed(1)}</text>
+
+                <rect x="${(p2.x + p3.x)/2 - 24}" y="${(p2.y + p3.y)/2 - 20}" width="48" height="20" rx="4" fill="#0f172a" stroke="#06b6d4" stroke-width="1" />
+                <text x="${(p2.x + p3.x)/2}" y="${(p2.y + p3.y)/2 - 6}" fill="#06b6d4" font-size="10" font-weight="bold" text-anchor="middle">c = ${c.toFixed(1)}</text>
+            `;
+        }
+
+        // Event Listeners
+        targetVarSelect.addEventListener('change', updateApp);
+        slider1.addEventListener('input', updateApp);
+        slider2.addEventListener('input', updateApp);
+        slider3.addEventListener('input', updateApp);
+
+        // Initial Load
+        updateApp();
+    </script>
+</body>
+</html>

@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Oblique Triangle Solver</title>
+    <style>
+        :root {
+            --bg-main: #0f172a;
+            --bg-card: #1e293b;
+            --border: #334155;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --color-a: #f43f5e;
+            --color-b: #3b82f6;
+            --color-c: #eab308;
+            --accent: #14b8a6;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            padding: 1.5rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .dashboard {
+            width: 100%;
+            max-width: 680px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+
+        .canvas-container {
+            width: 100%;
+            background: #111827;
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid var(--border);
+            margin-bottom: 1.25rem;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: auto;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 1.25rem;
+            margin-bottom: 1.25rem;
+            text-align: center;
+        }
+
+        .metric-card h4 {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.25rem;
+        }
+
+        .metric-card p {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .control-group {
+            margin-bottom: 1.25rem;
+            position: relative;
+        }
+
+        label.section-title {
+            display: block;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .custom-select-wrapper {
+            position: relative;
+            user-select: none;
+        }
+
+        .custom-select-trigger {
+            width: 100%;
+            background: #0f172a;
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .custom-select-trigger::after {
+            content: "";
+            width: 0;
+            height: 0;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-top: 5px solid var(--text-muted);
+            transition: transform 0.2s ease;
+        }
+
+        .custom-select-wrapper.open .custom-select-trigger::after {
+            transform: rotate(180deg);
+        }
+
+        .custom-options-list {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: #0f172a;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-top: 4px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+            z-index: 100;
+            display: none;
+            overflow: hidden;
+        }
+
+        .custom-select-wrapper.open .custom-options-list {
+            display: block;
+        }
+
+        .custom-option {
+            padding: 0.75rem 1rem;
+            color: var(--text-main) !important;
+            background: #0f172a !important;
+            cursor: pointer;
+            transition: background 0.15s ease;
+        }
+
+        .custom-option:hover {
+            background: var(--border) !important;
+        }
+
+        .custom-option.selected {
+            background: #2563eb !important;
+            color: #ffffff !important;
+        }
+
+        .sliders-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.25rem;
+        }
+
+        @media (max-width: 500px) {
+            .sliders-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .slider-row {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .slider-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .slider-meta .name { color: var(--text-main); }
+        .slider-meta .value { font-family: monospace; font-weight: bold; }
+        .slider-input-wrapper { display: flex; align-items: center; gap: 0.75rem; }
+
+        input[type="range"] {
+            flex: 1;
+            -webkit-appearance: none;
+            appearance: none;
+            background: #0f172a;
+            height: 6px;
+            border-radius: 4px;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--color-b);
+            cursor: pointer;
+            transition: transform 0.1s ease;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+        .slider-row.type-a input[type="range"]::-webkit-slider-thumb { background: var(--color-a); }
+        .slider-row.type-b input[type="range"]::-webkit-slider-thumb { background: var(--color-b); }
+        .slider-row.type-c input[type="range"]::-webkit-slider-thumb { background: var(--color-c); }
+
+        .invalid-banner {
+            grid-column: 1 / -1;
+            background: rgba(244, 63, 94, 0.1);
+            border: 1px dashed var(--color-a);
+            color: var(--color-a);
+            padding: 0.75rem;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 0.85rem;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="dashboard">
+    <div class="canvas-container">
+        <canvas id="triangleCanvas" width="600" height="360"></canvas>
+    </div>
+
+    <div class="metrics-grid">
+        <div class="metric-card">
+            <h4>Classification</h4>
+            <p id="metricClass">Acute</p>
+        </div>
+        <div class="metric-card">
+            <h4>Total Area</h4>
+            <p id="metricArea">20.3</p>
+        </div>
+        <div class="metric-card">
+            <h4>Perimeter</h4>
+            <p id="metricPeri">21.0</p>
+        </div>
+    </div>
+
+    <div class="control-group">
+        <label class="section-title">Select Given Conditions</label>
+        <div class="custom-select-wrapper" id="customSelectWrapper">
+            <div class="custom-select-trigger" id="customSelectTrigger">Side-Side-Side (SSS)</div>
+            <div class="custom-options-list" id="customOptionsList">
+                <div class="custom-option selected" data-value="SSS">Side-Side-Side (SSS)</div>
+                <div class="custom-option" data-value="SAS">Side-Angle-Side (SAS)</div>
+                <div class="custom-option" data-value="ASA">Angle-Side-Angle (ASA)</div>
+                <div class="custom-option" data-value="AAS">Angle-Angle-Side (AAS)</div>
+                <div class="custom-option" data-value="SSA">Side-Side-Angle (SSA)</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="sliders-container" id="slidersContainer"></div>
+</div>
+
+<script>
+    const caseDefinitions = {
+        SSS: [
+            { id: 'a', name: 'Side a', min: 1, max: 20, step: 0.1, val: 6, cls: 'type-a' },
+            { id: 'b', name: 'Side b', min: 1, max: 20, step: 0.1, val: 7, cls: 'type-b' },
+            { id: 'c', name: 'Side c', min: 1, max: 20, step: 0.1, val: 8, cls: 'type-c' }
+        ],
+        SAS: [
+            { id: 'a', name: 'Side a', min: 1, max: 20, step: 0.1, val: 6, cls: 'type-a' },
+            { id: 'C', name: 'Angle C (°)', min: 1, max: 179, step: 0.5, val: 75.5, cls: 'type-c' },
+            { id: 'b', name: 'Side b', min: 1, max: 20, step: 0.1, val: 7, cls: 'type-b' }
+        ],
+        ASA: [
+            { id: 'A', name: 'Angle A (°)', min: 1, max: 179, step: 0.5, val: 46.6, cls: 'type-a' },
+            { id: 'c', name: 'Side c', min: 1, max: 20, step: 0.1, val: 8, cls: 'type-c' },
+            { id: 'B', name: 'Angle B (°)', min: 1, max: 179, step: 0.5, val: 57.9, cls: 'type-b' }
+        ],
+        AAS: [
+            { id: 'A', name: 'Angle A (°)', min: 1, max: 179, step: 0.5, val: 46.6, cls: 'type-a' },
+            { id: 'B', name: 'Angle B (°)', min: 1, max: 179, step: 0.5, val: 57.9, cls: 'type-b' },
+            { id: 'a', name: 'Side a', min: 1, max: 20, step: 0.1, val: 6, cls: 'type-a' }
+        ],
+        SSA: [
+            { id: 'a', name: 'Side a', min: 1, max: 20, step: 0.1, val: 6, cls: 'type-a' },
+            { id: 'b', name: 'Side b', min: 1, max: 20, step: 0.1, val: 7, cls: 'type-b' },
+            { id: 'A', name: 'Angle A (°)', min: 1, max: 179, step: 0.5, val: 46.6, cls: 'type-a' }
+        ]
+    };
+
+    let selectedCaseValue = 'SSS';
+    const selectWrapper = document.getElementById('customSelectWrapper');
+    const selectTrigger = document.getElementById('customSelectTrigger');
+    const optionsList = document.getElementById('customOptionsList');
+    const slidersContainer = document.getElementById('slidersContainer');
+    const metricClass = document.getElementById('metricClass');
+    const metricArea = document.getElementById('metricArea');
+    const metricPeri = document.getElementById('metricPeri');
+    const canvas = document.getElementById('triangleCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    const rad = d => (d * Math.PI) / 180;
+    const deg = r => (r * 180) / Math.PI;
+
+    selectTrigger.addEventListener('click', () => {
+        selectWrapper.classList.toggle('open');
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!selectWrapper.contains(e.target)) {
+            selectWrapper.classList.remove('open');
+        }
+    });
+
+    document.querySelectorAll('.custom-option').forEach(option => {
+        option.addEventListener('click', function() {
+            document.querySelectorAll('.custom-option').forEach(opt => opt.classList.remove('selected'));
+            this.classList.add('selected');
+            selectedCaseValue = this.getAttribute('data-value');
+            selectTrigger.textContent = this.textContent;
+            selectWrapper.classList.remove('open');
+            setupSliders();
+        });
+    });
+
+    function setupSliders() {
+        const controls = caseDefinitions[selectedCaseValue];
+        slidersContainer.innerHTML = '';
+        controls.forEach((ctrl, idx) => {
+            const row = document.createElement('div');
+            row.className = 'slider-row ' + ctrl.cls;
+            
+            const meta = document.createElement('div');
+            meta.className = 'slider-meta';
+            
+            const labelSpan = document.createElement('span');
+            labelSpan.className = 'name';
+            labelSpan.textContent = ctrl.name;
+            
+            const valSpan = document.createElement('span');
+            valSpan.className = 'value';
+            valSpan.id = 'valDisplay_' + idx;
+            valSpan.textContent = ctrl.val;
+            
+            meta.appendChild(labelSpan);
+            meta.appendChild(valSpan);
+            
+            const inputWrapper = document.createElement('div');
+            inputWrapper.className = 'slider-input-wrapper';
+            
+            const slider = document.createElement('input');
+            slider.type = 'range';
+            slider.id = 'inputField_' + idx;
+            slider.min = ctrl.min;
+            slider.max = ctrl.max;
+            slider.step = ctrl.step;
+            slider.value = ctrl.val;
+            
+            slider.addEventListener('input', (e) => {
+                valSpan.textContent = parseFloat(e.target.value).toFixed(ctrl.step >= 1 ? 0 : 1);
+                calculateAndRender();
+            });
+            
+            inputWrapper.appendChild(slider);
+            row.appendChild(meta);
+            row.appendChild(inputWrapper);
+            slidersContainer.appendChild(row);
+        });
+
+        const errorBanner = document.createElement('div');
+        errorBanner.className = 'invalid-banner';
+        errorBanner.id = 'mathErrorBox';
+        slidersContainer.appendChild(errorBanner);
+
+        calculateAndRender();
+    }
+
+    function calculateAndRender() {
+        const v0 = parseFloat(document.getElementById('inputField_0').value);
+        const v1 = parseFloat(document.getElementById('inputField_1').value);
+        const v2 = parseFloat(document.getElementById('inputField_2').value);
+        const errorBox = document.getElementById('mathErrorBox');
+        errorBox.style.display = 'none';
+
+        let a, b, c, A, B, C;
+        let customErrorMsg = "Impossible Geometry Profile Configured";
+
+        try {
+            if (selectedCaseValue === 'SSS') {
+                a = v0; b = v1; c = v2;
+                if (a + b <= c || a + c <= b || b + c <= a) {
+                    customErrorMsg = "Triangle Inequality Violation: Sum of 2 sides must exceed the 3rd.";
+                    throw new Error();
+                }
+                A = deg(Math.acos((b * b + c * c - a * a) / (2 * b * c)));
+                B = deg(Math.acos((a * a + c * c - b * b) / (2 * a * c)));
+                C = 180 - A - B;
+            }
+            else if (selectedCaseValue === 'SAS') {
+                a = v0; C = v1; b = v2;
+                c = Math.sqrt(a * a + b * b - 2 * a * b * Math.cos(rad(C)));
+                A = deg(Math.acos((b * b + c * c - a * a) / (2 * b * c)));
+                B = 180 - A - C;
+            }
+            else if (selectedCaseValue === 'ASA') {
+                A = v0; c = v1; B = v2;
+                if (A + B >= 180) {
+                    customErrorMsg = "Angle Violation: Total sum of input elements equals or exceeds 180°.";
+                    throw new Error();
+                }
+                C = 180 - A - B;
+                a = (c * Math.sin(rad(A))) / Math.sin(rad(C));
+                b = (c * Math.sin(rad(B))) / Math.sin(rad(C));
+            }
+            else if (selectedCaseValue === 'AAS') {
+                A = v0; B = v1; a = v2;
+                if (A + B >= 180) {
+                    customErrorMsg = "Angle Violation: Total sum of input elements equals or exceeds 180°.";
+                    throw new Error();
+                }
+                C = 180 - A - B;
+                b = (a * Math.sin(rad(B))) / Math.sin(rad(A));
+                c = (a * Math.sin(rad(C))) / Math.sin(rad(A));
+            }
+            else if (selectedCaseValue === 'SSA') {
+                a = v0; b = v1; A = v2;
+                let sinB = (b * Math.sin(rad(A))) / a;
+                if (sinB > 1) {
+                    customErrorMsg = "Impossible configuration: Side a too short to form a completed profile.";
+                    throw new Error();
+                }
+                B = deg(Math.asin(sinB));
+                C = 180 - A - B;
+                c = (a * Math.sin(rad(C))) / Math.sin(rad(A));
+            }
+
+            if (isNaN(a) || isNaN(b) || isNaN(c) || isNaN(A) || isNaN(B) || isNaN(C)) throw new Error();
+
+            const perimeter = a + b + c;
+            const s = perimeter / 2;
+            const area = Math.sqrt(s * (s - a) * (s - b) * (s - c));
+
+            let typeStr = "Acute";
+            if (A > 90.1 || B > 90.1 || C > 90.1) typeStr = "Obtuse";
+            else if (Math.abs(A - 90) < 0.5 || Math.abs(B - 90) < 0.5 || Math.abs(C - 90) < 0.5) typeStr = "Right";
+
+            metricClass.textContent = typeStr;
+            metricArea.textContent = area.toFixed(1);
+            metricPeri.textContent = perimeter.toFixed(1);
+
+            drawTriangleGraph(a, b, c, A, B, C);
+        } catch (e) {
+            errorBox.textContent = customErrorMsg;
+            errorBox.style.display = 'block';
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            metricClass.textContent = "--";
+            metricArea.textContent = "--";
+            metricPeri.textContent = "--";
+        }
+    }
+
+    function drawTriangleGraph(a, b, c, A, B, C) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const xA = 0, yA = 0;
+        const xB = c, yB = 0;
+        const xC = b * Math.cos(rad(A));
+        const yC = b * Math.sin(rad(A));
+
+        const minX = Math.min(xA, xB, xC), maxX = Math.max(xA, xB, xC);
+        const minY = Math.min(yA, yB, yC), maxY = Math.max(yA, yB, yC);
+        const widthGeo = maxX - minX, heightGeo = maxY - minY;
+        const padMargin = 60;
+
+        const scaleFactor = Math.min(
+            (canvas.width - padMargin * 2) / (widthGeo || 1),
+            (canvas.height - padMargin * 2) / (heightGeo || 1)
+        );
+
+        const offsetX = padMargin - minX * scaleFactor + (canvas.width - padMargin * 2 - widthGeo * scaleFactor) / 2;
+        const offsetY = canvas.height - padMargin + minY * scaleFactor - (canvas.height - padMargin * 2 - heightGeo * scaleFactor) / 2;
+
+        const pA = { x: offsetX + xA * scaleFactor, y: offsetY - yA * scaleFactor };
+        const pB = { x: offsetX + xB * scaleFactor, y: offsetY - yB * scaleFactor };
+        const pC = { x: offsetX + xC * scaleFactor, y: offsetY - yC * scaleFactor };
+
+        ctx.beginPath();
+        ctx.moveTo(pA.x, pA.y);
+        ctx.lineTo(pB.x, pB.y);
+        ctx.lineTo(pC.x, pC.y);
+        ctx.closePath();
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = '#2dd4bf';
+        ctx.fillStyle = 'rgba(45, 212, 191, 0.06)';
+        ctx.fill();
+        ctx.stroke();
+
+        const drawVertexDot = (pt, color) => {
+            ctx.beginPath();
+            ctx.arc(pt.x, pt.y, 6, 0, 2 * Math.PI);
+            ctx.fillStyle = color;
+            ctx.shadowBlur = 8;
+            ctx.shadowColor = color;
+            ctx.fill();
+            ctx.shadowBlur = 0;
+        };
+
+        drawVertexDot(pA, '#f43f5e');
+        drawVertexDot(pB, '#3b82f6');
+        drawVertexDot(pC, '#eab308');
+
+        ctx.font = '600 13px system-ui';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = '#f43f5e'; ctx.fillText('A', pA.x - 18, pA.y + 18);
+        ctx.fillStyle = '#3b82f6'; ctx.fillText('B', pB.x + 18, pB.y + 18);
+        ctx.fillStyle = '#eab308'; ctx.fillText('C', pC.x, pC.y - 20);
+
+        ctx.font = '500 11px system-ui';
+        ctx.fillStyle = '#f43f5e'; ctx.fillText('α: ' + A.toFixed(1) + '°', pA.x + 35, pA.y - 12);
+        ctx.fillStyle = '#3b82f6'; ctx.fillText('β: ' + B.toFixed(1) + '°', pB.x - 35, pB.y - 12);
+        ctx.fillStyle = '#eab308'; ctx.fillText('γ: ' + C.toFixed(1) + '°', pC.x, pC.y + 18);
+
+        const writeSegmentText = (p1, p2, text) => {
+            ctx.fillStyle = '#94a3b8';
+            ctx.fillText(text, (p1.x + p2.x) / 2, (p1.y + p2.y) / 2 - 12);
+        };
+
+        writeSegmentText(pA, pB, 'c = ' + c.toFixed(1));
+        writeSegmentText(pB, pC, 'a = ' + a.toFixed(1));
+        writeSegmentText(pC, pA, 'b = ' + b.toFixed(1));
+    }
+
+    window.addEventListener('DOMContentLoaded', setupSliders);
+</script>
+</body>
+</html>
