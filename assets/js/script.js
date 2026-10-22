@@ -317,3 +317,5 @@ floatingSymbolStyles.textContent = `
 `;
 document.head.appendChild(floatingSymbolStyles);
 createMathSymbols();
+
+document.getElementById('begin-exploration')?.addEventListener('click', scrollToSections);

@@ -1,4 +1,3 @@
-@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Libre+Franklin:wght@400;500;600&display=swap");
 @import "tailwindcss";
 
 :root {
@@ -9,7 +8,7 @@
   --gallery: #15120f;
   --gallery-soft: #211c17;
   --gold: #b8963e;
-  --gold-dark: #806725;
+  --gold-dark: #6f5a1c;
   --burgundy: #6e2a2a;
   --rule: #cbbd9f;
   --display: "Cormorant Garamond", Georgia, serif;
@@ -134,8 +133,7 @@ a {
   color: var(--paper);
 }
 
-main,
-footer {
+main {
   width: 100%;
 }
 
@@ -423,7 +421,7 @@ h4 {
 
 .era-meta p {
   margin: 0 auto;
-  color: #746959;
+  color: #625a50;
   font-size: 9px;
   line-height: 1.7;
 }
@@ -495,7 +493,7 @@ h4 {
 
 .topic-card > p {
   margin-bottom: 0;
-  color: #665e55;
+  color: #625a50;
   font-size: 12px;
   line-height: 1.75;
 }
@@ -887,7 +885,7 @@ h4 {
   align-items: center;
   gap: 30px;
   margin-bottom: 25px;
-  color: #6d6356;
+  color: #625a50;
   font-size: 8px;
   font-weight: 600;
   letter-spacing: 0.13em;
@@ -943,7 +941,7 @@ h4 {
 .number-card small,
 .formula-card p,
 .formula-card > div > span {
-  color: #766b5e;
+  color: #625a50;
   font-size: 8px;
   font-weight: 600;
   line-height: 1.5;
@@ -975,7 +973,7 @@ h4 {
   gap: 7px;
   border-right: 1px solid var(--rule);
   border-bottom: 1px solid var(--rule);
-  color: #776d60;
+  color: #625a50;
 }
 
 .number-empty strong {
@@ -994,7 +992,7 @@ h4 {
   border: 0;
   border-bottom: 1px solid transparent;
   background: transparent;
-  color: #776c5f;
+  color: #625a50;
   cursor: pointer;
   font-size: 8px;
   font-weight: 600;
@@ -1027,7 +1025,7 @@ h4 {
 }
 
 .comparison-side span {
-  color: #756a5b;
+  color: #625a50;
   font-size: 8px;
   font-weight: 600;
   letter-spacing: 0.13em;
@@ -1137,7 +1135,7 @@ h4 {
 
 .comparison-caption {
   margin: 15px 0 0;
-  color: #756b60;
+  color: #625a50;
   font: italic 15px/1.4 var(--display);
 }
 
@@ -1219,28 +1217,11 @@ h4 {
 }
 
 .stats-band small {
-  color: #706658;
+  color: #625a50;
   font-size: 8px;
   font-weight: 600;
   letter-spacing: 0.13em;
   text-transform: uppercase;
-}
-
-footer {
-  display: grid;
-  grid-template-columns: 1fr 1fr auto;
-  gap: 50px;
-  align-items: end;
-  padding: 66px max(32px, calc((100vw - 1160px) / 2)) 78px;
-  background: var(--gallery);
-  color: var(--paper);
-}
-
-footer p {
-  max-width: 430px;
-  margin: 0;
-  color: rgb(243 236 221 / 62%);
-  font: italic 16px/1.5 var(--display);
 }
 
 @media (max-width: 980px) {
@@ -1335,10 +1316,6 @@ footer p {
   .people-section,
   .instruments,
   .stats-band,
-  footer {
-    padding-right: 18px;
-    padding-left: 18px;
-  }
 
   .contents-section {
     padding-top: 82px;
@@ -1523,10 +1500,6 @@ footer p {
     border: 0;
   }
 
-  footer {
-    grid-template-columns: 1fr;
-    align-items: start;
-  }
 }
 
 @media (max-width: 430px) {
@@ -1762,7 +1735,7 @@ footer p {
 
 .marquee-footer {
   padding-top: 4px;
-  color: rgb(243 236 221 / 45%);
+  color: rgb(243 236 221 / 62%);
 }
 
 .marquee-footer > span:last-child {
@@ -2397,7 +2370,7 @@ footer p {
   bottom: 18px;
   left: 50%;
   z-index: 30;
-  color: rgb(211 233 235 / 46%);
+  color: rgb(211 233 235 / 70%);
   font: 600 9px/1.4 var(--body);
   letter-spacing: 0.17em;
   text-transform: uppercase;
@@ -2855,9 +2828,9 @@ footer p {
 
 .profile-name { font: 600 22px/1.05 var(--display); }
 .profile-years { margin-top: 4px; color: #6e2a2a; font: 600 8px/1.5 var(--body); letter-spacing: .08em; text-transform: uppercase; }
-.profile-region { color: #766b5b; font: 500 8px/1.5 var(--body); letter-spacing: .06em; text-transform: uppercase; }
+.profile-region { color: #625a50; font: 500 8px/1.5 var(--body); letter-spacing: .06em; text-transform: uppercase; }
 .profile-contribution { display: -webkit-box; max-width: 29ch; margin-top: 9px; overflow: hidden; color: #504940; font: 400 11px/1.45 var(--body); -webkit-box-orient: vertical; -webkit-line-clamp: 3; }
-.profile-action, .detail-label { margin-top: auto; padding-top: 9px; color: #806725; font: 600 8px/1.3 var(--body); letter-spacing: .12em; text-transform: uppercase; }
+.profile-action, .detail-label { margin-top: auto; padding-top: 9px; color: #6f5a1c; font: 600 8px/1.3 var(--body); letter-spacing: .12em; text-transform: uppercase; }
 .profile-action i { display: inline-block; margin-left: 5px; font-style: normal; transition: transform 300ms ease; }
 .profile-card.is-expanded .profile-action i { transform: rotate(45deg); }
 
@@ -2881,8 +2854,8 @@ footer p {
 .detail-label { display: block; margin: 0 0 11px; padding: 0; }
 .idea-list { display: flex; flex-wrap: wrap; gap: 5px; }
 .idea-list > span { padding: 5px 7px; border: 1px solid #cbbd9f; color: #4d453b; font-size: 8px; line-height: 1.2; }
-.profile-note { display: block; margin-top: 12px; color: #71675a; font: italic 13px/1.35 var(--display); }
-.image-credit { max-width: 1160px; margin: 30px auto 0; color: rgb(243 236 221 / 42%); font-size: 8px; letter-spacing: .05em; }
+.profile-note { display: block; margin-top: 12px; color: #625a50; font: italic 13px/1.35 var(--display); }
+.image-credit { max-width: 1160px; margin: 30px auto 0; color: rgb(243 236 221 / 62%); font-size: 8px; letter-spacing: .05em; }
 
 @media (max-width: 980px) {
   .profile-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }

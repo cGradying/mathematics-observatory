@@ -2,21 +2,14 @@
    Shared observatory tokens, pill nav, press-down buttons, plum footer,
    and entrance live in assets/css/styles.css (.observatory-page);
    this sheet sets the studio accent and card surfaces only. */
-.challenges-page { --op-accent: #B25A24; --op-paper: #FFF8F1; --op-card: #FFFDF9; }
+.challenges-page { --op-accent: #9A4A18; --op-paper: #FFF8F1; --op-card: #FFFDF9; }
 .challenges-page.observatory-page { padding-top: 0; }
 .challenges-page .challenge-hero { padding-top: 152px; padding-bottom: 57px; }
-.observatory-page { padding-top: 88px; }
 .observatory-page main { min-height: 70vh; }
 .op-shell { width: min(1180px, calc(100% - 48px)); margin-inline: auto; }
 .op-kicker { margin: 0 0 16px; color: var(--op-accent); }
 .op-button-challenge { color: var(--op-ink); background: var(--op-coral); }
 .op-button-challenge:hover { background: var(--op-blush); }
-.op-footer { min-height: 90px; padding: 24px max(24px, calc((100% - 1180px) / 2)); display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 14px 28px; color: rgba(255,255,255,.85); font-size: .72rem; }
-.op-footer a:first-child { color: white; }
-.op-footer a { color: inherit; text-decoration: none; }
-.op-footer a:hover { color: white; }
-.op-more { display: flex; flex-wrap: wrap; gap: 14px; }
-.op-more a[aria-current="page"] { color: white; }
 .challenge-hero h1 { margin: 0 0 20px; font-family: "Archivo Black", "Archivo", sans-serif; font-weight: 400; font-size: clamp(3.4rem, 7vw, 6.1rem); line-height: .98; letter-spacing: 0; }
 .challenge-hero h1 em { color: var(--op-accent); font-style: normal; }
 .challenge-hero-inner > div > p:not(.op-kicker) { max-width: 510px; margin: 0 0 26px; color: var(--op-muted); font-size: .98rem; line-height: 1.7; }
@@ -123,6 +116,20 @@
   .challenge-answer-row { flex-direction: column; }
   .challenge-answer-row input { min-height: 46px; }
   .challenge-answer-row .op-button { justify-content: space-between; }
-  .op-footer { padding: 22px 18px; }
 }
 @media (prefers-reduced-motion: reduce) { .observatory-page *, .observatory-page *::before, .observatory-page *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; } }
+
+.challenge-mastery{display:block;font-size:.7em;opacity:.75;font-weight:400}
+.challenge-next-step,.challenge-related{font-size:.85rem;margin:.5rem 0;opacity:.85}
+.challenge-next-step:empty{display:none}
+.challenge-levelup{margin:6px 0 0;color:#27734e;font-size:.75rem;font-weight:700}
+.challenge-levelup:empty{display:none}
+.challenge-next-step{line-height:1.5;overflow-wrap:anywhere}
+.challenge-next-step a,.challenge-related a{display:inline-block;padding:11px 2px;min-height:44px;box-sizing:border-box}
+.challenge-related{line-height:1.5}
+.challenge-filters button{min-height:44px}
+.challenge-mastery{white-space:normal;line-height:1.25}
+.challenge-hint-toggle,.challenge-solution .solution-heading button,.challenge-library-tools button,.challenge-library-tools select,.challenge-next{min-height:44px}
+@media (max-width:700px){.challenge-filters button{flex:1 1 auto;text-align:center}.challenge-next-step,.challenge-related{margin-inline:0}}
+.challenge-solution .solution-heading{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px}
+.challenge-solution .solution-heading button{padding:8px 14px;border:2px solid var(--op-ink);border-radius:12px;background:#fff;color:var(--op-ink);font-weight:700;cursor:pointer}

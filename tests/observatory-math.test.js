@@ -106,7 +106,7 @@ test('interactive workspaces expose curriculum studies and working experiment se
   const visualizeScript = fs.readFileSync(path.join(root, 'assets/js/visualize.js'), 'utf8');
   const labScript = fs.readFileSync(path.join(root, 'assets/js/laboratory.js'), 'utf8');
   assert.equal((visualize.match(/<option value=/g) || []).length, 24);
-  assert.equal((laboratory.match(/<option value=/g) || []).length, 14);
+  assert.equal((laboratory.match(/<option value=/g) || []).length, 13);
   assert.match(visualizeScript, /linearRegression/);
   assert.match(visualizeScript, /truthTable/);
   assert.match(visualizeScript, /cube-root/);

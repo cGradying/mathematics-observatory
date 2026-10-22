@@ -4,21 +4,25 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Explore Grade 11 mathematics through structured courses, a guided learning path, and study resources.">
-  <title>Learn - The Mathematics Observatory</title>
+  <title>Learn | The Mathematics Observatory</title>
   <link rel="stylesheet" href="assets/css/styles.css?v=16">
   <link rel="stylesheet" href="assets/css/learn.css?v=1">
   <link rel="stylesheet" href="assets/css/assistant.css?v=1">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Archivo+Black&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="/fonts/archivo-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/fonts/fonts.css">
+  <meta property="og:site_name" content="The Mathematics Observatory">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Learn | The Mathematics Observatory">
+  <meta property="og:description" content="Explore Grade 11 mathematics through structured courses, a guided learning path, and study resources.">
+  <meta name="twitter:card" content="summary">
+  <meta name="theme-color" content="#15120F">
 </head>
 <body class="observatory-page learn-page">
+<a class="skip-link" href="#learn-root">Skip to main content</a>
   <nav class="main-nav" aria-label="Main navigation">
     <div class="nav-container">
-      <a href="index.html" class="logo" aria-label="Home">
-        <span class="logo-symbol" aria-hidden="true">∫</span>
-        <span class="logo-text">The Mathematics Observatory</span>
-      </a>
+      <a class="logo" href="index.html" aria-label="The Mathematics Observatory home"><span class="logo-symbol" aria-hidden="true">∫</span><span class="logo-text">The Mathematics Observatory</span></a>
       <button class="menu-toggle" type="button" aria-label="Toggle menu" aria-controls="site-navigation" aria-expanded="false">
         <span></span><span></span><span></span>
       </button>
@@ -40,6 +44,7 @@
   <script src="assets/js/math-calculator.js?v=7"></script>
   <script src="assets/js/assistant-config.js"></script>
   <script src="assets/js/assistant.js?v=46"></script>
+  <script src="assets/js/progress.js"></script>
   <script type="module" src="/src/learn-main.tsx"></script>
 </body>
 </html>

@@ -109,3 +109,31 @@ test('Gemini proxy translates chat messages and structured output while keeping 
         globalThis.fetch = previousFetch;
     }
 });
+
+test('Gemini proxy rejects cross-origin requests and never leaks the API key', async () => {
+    await withEnvironment({ GEMINI_API_KEY: 'secret-key-123' }, async () => {
+        const response = createResponse();
+        await assistantApi({ method: 'POST', headers: { host: 'site.test', origin: 'https://evil.test' }, body: {} }, response);
+        assert.equal(response.statusCode, 403);
+        assert.equal(response.headers['cache-control'], 'no-store');
+        assert.ok(!JSON.stringify(response.body).includes('secret-key-123'));
+    });
+});
+
+test('Gemini proxy aborts the upstream call with a timeout signal and hides upstream errors', async () => {
+    const realFetch = global.fetch;
+    let signal;
+    global.fetch = async (url, options) => { signal = options.signal; throw new Error('boom secret-key-123'); };
+    try {
+        await withEnvironment({ GEMINI_API_KEY: 'secret-key-123' }, async () => {
+            const response = createResponse();
+            const messages = [{ role: 'system', content: 's' }, { role: 'user', content: 'hi' }];
+            await assistantApi({ method: 'POST', headers: { host: 'site.test' }, body: { messages } }, response);
+            assert.equal(response.statusCode, 502);
+            assert.ok(signal instanceof AbortSignal);
+            assert.ok(!JSON.stringify(response.body).includes('secret-key-123'));
+        });
+    } finally {
+        global.fetch = realFetch;
+    }
+});

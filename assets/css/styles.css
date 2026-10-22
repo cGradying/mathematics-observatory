@@ -833,88 +833,28 @@ a.logo .logo-symbol {
    FOOTER
    ============================================ */
 
-.main-footer {
-    position: relative;
-    padding: 5.8rem max(1rem, 4vw) 2rem;
-    overflow: hidden;
-    color: #ffffff;
-    background:
-        radial-gradient(circle at 18% 0%, rgba(160, 66, 225, 0.22), transparent 27rem),
-        var(--color-night);
-}
-
-.main-footer::before {
-    content: "∫";
-    position: absolute;
-    right: 7%;
-    bottom: -4rem;
-    color: rgba(255, 255, 255, 0.035);
-    font-family: var(--font-display);
-    font-size: 24rem;
-    line-height: 1;
-    pointer-events: none;
-}
-
-.footer-content {
-    position: relative;
-    z-index: 1;
-    width: min(var(--page-width), 100%);
-    margin: 0 auto 4rem;
-    display: grid;
-    grid-template-columns: 2fr 1fr 1fr;
-    gap: 4rem;
-}
-
-.footer-section h3 {
-    max-width: 390px;
-    margin-bottom: 1rem;
-    font-size: 1.65rem;
-    line-height: 1.25;
-}
-
-.footer-section h4 {
-    margin-bottom: 1.15rem;
-    color: #d9b4ff;
-    font-family: var(--font-primary);
-    font-size: 0.76rem;
-    letter-spacing: 0.13em;
-    text-transform: uppercase;
-}
-
-.footer-section p {
-    color: rgba(255, 255, 255, 0.5);
+/* Single shared footer (all pages). footer.site-footer outranks bare `footer` rules in learn/history CSS. */
+footer.site-footer {
+    display: block;
+    padding: 3rem max(1.25rem, calc((100% - 1180px) / 2)) 1.5rem;
+    color: rgba(255, 255, 255, 0.82);
+    background: #57436E;
+    border-top: 2px solid #282435;
+    font-family: "Archivo", system-ui, sans-serif;
     font-size: 0.9rem;
+    line-height: 1.5;
 }
-
-.footer-section ul {
-    list-style: none;
-}
-
-.footer-section li + li {
-    margin-top: 0.6rem;
-}
-
-.footer-section a {
-    color: rgba(255, 255, 255, 0.62);
-    font-size: 0.9rem;
-    text-decoration: none;
-    transition: color var(--transition-fast);
-}
-
-.footer-section a:hover {
-    color: #ffffff;
-}
-
-.footer-bottom {
-    position: relative;
-    z-index: 1;
-    width: min(var(--page-width), 100%);
-    margin: 0 auto;
-    padding-top: 1.6rem;
-    color: rgba(255, 255, 255, 0.35);
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    font-size: 0.78rem;
-}
+.site-footer ul { margin: 0; padding: 0; list-style: none; }
+.site-footer a { color: inherit; text-decoration: none; }
+.site-footer a:hover { color: #fff; text-decoration: underline; text-underline-offset: 3px; }
+.site-footer a:focus-visible { outline: 3px solid #FFE08A; outline-offset: 3px; }
+.site-footer-inner { display: grid; grid-template-columns: 1.2fr 1.6fr 1fr; gap: 2rem 3rem; align-items: start; }
+.site-footer .site-footer-name { color: #fff; font-family: "Archivo Black", "Archivo", sans-serif; font-size: 1.1rem; font-weight: 400; }
+.site-footer p { max-width: none; margin: 0.4rem 0 0; color: rgba(255, 255, 255, 0.7); font: inherit; font-style: normal; }
+.site-footer-nav ul { display: grid; grid-template-columns: repeat(2, auto); justify-content: start; gap: 0.5rem 2.5rem; }
+.site-footer-meta { display: grid; gap: 0.5rem; }
+.site-footer p.site-footer-legal { margin: 2.25rem 0 0; padding-top: 1.25rem; border-top: 1px solid rgba(255, 255, 255, 0.18); font-size: 0.78rem; color: rgba(255, 255, 255, 0.6); }
+@media (max-width: 860px) { .site-footer-inner { grid-template-columns: 1fr; } }
 
 /* ============================================
    REVEAL SUPPORT
@@ -1056,11 +996,6 @@ a.logo .logo-symbol {
     .scroll-indicator {
         display: none;
     }
-
-    .footer-content {
-        grid-template-columns: 1.5fr 1fr 1fr;
-        gap: 2rem;
-    }
 }
 
 @media (max-width: 620px) {
@@ -1109,13 +1044,8 @@ a.logo .logo-symbol {
         padding-bottom: 6.5rem;
     }
 
-    .approach-grid,
-    .footer-content {
+    .approach-grid {
         grid-template-columns: 1fr;
-    }
-
-    .footer-content {
-        gap: 2.7rem;
     }
 }
 
@@ -1167,7 +1097,7 @@ a.logo .logo-symbol {
 .home-page {
     --home-paper: #FFF8F1;
     --home-ink: #282435;
-    --home-muted: #7C7587;
+    --home-muted: #655E71;
     --home-plum: #57436E;
     --home-violet: #7A68C8;
     --home-coral: #FF9E8A;
@@ -1475,7 +1405,7 @@ a.logo .logo-symbol {
 }
 .home-page .grid-kicker {
     margin-bottom: 0.6rem;
-    color: #B84A6E;
+    color: #A33A5E;
     font-family: var(--font-mono);
     font-size: 0.72rem;
     font-weight: 600;
@@ -1519,10 +1449,10 @@ a.logo .logo-symbol {
     transition: transform var(--transition-medium), box-shadow var(--transition-medium);
 }
 /* Each studio gets its own pastel wash from the same family */
-.home-page .section-card.explore { --accent-color: #B84A6E; background: var(--home-blush); }
+.home-page .section-card.explore { --accent-color: #A33A5E; background: var(--home-blush); }
 .home-page .section-card.visualize { --accent-color: #3B74A8; background: var(--home-sky); }
-.home-page .section-card.laboratory { --accent-color: #2E7D52; background: var(--home-mint); }
-.home-page .section-card.challenges { --accent-color: #B25A24; background: var(--home-peach); }
+.home-page .section-card.laboratory { --accent-color: #226841; background: var(--home-mint); }
+.home-page .section-card.challenges { --accent-color: #9A4A18; background: var(--home-peach); }
 .home-page .section-card.history { --accent-color: #8F6B14; background: var(--home-lime); }
 .home-page .section-card.proofs { --accent-color: #6555B8; background: var(--home-lav); }
 .home-page .section-card::before { display: none; }
@@ -1723,12 +1653,9 @@ a.logo .logo-symbol {
 .home-page .approach-item + .approach-item { border-left: 1px solid rgba(76, 51, 86, 0.16); }
 .home-page .approach-item::after { display: none; }
 .home-page .approach-item:hover { box-shadow: none; transform: translateY(-3px); }
-.home-page .approach-number { width: auto; height: auto; display: block; color: #B84A6E; border-radius: 0; background: none !important; box-shadow: none !important; font-size: 0.7rem; }
+.home-page .approach-number { width: auto; height: auto; display: block; color: #A33A5E; border-radius: 0; background: none !important; box-shadow: none !important; font-size: 0.7rem; }
 .home-page .approach-item h3 { margin: 0.8rem 0 0.45rem; color: var(--home-ink); font-family: var(--font-primary); font-size: 1rem; letter-spacing: -0.02em; }
 .home-page .approach-item p { color: var(--home-muted); font-size: 0.85rem; }
-.home-page .main-footer { background: var(--home-plum); font-family: var(--font-primary); }
-.home-page .main-footer::before { font-family: Georgia, serif; }
-.home-page .main-footer::before { color: rgba(255, 255, 255, 0.045); }
 
 @media (max-width: 1400px) {
     .home-page .nav-container { gap: 0.5rem; }
@@ -1829,10 +1756,11 @@ a.logo .logo-symbol {
    ============================================ */
 
 .observatory-page {
+    padding-top: 88px;
     --op-paper: #FFF8F1;
     --op-card: #FFFDF9;
     --op-ink: #282435;
-    --op-muted: #7C7587;
+    --op-muted: #655E71;
     --op-plum: #57436E;
     --op-violet: #7A68C8;
     --op-coral: #FF9E8A;
@@ -1966,8 +1894,6 @@ a.logo .logo-symbol {
 .observatory-page .op-button:focus-visible { outline: 3px solid var(--op-violet); outline-offset: 3px; }
 /* Anchor jump targets (hero buttons, footer return links) land below the fixed pill nav. */
 .observatory-page section[id] { scroll-margin-top: 96px; }
-.observatory-page .op-footer { background: var(--op-plum); }
-.observatory-page .op-footer a:first-child { font-family: var(--font-display); font-weight: 400; }
 
 /* One-time hero entrance for studio mastheads */
 @keyframes op-hero-enter {
@@ -1982,7 +1908,7 @@ a.logo .logo-symbol {
     .observatory-page main > section:first-child { animation: none; }
     .observatory-page .op-button,
     .observatory-page .op-button span,
-    .observatory-page .nav-link { transition: none; }
+        .observatory-page .nav-link { transition: none; }
 }
 
 /* Brand link must never show a link underline. This sits last so it wins. */
@@ -2000,4 +1926,127 @@ a.logo .logo-symbol {
     border-bottom: none !important;
     box-shadow: none !important;
     background-image: none !important;
+}
+
+/* ============================================
+   ACCESSIBILITY UTILITIES (shared by every page)
+   ============================================ */
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.skip-link {
+    position: fixed;
+    top: 0.75rem;
+    left: 0.75rem;
+    z-index: 3000;
+    padding: 0.75rem 1.1rem;
+    border-radius: 999px;
+    background: var(--color-ink);
+    color: #fff;
+    font: 600 0.9rem/1 var(--font-primary);
+    text-decoration: none;
+    transform: translateY(-200%);
+    transition: transform var(--transition-fast);
+}
+
+.skip-link:focus,
+.skip-link:focus-visible {
+    transform: none;
+    outline: 3px solid var(--color-gold);
+    outline-offset: 2px;
+}
+
+main:focus { outline: none; }
+
+/* Keyboard focus ring that stays visible on dark and light surfaces. */
+a:focus-visible,
+button:focus-visible,
+summary:focus-visible,
+[tabindex]:focus-visible {
+    outline: 3px solid var(--color-purple);
+    outline-offset: 3px;
+    box-shadow: 0 0 0 5px rgba(255, 255, 255, 0.85);
+}
+
+/* Prevent wide content (ticker, filter rails) from creating page-level scroll. */
+html, body { overflow-x: clip; }
+
+/* Brand wordmark wraps to two lines on phones instead of truncating. */
+@media (max-width: 620px) {
+    .main-nav .nav-container a.logo .logo-text {
+        max-width: none;
+        overflow: visible;
+        white-space: normal;
+        text-overflow: clip;
+        font-size: 0.82rem;
+        line-height: 1.1;
+    }
+    .home-page .logo-words { white-space: normal; font-size: 0.85rem; }
+    .home-page .logo-word-1, .home-page .logo-word-2 { display: block; }
+}
+
+/* Topic chip (assets/js/topic-chip.js) */
+.topic-chip {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 1rem;
+    max-width: var(--page-width);
+    margin: 1rem auto 0;
+    padding: 0.6rem 1rem;
+    width: calc(100% - 2rem);
+    box-sizing: border-box;
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-lavender);
+    border-radius: var(--radius-sm);
+    color: var(--color-text-primary);
+    font-family: var(--font-primary);
+    font-size: 0.9rem;
+}
+.topic-chip-text { font-weight: 700; margin-right: auto; text-transform: none; }
+.topic-chip a { color: var(--color-purple); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+.topic-chip a:hover { color: var(--color-night-soft); }
+.topic-chip a:focus-visible { outline: 3px solid var(--color-purple); outline-offset: 2px; border-radius: 4px; }
+
+/* Shared nav collapse: the 8-link bar does not fit beside the brand below 1200px
+   on any page, so every page opens the hamburger panel at the same width. */
+@media (max-width: 1200px) {
+    .main-nav .nav-container { position: relative; }
+    .main-nav .menu-toggle { display: flex; }
+    .main-nav .nav-links {
+        position: absolute;
+        top: calc(100% + 0.65rem);
+        right: 0;
+        left: 0;
+        padding: 0.65rem;
+        flex: none;
+        flex-direction: column;
+        align-items: stretch;
+        justify-content: flex-start;
+        gap: 0.15rem;
+        visibility: hidden;
+        opacity: 0;
+        border: 1px solid rgba(255, 255, 255, 0.13);
+        border-radius: 18px;
+        background: rgba(20, 5, 36, 0.97);
+        box-shadow: 0 20px 44px rgba(13, 2, 24, 0.37);
+        transform: translateY(-8px);
+        transition: opacity var(--transition-fast), transform var(--transition-fast), visibility var(--transition-fast);
+    }
+    .main-nav .nav-links.active { visibility: visible; opacity: 1; transform: translateY(0); }
+    .main-nav .nav-link { width: 100%; }
+    .observatory-page .main-nav .nav-links {
+        border: 2px solid var(--op-ink);
+        background: #fffaf2;
+        box-shadow: 5px 5px 0 0 var(--op-ink);
+    }
 }

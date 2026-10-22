@@ -877,7 +877,7 @@
   }
 
   // Click the rule panel to copy the equation (progressive enhancement).
-  if(rulePanelEl&&equationEl&&navigator.clipboard?.writeText){
+  if(rulePanelEl&&equationEl&&typeof navigator!=='undefined'&&navigator.clipboard?.writeText){
     rulePanelEl.classList.add('is-copyable');
     rulePanelEl.title='Click to copy this rule';
     rulePanelEl.addEventListener('click',async()=>{

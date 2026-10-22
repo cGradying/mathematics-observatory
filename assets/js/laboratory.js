@@ -1217,13 +1217,11 @@
   render();
 });
 render();
-// Initial position: ensure workspace is visible on load
+// Scroll to the URL hash target on load (getElementById: an invalid selector like "#1a" must not throw).
 document.addEventListener('DOMContentLoaded',()=>{
-  if(window.location.hash){
-    const target=document.querySelector(window.location.hash);
-    if(target) target.scrollIntoView({behavior:'smooth'});
-  }
+  const target=window.location.hash&&document.getElementById(decodeURIComponent(window.location.hash.slice(1)));
+  if(target) target.scrollIntoView({behavior:'smooth'});
 });
-  const reveal=document.querySelector('#lab-reveal');reveal.addEventListener('click',()=>{const expanded=reveal.getAttribute('aria-expanded')!=='true';reveal.setAttribute('aria-expanded',String(expanded));reveal.innerHTML=expanded?'Hide hint <span aria-hidden="true">−</span>':'Reveal a hint <span aria-hidden="true">＋</span>';document.querySelector('#lab-hint').hidden=!expanded;});
-  document.querySelectorAll('[data-lab-experiment]').forEach(button=>button.addEventListener('click',()=>{const match={sequence:'sequence',measurement:'temperature',statistics:'statistics'}[button.dataset.labExperiment];if(match){picker.value=match;render();document.querySelector('#experiment').scrollIntoView({behavior:'smooth'});}}));
+  const reveal=document.querySelector('#lab-reveal');if(reveal)reveal.addEventListener('click',()=>{const expanded=reveal.getAttribute('aria-expanded')!=='true';reveal.setAttribute('aria-expanded',String(expanded));reveal.innerHTML=expanded?'Hide hint <span aria-hidden="true">−</span>':'Reveal a hint <span aria-hidden="true">＋</span>';document.querySelector('#lab-hint').hidden=!expanded;});
+  document.querySelectorAll('[data-lab-experiment]').forEach(button=>button.addEventListener('click',()=>{const match={sequence:'sequence',measurement:'temperature'}[button.dataset.labExperiment];if(match){picker.value=match;render();document.querySelector('#experiment').scrollIntoView({behavior:'smooth'});}}));
 })();

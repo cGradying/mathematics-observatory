@@ -8,14 +8,21 @@
   <link rel="stylesheet" href="assets/css/styles.css?v=16">
   <link rel="stylesheet" href="assets/css/assistant.css?v=7">
   <link rel="stylesheet" href="assets/css/visualize.css?v=18">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Archivo+Black&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="/fonts/archivo-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/fonts/fonts.css">
+  <meta property="og:site_name" content="The Mathematics Observatory">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Visualize | The Mathematics Observatory">
+  <meta property="og:description" content="See Grade 11 mathematical relationships through interactive graphs and visual studies.">
+  <meta name="twitter:card" content="summary">
+  <meta name="theme-color" content="#15120F">
 </head>
 <body class="observatory-page visualize-page" data-section="visualize">
+<a class="skip-link" href="#main">Skip to main content</a>
   <nav class="main-nav" aria-label="Main navigation">
     <div class="nav-container">
-      <a class="logo" href="index.html" aria-label="The Mathematics Observatory home"><span class="logo-symbol">∫</span><span class="logo-text">The Mathematics Observatory</span></a>
+      <a class="logo" href="index.html" aria-label="The Mathematics Observatory home"><span class="logo-symbol" aria-hidden="true">∫</span><span class="logo-text">The Mathematics Observatory</span></a>
       <button class="menu-toggle" type="button" aria-label="Toggle menu" aria-controls="site-navigation" aria-expanded="false"><span></span><span></span><span></span></button>
       <ul class="nav-links" id="site-navigation">
         <li><a href="index.html" class="nav-link">Home</a></li>
@@ -29,7 +36,7 @@
       </ul>
     </div>
   </nav>
-  <main>
+  <main id="main">
     <section class="viz-hero">
       <div class="viz-hero-copy"><p class="op-kicker">A visual field guide · Grade 11</p><h1>See the rule<br><em>take shape.</em></h1><p>Explore how inputs, patterns, and data become visible relationships. Change the rule and watch the graph respond.</p><a class="op-button op-button-viz" href="#visual-workspace">Open the function studio <span aria-hidden="true">↓</span></a></div>
       <div class="viz-hero-mark" aria-hidden="true"><span>y = mx + b</span><svg viewBox="0 0 400 230"><path d="M30 195H375M55 215V18M80 177 338 42"/><circle cx="210" cy="112" r="6"/></svg></div>
@@ -53,7 +60,8 @@
       <article class="viz-study" data-viz-category="finance"><span class="study-number">05</span><div class="study-spark spark-finance" aria-hidden="true"><svg viewBox="0 0 150 62"><path d="M4 54C44 49 70 43 93 31S128 12 148 5"/></svg></div><div><p>Finance · compound interest</p><h3>Growth over time</h3><span>Compare a balance after repeated compounding.</span></div><a href="explore.html#curriculum-paths" class="study-action">Explore formulas <span>↗</span></a></article>
     </div></section>
   </main>
-  <footer class="op-footer"><a href="index.html">The Mathematics Observatory</a><nav class="op-more" aria-label="More mathematics studios"><a href="visualize.html" aria-current="page">Visualize</a><a href="laboratory.html">Laboratory</a><a href="challenges.html">Challenges</a></nav><span>Visualize · See relationships</span><a href="#visual-workspace">Return to the studio ↑</a></footer>
+  <footer class="site-footer"><div class="site-footer-inner"><div class="site-footer-brand"><a class="site-footer-name" href="index.html">The Mathematics Observatory</a><p>A Grade 11 exploration project</p></div><nav class="site-footer-nav" aria-label="Footer"><ul><li><a href="index.html">Home</a></li><li><a href="learn.html">Learn</a></li><li><a href="explore.html">Explore</a></li><li><a href="visualize.html">Visualize</a></li><li><a href="laboratory.html">Laboratory</a></li><li><a href="challenges.html">Challenges</a></li><li><a href="history.html">History</a></li><li><a href="proofs.html">Why It Works</a></li></ul></nav><ul class="site-footer-meta"><li><a href="docs/references/G11-General-Mathematics.pdf">Curriculum source (PDF)</a></li><li><a href="#">Back to top <span aria-hidden="true">&uarr;</span></a></li></ul></div><p class="site-footer-legal">&copy; 2026 The Mathematics Observatory</p></footer>
   <script src="assets/js/script.js"></script><script src="assets/js/curriculum-data.js?v=7"></script><script src="assets/js/math-calculator.js?v=7"></script><script src="assets/js/observatory-math.js?v=4"></script><script src="assets/js/assistant-config.js"></script><script src="assets/js/assistant.js?v=46"></script><script type="module" src="assets/js/geometry-loader.js?v=1"></script><script src="assets/js/visualize.js?v=38"></script>
+<script defer src="assets/js/progress.js"></script><script defer src="assets/js/topic-chip.js"></script>
 </body>
 </html>

@@ -1,0 +1,50 @@
+.dash { background: var(--color-bg-secondary); padding: 3rem 1.5rem; }
+.dash[hidden], .dash [hidden] { display: none; }
+.dash-inner { max-width: var(--page-width); margin: 0 auto; font-family: var(--font-primary); color: var(--color-text-primary); }
+.dash-title { font-family: var(--font-display); font-size: clamp(1.6rem, 4vw, 2.4rem); margin: 0.25rem 0 1.25rem; }
+.dash-goals { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; }
+.dash-btn, .dash select { font: inherit; min-height: 44px; padding: 0.5rem 1.1rem; border-radius: var(--radius-sm); border: 2px solid var(--color-purple); background: var(--color-paper); color: var(--color-ink); cursor: pointer; }
+.dash-btn:hover { background: var(--color-lavender); }
+.dash-danger { border-color: var(--color-challenges); }
+.dash-label { font-weight: 600; }
+.dash-file { position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; }
+.dash-btn:has(+ .dash-file:focus-visible), .dash-btn:focus-visible { outline: 3px solid var(--color-purple); outline-offset: 3px; }
+.dash-note { color: var(--color-text-secondary); margin: 0.75rem 0; }
+.dash-top { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); margin-bottom: 1.25rem; }
+.dash-card { background: var(--color-paper); border-radius: var(--radius-md); padding: 1.25rem; box-shadow: var(--shadow-sm); }
+.dash-card-title { font-family: var(--font-display); font-size: 1.2rem; margin: 0.25rem 0 0.75rem; overflow-wrap: anywhere; }
+.dash-topics { list-style: none; margin: 0 0 1.25rem; padding: 0; display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr)); }
+.dash-topic { background: var(--color-paper); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); }
+.dash-topic { display: flex; flex-direction: column; gap: 0.4rem; padding: 1rem; }
+.dash-topic > p { margin: 0; }
+.dash-topic-action { margin-top: auto; display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0.5rem 1rem; border-radius: var(--radius-sm); border: 2px solid var(--color-purple); color: var(--color-ink); font-weight: 700; text-decoration: none; text-align: center; }
+.dash-topic-action:hover { background: var(--color-lavender); }
+.dash-topic-action:focus-visible { outline: 3px solid var(--color-purple); outline-offset: 3px; }
+.dash-new .dash-topic-action { background: var(--color-lavender); }
+.dash-topic-name { font-size: 1rem; font-weight: 700; margin: 0; overflow-wrap: anywhere; }
+.dash-level { font-size: 0.85rem; font-weight: 700; color: var(--color-purple); }
+.dash-bar { display: block; height: 8px; border-radius: 4px; background: var(--color-bg-secondary); overflow: hidden; }
+.dash-fill { display: block; height: 100%; background: var(--color-purple); transition: width var(--transition-medium); }
+.dash-meta { font-size: 0.85rem; color: var(--color-text-secondary); }
+.dash-data summary { cursor: pointer; font-weight: 700; min-height: 44px; display: flex; align-items: center; }
+.dash-status { min-height: 1.5em; font-weight: 600; }
+@media (prefers-reduced-motion: reduce) { .dash-fill { transition: none; } }
+
+/* Returning students: keep the intro short so the dashboard is above the fold. */
+.has-dashboard .hero {
+    min-height: 0;
+    height: auto;
+    padding-block: 7rem 3rem;
+}
+.has-dashboard .hero-stats,
+.has-dashboard .hero-secondary {
+    display: none;
+}
+
+@media (max-width: 480px) {
+    .dash { padding: 2rem 1rem; }
+    .dash-goals > .dash-btn, .dash-goals > select { flex: 1 1 100%; }
+    .dash-topics { grid-template-columns: 1fr; }
+
+}
+.dash-card .card-link { display: inline-flex; align-items: center; min-height: 44px; }

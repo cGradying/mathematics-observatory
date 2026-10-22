@@ -3,23 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Explore - The Mathematics Observatory</title>
+    <title>Explore Topics | The Mathematics Observatory</title>
+  <meta name="description" content="Explore Grade 11 General Mathematics topic by topic, with worked examples and interactive tools.">
     <link rel="stylesheet" href="assets/css/styles.css?v=16">
     <link rel="stylesheet" href="assets/css/assistant.css?v=7">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Archivo+Black&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
         <link rel="stylesheet" href="assets/css/explore.css?v=35">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="/fonts/archivo-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/fonts/fonts.css">
+  <meta property="og:site_name" content="The Mathematics Observatory">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Explore Topics | The Mathematics Observatory">
+  <meta property="og:description" content="Explore Grade 11 General Mathematics topic by topic, with worked examples and interactive tools.">
+  <meta name="twitter:card" content="summary">
+  <meta name="theme-color" content="#15120F">
 </head>
 <body class="observatory-page explore-page" data-section="explore">
+<a class="skip-link" href="#main">Skip to main content</a>
     <!-- Navigation -->
     <nav class="main-nav" aria-label="Main navigation">
         <div class="nav-container">
-            <a href="index.html" class="logo" aria-label="Home">
-                <span class="logo-symbol">∫</span>
-                <span class="logo-text">The Mathematics Observatory</span>
-            </a>
+            <a class="logo" href="index.html" aria-label="The Mathematics Observatory home"><span class="logo-symbol" aria-hidden="true">∫</span><span class="logo-text">The Mathematics Observatory</span></a>
 
             <button class="menu-toggle" type="button" aria-label="Toggle menu" aria-controls="site-navigation" aria-expanded="false">
                 <span></span>
@@ -45,7 +50,8 @@
         <span class="theme-toggle-label">Dark mode</span>
     </button>
 
-    <main>
+    <main id="main">
+        <h1 class="visually-hidden">Explore Grade 11 formulas and curriculum paths</h1>
         <section class="formula-lab" id="formula-lab" aria-labelledby="formula-lab-title">
             <div class="explore-shell">
                 <div class="section-heading">
@@ -292,38 +298,7 @@
         </section>
     </main>
 
-    <footer class="site-footer">
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-brand">
-                    <div class="footer-logo" aria-hidden="true">∫</div>
-                    <div>
-                        <p class="footer-title">The Mathematics Observatory</p>
-                        <p class="footer-desc">An interactive digital museum for Grade 11 mathematics</p>
-                    </div>
-                </div>
-                <div class="footer-links">
-                    <div class="footer-column">
-                        <h4>Explore</h4>
-                        <ul>
-                            <li><a href="learn.html">Learn</a></li>
-                            <li><a href="explore.html">Formula Explorer</a></li>
-                        </ul>
-                    </div>
-                    <div class="footer-column">
-                        <h4>More</h4>
-                        <ul>
-                            <li><a href="history.html">History</a></li>
-                            <li><a href="proofs.html">Why It Works</a></li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <p class="footer-copyright">&copy; 2026 The Mathematics Observatory. All rights reserved.</p>
-            </div>
-        </div>
-    </footer>
+    <footer class="site-footer"><div class="site-footer-inner"><div class="site-footer-brand"><a class="site-footer-name" href="index.html">The Mathematics Observatory</a><p>A Grade 11 exploration project</p></div><nav class="site-footer-nav" aria-label="Footer"><ul><li><a href="index.html">Home</a></li><li><a href="learn.html">Learn</a></li><li><a href="explore.html">Explore</a></li><li><a href="visualize.html">Visualize</a></li><li><a href="laboratory.html">Laboratory</a></li><li><a href="challenges.html">Challenges</a></li><li><a href="history.html">History</a></li><li><a href="proofs.html">Why It Works</a></li></ul></nav><ul class="site-footer-meta"><li><a href="docs/references/G11-General-Mathematics.pdf">Curriculum source (PDF)</a></li><li><a href="#">Back to top <span aria-hidden="true">&uarr;</span></a></li></ul></div><p class="site-footer-legal">&copy; 2026 The Mathematics Observatory</p></footer>
 
     <script src="assets/js/script.js"></script>
     <script src="assets/js/curriculum-data.js?v=7"></script>
@@ -331,6 +306,8 @@
     <script src="assets/js/assistant-config.js"></script>
     <script src="assets/js/assistant.js?v=46"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
-    <script defer src="assets/js/explore.js?v=9"></script>
+    <script defer src="assets/js/explore-formulas.js"></script>
+    <script defer src="assets/js/explore.js"></script>
+<script defer src="assets/js/progress.js"></script><script defer src="assets/js/topic-chip.js"></script>
 </body>
 </html>

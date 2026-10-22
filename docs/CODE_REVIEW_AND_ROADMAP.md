@@ -50,6 +50,12 @@ Make the default model configurable only server-side for hosted Gemini, but vali
 
 Use the supplied Impeccable prompt after installing its skill. Run `/impeccable document` to capture the real design system, `/impeccable critique` to identify usability issues, then targeted `/impeccable polish` or `/impeccable typeset` work. Verify math rendering, contrast, mobile behavior, keyboard interaction, reduced motion, and all existing page/assistant behavior. Treat the product-specific instructions as guidance; Impeccable is an optional authoring-time tool, not a runtime dependency.
 
+## Status update
+
+Done since this review: self-hosted fonts, Vercel config (`vercel.json`: CSP, cache headers, 404), browser-only progress/dashboard, unused deps (`gsap`, `lenis`, `@tailwindcss/vite`) removed, legacy prototypes moved to `legacy/`, dist-link, header, progress and accessibility tests, footer/contrast CSS cleanup.
+
+Remaining: everything in the P1-P3 items above (WAF rate limit and quota alerts, recursive knowledge-schema validation, Gemini failure-path tests, clear-history control and provider disclosure, model allowlist, Impeccable critique pass), plus dropping CSP `'unsafe-inline'` styles and the stray `@import "tailwindcss"` in `history.css` (no Tailwind plugin is configured).
+
 ## Already in place
 
 - Folder separation for root HTML entry pages, browser assets, topic/example data, templates, references, tests, and Vercel API function.

@@ -27,7 +27,7 @@ test('local HTML assets and page links resolve to files in the project', () => {
             const target = path.resolve(root, localPath);
             if (!target.startsWith(`${root}${path.sep}`) && target !== root) {
                 brokenReferences.push(`${htmlFile}: reference escapes project root: ${reference}`);
-            } else if (!fs.existsSync(target)) {
+            } else if (!fs.existsSync(target) && !fs.existsSync(path.resolve(root, 'public', localPath))) {
                 brokenReferences.push(`${htmlFile}: missing ${reference}`);
             }
         }
@@ -58,7 +58,7 @@ test('local CSS url() references resolve relative to their stylesheet', () => {
 test('Vite includes every root HTML page in its multi-page build', async () => {
     const { default: config } = await import(pathToFileURL(path.join(root, 'vite.config.mjs')));
     const input = config.build.rolldownOptions.input;
-    const configuredPages = Object.keys(input).map(name => `${name}.html`).sort();
+    const configuredPages = Object.keys(input).filter(name => !name.includes('/')).map(name => `${name}.html`).sort();
 
     assert.deepEqual(configuredPages, [...htmlFiles].sort());
     assert.ok(!Object.hasOwn(input, 'api'), 'server functions are not client page entries');

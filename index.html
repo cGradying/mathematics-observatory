@@ -3,17 +3,23 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>The Mathematics Observatory | Grade 11</title>
+    <title>The Mathematics Observatory | Grade 11 General Mathematics</title>
+  <meta name="description" content="A Grade 11 General Mathematics study site with lessons, interactive graphs, experiments, practice challenges and an AI tutor.">
     <link rel="stylesheet" href="assets/css/styles.css?v=17" />
+    <link rel="stylesheet" href="assets/css/dashboard.css?v=1" />
     <link rel="stylesheet" href="assets/css/assistant.css?v=7" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Archivo+Black&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
-      rel="stylesheet"
-    />
-  </head>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="/fonts/archivo-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/fonts/fonts.css">
+  <meta property="og:site_name" content="The Mathematics Observatory">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="The Mathematics Observatory | Grade 11 General Mathematics">
+  <meta property="og:description" content="A Grade 11 General Mathematics study site with lessons, interactive graphs, experiments, practice challenges and an AI tutor.">
+  <meta name="twitter:card" content="summary">
+  <meta name="theme-color" content="#15120F">
+</head>
   <body class="home-page">
+<a class="skip-link" href="#main">Skip to main content</a>
     <!-- Navigation -->
     <nav class="main-nav" aria-label="Main navigation">
       <div class="nav-container">
@@ -46,6 +52,7 @@
       </div>
     </nav>
 
+    <main id="main">
     <!-- Hero Section -->
     <section class="hero">
       <div class="hero-background">
@@ -62,7 +69,7 @@
           A comprehensive digital exploration of Grade 11 Mathematics
         </p>
         <div class="hero-actions">
-          <button class="cta-button" onclick="scrollToSections()">Begin Exploration</button>
+          <button class="cta-button" id="begin-exploration">Begin Exploration</button>
           <a class="hero-secondary" href="#about">About this archive <span aria-hidden="true">↓</span></a>
         </div>
         <dl class="hero-stats" aria-label="Site summary">
@@ -74,6 +81,57 @@
       <div class="scroll-indicator">
         <span>Scroll to explore</span>
         <div class="scroll-arrow"></div>
+      </div>
+    </section>
+
+    <!-- Personal dashboard (revealed by assets/js/dashboard.js; stays hidden without JS) -->
+    <section class="dash" id="dashboard" aria-labelledby="dash-title" hidden>
+      <div class="dash-inner">
+        <div id="dash-goal" hidden>
+          <p class="grid-kicker">Make it yours</p>
+          <h2 class="dash-title" id="dash-goal-title">What are you here for?</h2>
+          <div class="dash-goals" role="group" aria-labelledby="dash-goal-title">
+            <button type="button" class="dash-btn" data-goal="exam">Exam prep</button>
+            <button type="button" class="dash-btn" data-goal="catchup">Catch up</button>
+            <button type="button" class="dash-btn" data-goal="explore">Just exploring</button>
+          </div>
+          <p class="dash-note">Saved only in this browser. You can change it any time.</p>
+        </div>
+        <div id="dash-main" hidden>
+          <p class="grid-kicker">Your progress</p>
+          <h2 class="dash-title" id="dash-title">Your study dashboard</h2>
+          <p class="dash-note" id="dash-activity"></p>
+          <div class="dash-top">
+            <article class="dash-card" id="dash-continue" hidden>
+              <p class="card-eyebrow">Continue</p>
+              <h3 class="dash-card-title" id="dash-continue-label"></h3>
+              <a class="card-link" id="dash-continue-link" href="learn.html">Pick up where you left off <span aria-hidden="true">&rarr;</span></a>
+            </article>
+            <article class="dash-card" id="dash-next">
+              <p class="card-eyebrow">Next best step</p>
+              <h3 class="dash-card-title" id="dash-next-label"></h3>
+              <a class="card-link" id="dash-next-link" href="challenges.html">Go <span aria-hidden="true">&rarr;</span></a>
+            </article>
+          </div>
+          <ul class="dash-topics" id="dash-topics" aria-label="Your topics"></ul>
+          <details class="dash-data">
+            <summary>Your data</summary>
+            <p class="dash-note">Everything is stored in this browser only. Goal: <strong id="dash-goal-now"></strong></p>
+            <div class="dash-goals">
+              <label class="dash-label" for="dash-goal-select">Change goal</label>
+              <select id="dash-goal-select">
+                <option value="exam">Exam prep</option>
+                <option value="catchup">Catch up</option>
+                <option value="explore">Just exploring</option>
+              </select>
+              <button type="button" class="dash-btn" id="dash-export">Export progress</button>
+              <label class="dash-btn" for="dash-import">Import progress</label>
+              <input type="file" id="dash-import" accept="application/json,.json" class="dash-file" />
+              <button type="button" class="dash-btn dash-danger" id="dash-reset">Reset my progress</button>
+            </div>
+          </details>
+          <p class="dash-status" id="dash-status" role="status" aria-live="polite"></p>
+        </div>
       </div>
     </section>
 
@@ -291,47 +349,14 @@
       </div>
     </section>
 
+    </main>
+
     <!-- Footer -->
-    <footer class="main-footer">
-      <div class="footer-content">
-        <div class="footer-section">
-          <h3>The Mathematics Observatory</h3>
-          <p>A Grade 11 exploration project</p>
-        </div>
-        <div class="footer-section">
-          <h4>Quick Links</h4>
-          <ul>
-            <li><a href="learn.html">Learn</a></li>
-            <li><a href="explore.html">Explore</a></li>
-            <li><a href="visualize.html">Visualize</a></li>
-            <li><a href="laboratory.html">Laboratory</a></li>
-            <li><a href="challenges.html">Challenges</a></li>
-            <li><a href="history.html">History</a></li>
-            <li><a href="proofs.html">Why It Works</a></li>
-          </ul>
-        </div>
-        <div class="footer-section">
-          <h4>Resources</h4>
-          <ul>
-            <li><a href="index.html#about">About</a></li>
-            <li>
-              <a href="docs/references/G11-General-Mathematics.pdf"
-                >Curriculum source</a
-              >
-            </li>
-            <li><a href="explore.html">Formula practice</a></li>
-          </ul>
-        </div>
-      </div>
-      <div class="footer-bottom">
-        <p>
-          &copy; 2026 The Mathematics Observatory. Created with precision and
-          passion.
-        </p>
-      </div>
-    </footer>
+    <footer class="site-footer"><div class="site-footer-inner"><div class="site-footer-brand"><a class="site-footer-name" href="index.html">The Mathematics Observatory</a><p>A Grade 11 exploration project</p></div><nav class="site-footer-nav" aria-label="Footer"><ul><li><a href="index.html">Home</a></li><li><a href="learn.html">Learn</a></li><li><a href="explore.html">Explore</a></li><li><a href="visualize.html">Visualize</a></li><li><a href="laboratory.html">Laboratory</a></li><li><a href="challenges.html">Challenges</a></li><li><a href="history.html">History</a></li><li><a href="proofs.html">Why It Works</a></li></ul></nav><ul class="site-footer-meta"><li><a href="docs/references/G11-General-Mathematics.pdf">Curriculum source (PDF)</a></li><li><a href="#">Back to top <span aria-hidden="true">&uarr;</span></a></li></ul></div><p class="site-footer-legal">&copy; 2026 The Mathematics Observatory</p></footer>
 
     <script src="assets/js/script.js?v=3"></script>
+    <script src="assets/js/progress.js"></script>
+    <script src="assets/js/dashboard.js"></script>
     <script src="assets/js/curriculum-data.js?v=7"></script>
     <script src="assets/js/math-calculator.js?v=7"></script>
     <script src="assets/js/assistant-config.js"></script>

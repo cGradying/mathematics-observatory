@@ -1,11 +1,31 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
+
+// Learn course -> knowledge slug used by window.Progress (assets/js/progress.js)
+const SLUGS: Record<string, string> = {
+  Functions: "functions",
+  Algebra: "sequences-and-series",
+  Trigonometry: "trigonometry",
+  Geometry: "measurement-and-conversion",
+  Statistics: "statistics",
+  Probability: "statistics",
+  "Business Mathematics": "business-mathematics",
+  "Mathematical Reasoning": "logic-and-mathematical-reasoning",
+};
+type ProgressApi = {
+  markRead(t: string, k: string, r: boolean): unknown;
+  isRead(t: string, k: string): boolean;
+  setLast(t: string, p: string, l: string, h: string): unknown;
+};
+const prog = (): ProgressApi | undefined => (window as unknown as { Progress?: ProgressApi }).Progress;
+const lessonKey = (course: string, lesson: string) => `${course}: ${lesson}`;
+const readNow = (course: string, lesson: string) =>
+  !!prog()?.isRead(SLUGS[course], lessonKey(course, lesson));
 
 type Topic = {
   title: string;
   description: string;
   lessons: string[];
-  count: number;
-  duration: string;
+  formula: string;
   icon: ReactNode;
   color: string;
   softColor: string;
@@ -32,12 +52,15 @@ const Icon = ({
   </svg>
 );
 
+// ~45 min per lesson, derived so the badge never drifts from the list
+const studyTime = (n: number) => `~${Math.ceil(n * 0.75)} hours`;
+const slugId = (title: string) => title.toLowerCase().replace(/\s+/g, "-");
+
 const topics: Topic[] = [
   {
     title: "Functions",
     description: "Understand how quantities relate and change together",
-    count: 12,
-    duration: "~8 hours",
+    formula: "f(x)",
     color: "#7c5cff",
     softColor: "#eeeaff",
     icon: (
@@ -59,8 +82,7 @@ const topics: Topic[] = [
   {
     title: "Algebra",
     description: "Master symbolic manipulation and equation solving",
-    count: 14,
-    duration: "~10 hours",
+    formula: "x²",
     color: "#ef5da8",
     softColor: "#ffeaf5",
     icon: (
@@ -80,8 +102,7 @@ const topics: Topic[] = [
   {
     title: "Trigonometry",
     description: "Explore relationships between angles and sides",
-    count: 11,
-    duration: "~9 hours",
+    formula: "θ",
     color: "#ff9d42",
     softColor: "#fff2e5",
     icon: (
@@ -102,8 +123,7 @@ const topics: Topic[] = [
   {
     title: "Geometry",
     description: "Study shapes, spaces, and their properties",
-    count: 10,
-    duration: "~7 hours",
+    formula: "○",
     color: "#2db7a3",
     softColor: "#e5faf7",
     icon: (
@@ -124,8 +144,7 @@ const topics: Topic[] = [
   {
     title: "Statistics",
     description: "Learn to collect, analyze, and interpret data",
-    count: 9,
-    duration: "~6 hours",
+    formula: "μ",
     color: "#3f8cff",
     softColor: "#e8f2ff",
     icon: (
@@ -146,8 +165,7 @@ const topics: Topic[] = [
   {
     title: "Probability",
     description: "Quantify uncertainty and predict outcomes",
-    count: 8,
-    duration: "~6 hours",
+    formula: "P",
     color: "#7857c8",
     softColor: "#f0ebff",
     icon: (
@@ -168,6 +186,62 @@ const topics: Topic[] = [
       "Expected value",
     ],
   },
+  {
+    title: "Business Mathematics",
+    description: "Apply percentages, interest, and payroll to earning, buying, and selling",
+    formula: "%",
+    color: "#d9822b",
+    softColor: "#fff1e0",
+    icon: (
+      <Icon size={34}>
+        <rect height="12" rx="2.5" stroke="currentColor" strokeWidth="1.8" width="16" x="4" y="7" />
+        <path d="M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7M4 12.5h16" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" />
+      </Icon>
+    ),
+    lessons: [
+      "Wages, Salaries, Overtime, Allowances, Commission and Piecework",
+      "Percentages",
+      "Percentage increase and decrease",
+      "Markup",
+      "Markdown",
+      "Discounts",
+      "VAT",
+      "Multi-step percentage price changes",
+      "Profit and loss",
+      "Commission",
+      "Simple interest",
+      "Compound interest",
+      "Present value",
+      "Future value",
+      "Annuities",
+      "Loans",
+      "Amortization",
+      "Depreciation and inflation",
+      "Budgets, tax tables, and installment purchases",
+    ],
+  },
+  {
+    title: "Mathematical Reasoning",
+    description: "Analyze statements and arguments, and justify conclusions precisely",
+    formula: "∴",
+    color: "#c2477a",
+    softColor: "#ffe9f1",
+    icon: (
+      <Icon size={34}>
+        <path d="M6 8.5h12M6 15.5h12M9 5l-2 14m10-14-2 14" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" />
+      </Icon>
+    ),
+    lessons: [
+      "Statements and logical connectives",
+      "Truth tables and equivalent statements",
+      "Conditional statements and contrapositives",
+      "Arguments, premises, conclusions, and validity",
+      "Deductive and inductive reasoning",
+      "Counterexamples and conjectures",
+      "Quantifiers and mathematical statements",
+      "Proof and mathematical reasoning",
+    ],
+  },
 ];
 
 const paths = [
@@ -176,6 +250,8 @@ const paths = [
   ["Trigonometry", "Apply algebraic skills to circular and periodic phenomena"],
   ["Geometry", "Visualize and prove relationships in space"],
   ["Statistics & Probability", "Apply mathematical thinking to real-world data and uncertainty"],
+  ["Business Mathematics", "Use percentages and interest to model money, pay, and prices"],
+  ["Mathematical Reasoning", "Justify conclusions with logic, counterexamples, and proof"],
 ];
 
 const resources = [
@@ -187,7 +263,7 @@ const resources = [
     icon: "ƒx",
   },
   {
-    title: "Mathematical Reasoning",
+    title: "Why It Works",
     text: "Understand why key mathematical ideas and formulas work.",
     label: "Read explanations",
     href: "proofs.html",
@@ -245,6 +321,24 @@ function HeroArtwork() {
 export default function App() {
   const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [, bump] = useState(0);
+
+  const open = (topic: Topic) => {
+    setSelectedTopic(topic.title);
+    prog()?.setLast(SLUGS[topic.title], "learn", `Reading ${topic.title}`, `learn.html?topic=${SLUGS[topic.title]}`);
+  };
+  const toggle = (course: string, lesson: string) => {
+    prog()?.markRead(SLUGS[course], lessonKey(course, lesson), !readNow(course, lesson));
+    bump((n) => n + 1);
+  };
+
+  useEffect(() => {
+    const slug = new URLSearchParams(window.location.search).get("topic");
+    const match = topics.find((t) => SLUGS[t.title] === slug);
+    if (!match) return;
+    setSelectedTopic(match.title);
+    document.getElementById(slugId(match.title))?.scrollIntoView({ block: "center" });
+  }, []);
 
   const exploreTopic = () => {
     const match = topics.find((topic) =>
@@ -313,7 +407,7 @@ export default function App() {
         <section className="topic-strip" aria-label="Course topics">
           <span>Explore by topic</span>
           {topics.map((topic) => (
-            <a href={`#${topic.title.toLowerCase()}`} key={topic.title}>
+            <a href={`#${slugId(topic.title)}`} key={topic.title}>
               <i style={{ color: topic.color }}>{topic.icon}</i>
               {topic.title}
             </a>
@@ -327,8 +421,8 @@ export default function App() {
               <h2>Build skills that <em>last.</em></h2>
             </div>
             <p>
-              Six carefully structured areas make complex mathematics approachable, useful,
-              and rewarding.
+              {topics.length} carefully structured areas make complex mathematics approachable,
+              useful, and rewarding.
             </p>
           </div>
 
@@ -336,7 +430,7 @@ export default function App() {
             {topics.map((topic, index) => (
               <article
                 className={`topic-card reveal ${selectedTopic === topic.title ? "is-selected" : ""}`}
-                id={topic.title.toLowerCase()}
+                id={slugId(topic.title)}
                 key={topic.title}
                 style={{ "--topic-color": topic.color, "--topic-soft": topic.softColor } as React.CSSProperties}
               >
@@ -344,27 +438,39 @@ export default function App() {
                   <span className="card-number">0{index + 1}</span>
                   <div className="topic-icon">{topic.icon}</div>
                   <div className="cover-formula">
-                    {index === 0 && "f(x)"}
-                    {index === 1 && "x²"}
-                    {index === 2 && "θ"}
-                    {index === 3 && "○"}
-                    {index === 4 && "μ"}
-                    {index === 5 && "P"}
+                    {topic.formula}
                   </div>
                 </div>
                 <div className="card-body">
                   <div className="card-tags">
-                    <span>{topic.count} lessons</span>
-                    <span>{topic.duration}</span>
+                    <span>{topic.lessons.length} lessons</span>
+                    <span>{studyTime(topic.lessons.length)}</span>
                   </div>
                   <h3>{topic.title}</h3>
                   <p>{topic.description}</p>
-                  <ul>
-                    {topic.lessons.map((lesson) => <li key={lesson}>{lesson}</li>)}
+                  <ul className={selectedTopic === topic.title ? "is-open" : ""}>
+                    {topic.lessons.map((lesson) => {
+                      const done = readNow(topic.title, lesson);
+                      return (
+                        <li key={lesson}>
+                          {lesson}
+                          {prog() && (
+                            <button className="read-toggle" type="button" aria-pressed={done} onClick={() => toggle(topic.title, lesson)}>
+                              {done ? "Read ✓" : "Mark as read"}
+                            </button>
+                          )}
+                        </li>
+                      );
+                    })}
                   </ul>
+                  {prog() && (
+                    <p className="read-count">
+                      {topic.lessons.filter((l) => readNow(topic.title, l)).length} of {topic.lessons.length} lessons read
+                    </p>
+                  )}
                   <button
                     className="start-button"
-                    onClick={() => setSelectedTopic(topic.title)}
+                    onClick={() => open(topic)}
                     type="button"
                   >
                     {selectedTopic === topic.title ? "Course selected" : "Start learning"}
@@ -425,41 +531,7 @@ export default function App() {
         </section>
       </main>
 
-      <footer>
-        <div className="footer-main">
-          <div className="footer-brand">
-            <a className="brand brand-light" href="index.html">
-              <span className="brand-mark">
-                <Icon size={23}>
-                  <path d="M5 17c3.8-9.6 6.2-9.6 7.7-3.2 1.3 5.5 3 5.3 6.3-4.8" stroke="currentColor" strokeLinecap="round" strokeWidth="2" />
-                </Icon>
-              </span>
-              <span>The Mathematics <b>Observatory</b></span>
-            </a>
-            <p>A Grade 11 exploration project for curious minds.</p>
-          </div>
-          <div className="footer-links">
-            <div>
-              <h3>Quick links</h3>
-              <a href="index.html">Home</a>
-              <a href="learn.html">Learn</a>
-              <a href="explore.html">Explore</a>
-              <a href="history.html">History</a>
-              <a href="proofs.html">Why It Works</a>
-            </div>
-            <div>
-              <h3>Resources</h3>
-              <a href="index.html#about">About</a>
-              <a href="docs/references/G11-General-Mathematics.pdf">Curriculum source</a>
-              <a href="explore.html">Formula practice</a>
-            </div>
-          </div>
-        </div>
-        <div className="footer-bottom">
-          <span>© 2026 The Mathematics Observatory.</span>
-          <span>Created with precision and passion.</span>
-        </div>
-      </footer>
+      <footer className="site-footer"><div className="site-footer-inner"><div className="site-footer-brand"><a className="site-footer-name" href="index.html">The Mathematics Observatory</a><p>A Grade 11 exploration project</p></div><nav className="site-footer-nav" aria-label="Footer"><ul><li><a href="index.html">Home</a></li><li><a href="learn.html">Learn</a></li><li><a href="explore.html">Explore</a></li><li><a href="visualize.html">Visualize</a></li><li><a href="laboratory.html">Laboratory</a></li><li><a href="challenges.html">Challenges</a></li><li><a href="history.html">History</a></li><li><a href="proofs.html">Why It Works</a></li></ul></nav><ul className="site-footer-meta"><li><a href="docs/references/G11-General-Mathematics.pdf">Curriculum source (PDF)</a></li><li><a href="#">Back to top <span aria-hidden="true">↑</span></a></li></ul></div><p className="site-footer-legal">© 2026 The Mathematics Observatory</p></footer>
     </div>
   );
 }

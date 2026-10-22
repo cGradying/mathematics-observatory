@@ -1,4 +1,3 @@
-@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,700;1,700&display=swap");
 
 :root {
   color: #29223b;
@@ -1016,64 +1015,6 @@ a {
   transform: translateX(4px);
 }
 
-footer {
-  background: #25183e;
-  color: white;
-  padding: 64px max(6vw, 24px) 24px;
-}
-
-.footer-main {
-  display: flex;
-  justify-content: space-between;
-  margin: 0 auto 50px;
-  max-width: 1150px;
-}
-
-.brand-light b {
-  color: #a995ff;
-}
-
-.footer-brand p {
-  color: rgba(255, 255, 255, 0.46);
-  font-size: 12px;
-  margin: 17px 0 0 50px;
-}
-
-.footer-links {
-  display: flex;
-  gap: 90px;
-}
-
-.footer-links h3 {
-  color: #b7a7e9;
-  font-size: 10px;
-  letter-spacing: 1.2px;
-  margin: 0 0 17px;
-  text-transform: uppercase;
-}
-
-.footer-links a {
-  color: rgba(255, 255, 255, 0.56);
-  display: block;
-  font-size: 12px;
-  margin: 10px 0;
-}
-
-.footer-links a:hover {
-  color: white;
-}
-
-.footer-bottom {
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.35);
-  display: flex;
-  font-size: 10px;
-  justify-content: space-between;
-  margin: 0 auto;
-  max-width: 1150px;
-  padding-top: 23px;
-}
-
 .reveal {
   opacity: 1;
   transform: translateY(0);
@@ -1294,18 +1235,6 @@ footer {
     grid-template-columns: 1fr;
   }
 
-  .footer-main {
-    flex-direction: column;
-    gap: 48px;
-  }
-
-  .footer-brand p {
-    margin-left: 0;
-  }
-
-  .footer-links {
-    gap: 55px;
-  }
 }
 
 @media (max-width: 460px) {
@@ -1367,13 +1296,9 @@ footer {
     height: 160px;
   }
 
-  .footer-links {
-    flex-direction: column;
-    gap: 25px;
-  }
-
-  .footer-bottom {
-    flex-direction: column;
-    gap: 8px;
-  }
 }
+
+.read-toggle{margin-left:.6rem;padding:.15rem .6rem;border:1px solid currentColor;border-radius:999px;background:transparent;color:inherit;font:inherit;font-size:.8rem;cursor:pointer}
+.read-toggle[aria-pressed="true"]{font-weight:700;background:var(--topic-soft,rgba(0,0,0,.08))}
+.read-toggle:focus-visible{outline:2px solid currentColor;outline-offset:2px}
+.read-count{margin:.5rem 0 0;font-size:.85rem;opacity:.8}

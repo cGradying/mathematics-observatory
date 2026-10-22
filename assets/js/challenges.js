@@ -18,6 +18,61 @@
   let difficulty = 'all';
   let currentIndex = 0;
   let katexReady;
+  const P = () => window.Progress;
+  const slugOf = (key) => categoryIds[key];
+  const titleOf = (slug) => P()?.TOPICS.find((t) => t.id === slug)?.title || slug;
+  const nextStepEl = document.createElement('p');
+  nextStepEl.id = 'challenge-next-step';
+  nextStepEl.className = 'challenge-next-step';
+  list.before(nextStepEl);
+  const toolsEl = document.createElement('p');
+  toolsEl.id = 'challenge-related';
+  toolsEl.className = 'challenge-related';
+  toolsEl.hidden = true;
+  document.querySelector('#challenge-solution').append(toolsEl);
+  const levelEl = document.createElement('p');
+  levelEl.className = 'challenge-levelup';
+  levelEl.setAttribute('role', 'status');
+  document.querySelector('#challenge-feedback').after(levelEl);
+
+  function refreshProgress() {
+    if (!P()) return;
+    filters.forEach((button) => {
+      const slug = slugOf(button.dataset.challengeFilter);
+      if (!slug) return;
+      let tag = button.querySelector('small.challenge-mastery');
+      if (!tag) { tag = document.createElement('small'); tag.className = 'challenge-mastery'; button.append(tag); }
+      const d = P().describe(slug);
+      tag.textContent = d.n ? `${d.label} · ${d.n} of ${P().WINDOW}` : '';
+    });
+    const step = P().nextStep();
+    nextStepEl.replaceChildren();
+    if (step) {
+      nextStepEl.append('Next best step: ');
+      const a = document.createElement('a');
+      a.href = step.href;
+      a.textContent = step.label;
+      nextStepEl.append(a);
+    }
+    const act = P().activity();
+    if (act.today) nextStepEl.append(` · ${act.today} answered today${act.run > 1 ? `, ${act.run}-day streak` : ''}`);
+  }
+  function markLast(item) {
+    if (!P() || !item) return;
+    const slug = item.topicId;
+    P().setLast(slug, 'challenges', `Practising ${titleOf(slug)}`, `challenges.html#topic=${slug}`);
+  }
+  function pickRandom() {
+    const goal = P()?.load().goal;
+    let pool = filteredQuestions.map((_, i) => i);
+    if (P() && (goal === 'exam' || goal === 'catchup') && pool.length > 1) {
+      const stat = (i) => P().mastery(filteredQuestions[i].topicId);
+      const score = goal === 'exam' ? (i) => stat(i).n : (i) => stat(i).pct;
+      const best = Math.min(...pool.map(score));
+      pool = pool.filter((i) => score(i) === best);
+    }
+    return pool[Math.floor(Math.random() * pool.length)];
+  }
 
   function loadKatex() {
     if (window.katex?.render) return Promise.resolve(window.katex);
@@ -159,10 +214,12 @@
     }
     setText('challenge-count', `Question ${currentIndex + 1} of ${filteredQuestions.length}`);
     answerInput.value = '';
-    document.querySelector('#challenge-feedback').textContent = '';
+    document.querySelector('#challenge-feedback').textContent = ''; levelEl.textContent = '';
     document.querySelector('#challenge-feedback').className = 'challenge-feedback';
     document.querySelector('#challenge-solution').hidden = true;
     [...list.querySelectorAll('[data-question-index]')].forEach((button) => button.classList.toggle('is-current', Number(button.dataset.questionIndex) === currentIndex));
+    toolsEl.hidden = true;
+    markLast(item);
     if (focus) answerInput.focus({ preventScroll: true });
   }
 
@@ -209,25 +266,34 @@
       document.querySelector('#challenge-hint').hidden = true;
       document.querySelector('#challenge-formula').hidden = true;
       document.querySelector('#challenge-solution').hidden = true;
-      document.querySelector('#challenge-feedback').textContent = '';
+      document.querySelector('#challenge-feedback').textContent = ''; levelEl.textContent = '';
     }
   }
 
-  filters.forEach((button) => button.addEventListener('click', () => {
-    category = button.dataset.challengeFilter;
+  function setCategory(key) {
+    category = key;
     currentIndex = 0;
+    const button = filters.find((b) => b.dataset.challengeFilter === key);
     filters.forEach((item) => {
       const active = item === button;
       item.classList.toggle('is-active', active);
       item.setAttribute('aria-pressed', String(active));
     });
-    renderList();
-  }));
+    if (allQuestions.length) renderList();
+  }
+  filters.forEach((button) => button.addEventListener('click', () => setCategory(button.dataset.challengeFilter)));
+  function applyHash() {
+    const slug = new URLSearchParams(location.hash.slice(1)).get('topic');
+    const key = Object.keys(categoryIds).find((k) => categoryIds[k] === slug);
+    if (key && key !== category) setCategory(key);
+  }
+  window.addEventListener('hashchange', applyHash);
+  window.addEventListener('progress-change', refreshProgress);
   searchInput.addEventListener('input', () => { currentIndex = 0; renderList(); });
   document.querySelector('#challenge-difficulty-filter').addEventListener('change', (event) => { difficulty = event.target.value; currentIndex = 0; renderList(); });
   document.querySelector('#challenge-random').addEventListener('click', () => {
     if (!filteredQuestions.length) return;
-    const next = filteredQuestions.length < 2 ? 0 : Math.floor(Math.random() * filteredQuestions.length);
+    const next = filteredQuestions.length < 2 ? 0 : pickRandom();
     selectQuestion(next, true);
   });
   document.querySelector('#challenge-next').addEventListener('click', () => selectQuestion(currentIndex + 1, true));
@@ -253,10 +319,27 @@
     setText('challenge-final', item.finalAnswer);
     setText('challenge-mistake', item.commonMistake ? `Watch for: ${item.commonMistake}` : '');
     document.querySelector('#challenge-solution').hidden = false;
+    if (P()) {
+      const before = P().LEVEL_NAMES.indexOf(P().mastery(item.topicId).level);
+      P().recordAnswer(item.topicId, passed);
+      const after = P().describe(item.topicId);
+      const now = P().LEVEL_NAMES.indexOf(after.level);
+      levelEl.textContent = now > before ? (before === 0 ? `Nice start on ${titleOf(item.topicId)}.` : `Level up: ${titleOf(item.topicId)} is now ${after.label}.`) : '';
+      markLast(item);
+      const slug = item.topicId;
+      toolsEl.replaceChildren('Related tools: ');
+      [['Visualize', 'visualize'], ['Laboratory', 'laboratory'], ['Learn', 'learn']].forEach(([label, page], i) => {
+        const a = document.createElement('a');
+        a.href = `${page}.html?topic=${slug}`;
+        a.textContent = label;
+        toolsEl.append(i ? ' · ' : '', a);
+      });
+      toolsEl.hidden = false;
+    }
   });
   document.querySelector('#challenge-retry').addEventListener('click', () => {
     answerInput.value = '';
-    document.querySelector('#challenge-feedback').textContent = '';
+    document.querySelector('#challenge-feedback').textContent = ''; levelEl.textContent = '';
     document.querySelector('#challenge-solution').hidden = true;
     answerInput.focus();
   });
@@ -273,6 +356,8 @@
       setText('challenge-bank-count', 'No questions loaded.');
       return;
     }
+    applyHash();
     renderList();
+    refreshProgress();
   });
 })();
